@@ -8,8 +8,8 @@ metrics:
     value: "6+"
   - label: Active repositories supported
     value: "25+"
-  - label: Performance gains delivered
-    value: "~70% faster"
+  - label: Critical incidents resolved
+    value: "150+"
 primaryCta:
   label: Download Résumé
   href: /resume.pdf
