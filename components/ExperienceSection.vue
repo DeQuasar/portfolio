@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { ExperienceContent } from '~/types/content'
+import AppLink from '~/components/ui/AppLink.vue'
 
 const props = defineProps<{
   experience: ExperienceContent

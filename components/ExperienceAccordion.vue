@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { ExperienceContent, ExperienceEntry, ExperienceProject } from '~/types/content'
+import AppButton from '~/components/ui/AppButton.vue'
 
 const props = defineProps<{ experience: ExperienceContent }>()
 

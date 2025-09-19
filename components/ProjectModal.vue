@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { ExperienceProject } from '~/types/content'
+import AppButton from '~/components/ui/AppButton.vue'
+import AppLink from '~/components/ui/AppLink.vue'
 
 const props = defineProps<{
   project: ExperienceProject | null

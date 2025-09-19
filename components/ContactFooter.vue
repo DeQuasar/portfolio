@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import type { ContactContent } from '~/types/content'
 import { useClipboard } from '~/composables/useClipboard'
+import AppButton from '~/components/ui/AppButton.vue'
+import AppLink from '~/components/ui/AppLink.vue'
 
 const props = defineProps<{ contact: ContactContent }>()
 
@@ -23,21 +25,19 @@ const copyEmail = async () => {
       <h2>Let’s work together</h2>
       <p v-if="props.contact.message" class="contact__body">{{ props.contact.message }}</p>
       <div class="contact__cta">
-        <AppLink :href="props.contact.resumeUrl" variant="primary" class="contact__button contact__button--primary">
+        <AppLink :href="props.contact.resumeUrl" variant="primary">
           Download Résumé
         </AppLink>
         <div class="contact__dual-action">
           <AppLink
             :href="emailHref"
             variant="secondary"
-            class="contact__button contact__button--secondary"
             aria-label="Open email client to contact Anthony"
           >
             Email Anthony
           </AppLink>
           <AppButton
             variant="ghost"
-            class="contact__button contact__button--ghost"
             :aria-label="
               emailCopyState === 'copied'
                 ? 'Email copied to clipboard'
@@ -51,17 +51,25 @@ const copyEmail = async () => {
             <span v-else-if="emailCopyState === 'error'">Copy failed</span>
             <span v-else>Copy Email</span>
           </AppButton>
+          <Transition name="fade-slide">
+            <span
+              v-if="emailCopyState === 'copied' || emailCopyState === 'error'"
+              class="contact__feedback"
+            >
+              {{ emailCopyState === 'copied' ? 'Email copied' : 'Copy failed' }}
+            </span>
+          </Transition>
         </div>
       </div>
       <ul class="contact__links">
         <li>
           <span>Email</span>
           <div class="contact__link-group">
-            <AppLink :href="emailHref" variant="minimal" class="contact__link">
-              {{ props.contact.email }}
-            </AppLink>
-            <AppButton
-              variant="icon"
+          <AppLink :href="emailHref" variant="minimal" class="contact__link">
+            {{ props.contact.email }}
+          </AppLink>
+          <AppButton
+            variant="icon"
               class="contact__copy"
               :aria-label="
                 emailCopyState === 'copied'
@@ -126,6 +134,14 @@ const copyEmail = async () => {
                 }}
               </span>
             </AppButton>
+            <Transition name="fade-slide">
+              <span
+                v-if="emailCopyState === 'copied' || emailCopyState === 'error'"
+                class="contact__feedback contact__feedback--inline"
+              >
+                {{ emailCopyState === 'copied' ? 'Copied' : 'Copy failed' }}
+              </span>
+            </Transition>
           </div>
         </li>
         <li v-if="props.contact.github">
@@ -206,36 +222,6 @@ const copyEmail = async () => {
   align-items: center;
 }
 
-.contact__button {
-  padding: 0.9rem 1.75rem;
-  border-radius: var(--radius-pill);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.contact__button--primary {
-  background: #fff;
-  color: var(--color-primary-start);
-}
-
-.contact__button--secondary {
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  color: #fff;
-}
-
-.contact__button--ghost {
-  border: 1px dashed rgba(255, 255, 255, 0.6);
-  color: #fff;
-  background: transparent;
-  padding-inline: 1.4rem;
-}
-
-.contact__button:hover {
-  transform: translateY(-2px);
-  opacity: 0.9;
-}
-
 .contact__links {
   list-style: none;
   margin: 0;
@@ -290,6 +276,22 @@ const copyEmail = async () => {
 .contact__copy-icon {
   width: 1.1rem;
   height: 1.1rem;
+}
+
+.contact__feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.contact__feedback--inline {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .contact__availability {

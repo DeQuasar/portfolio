@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { HighlightContent } from '~/types/content'
+import AppLink from '~/components/ui/AppLink.vue'
 
 const props = defineProps<{ highlights: HighlightContent[] }>()
 </script>

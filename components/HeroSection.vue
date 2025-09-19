@@ -94,20 +94,20 @@ useEventListener(document, 'keydown', (event) => {
     ></span>
     <h1
       class="font-display font-semibold tracking-tight text-sage-700 animate-fade-up text-[clamp(2.25rem,5vw,3.25rem)]"
-      style="animation-delay: 40ms"
+      style="animation-delay: 20ms"
     >
       {{ props.hero.name }}
     </h1>
     <p
       class="mt-2 font-display text-sage-600 animate-fade-up text-[clamp(1.05rem,2.4vw,1.55rem)]"
-      style="animation-delay: 120ms"
+      style="animation-delay: 60ms"
     >
       {{ props.hero.role }}
     </p>
     <p
       v-if="description"
       class="mt-6 max-w-2xl text-base sm:text-[1.05rem] text-sage-600 animate-fade-up"
-      style="animation-delay: 200ms"
+      style="animation-delay: 110ms"
     >
       {{ description }}
     </p>
@@ -115,7 +115,7 @@ useEventListener(document, 'keydown', (event) => {
     <dl
       v-if="metrics.length"
       class="mt-6 flex flex-wrap justify-center gap-3 animate-fade-up"
-      style="animation-delay: 240ms"
+      style="animation-delay: 150ms"
     >
       <div
         v-for="metric in metrics"
@@ -132,7 +132,7 @@ useEventListener(document, 'keydown', (event) => {
       </div>
     </dl>
 
-    <div class="mt-8 flex flex-wrap items-center justify-center gap-4 animate-fade-up" style="animation-delay: 280ms">
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-4 animate-fade-up" style="animation-delay: 190ms">
       <AppLink
         :href="props.hero.primaryCta.href"
         variant="primary"
@@ -153,7 +153,7 @@ useEventListener(document, 'keydown', (event) => {
     <div
       v-if="socials.length"
       class="mt-10 flex w-full max-w-xl flex-col items-center animate-fade-up"
-      style="animation-delay: 320ms"
+      style="animation-delay: 230ms"
     >
       <transition name="fade" mode="out-in">
         <div
@@ -221,6 +221,45 @@ useEventListener(document, 'keydown', (event) => {
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </AppButton>
+          <Transition name="fade-slide">
+            <div
+              v-if="copyState === 'copied' || copyState === 'error'"
+              class="flex items-center gap-2 rounded-full border border-sage-200 bg-white/85 px-3 py-1 text-xs font-semibold text-sage-600 shadow-sm"
+            >
+              <svg
+                v-if="copyState === 'copied'"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-3.5 w-3.5 text-sage-500"
+                aria-hidden="true"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <svg
+                v-else
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-3.5 w-3.5 text-rose-500"
+                aria-hidden="true"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              <span>
+                {{ copyState === 'copied' ? 'Email copied' : 'Copy failed' }}
+              </span>
+            </div>
+          </Transition>
         </div>
         <div
           v-else
