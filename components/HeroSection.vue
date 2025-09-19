@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import type { HeroContent } from '~/types/content'
 
 const props = defineProps<{ hero: HeroContent }>()
@@ -7,7 +7,55 @@ const props = defineProps<{ hero: HeroContent }>()
 const socials = computed(() => props.hero.social ?? [])
 const description = computed(() => props.hero.subheadline ?? '')
 const metrics = computed(() => props.hero.metrics ?? [])
-const secondaryCta = computed(() => props.hero.secondaryCta)
+
+const copyState = ref<'idle' | 'copied' | 'error'>('idle')
+let copyTimeout: ReturnType<typeof setTimeout> | null = null
+
+const resetCopyState = () => {
+  if (copyTimeout) {
+    clearTimeout(copyTimeout)
+    copyTimeout = null
+  }
+  copyState.value = 'idle'
+}
+
+const copyEmail = async (href: string) => {
+  const email = href.startsWith('mailto:') ? href.replace('mailto:', '') : href
+  if (!email) {
+    return
+  }
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(email)
+    } else {
+      const textarea = document.createElement('textarea')
+      textarea.value = email
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'absolute'
+      textarea.style.left = '-9999px'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+    }
+    copyState.value = 'copied'
+  } catch (error) {
+    console.error('Failed to copy email', error)
+    copyState.value = 'error'
+  } finally {
+    if (copyTimeout) {
+      clearTimeout(copyTimeout)
+    }
+    copyTimeout = setTimeout(resetCopyState, 2500)
+  }
+}
+
+onBeforeUnmount(() => {
+  if (copyTimeout) {
+    clearTimeout(copyTimeout)
+  }
+})
 </script>
 
 <template>
@@ -84,29 +132,6 @@ const secondaryCta = computed(() => props.hero.secondaryCta)
         </svg>
         {{ props.hero.primaryCta.label }}
       </a>
-      <a
-        v-if="secondaryCta"
-        :href="secondaryCta.href"
-        class="inline-flex items-center gap-2 rounded-full border border-sage-400/40 bg-white/80 px-4 py-2 text-sm font-semibold text-sage-600 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-sage-500 hover:text-sage-700 hover:shadow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sage-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="h-5 w-5 text-sage-500 transition duration-300"
-          aria-hidden="true"
-        >
-          <rect x="3" y="5" width="18" height="14" rx="2" />
-          <path d="M21 7l-8.5 6a1 1 0 01-1 0L3 7" />
-        </svg>
-        <span class="font-semibold text-sage-600">
-          {{ secondaryCta.label }}
-        </span>
-      </a>
     </div>
 
     <div
@@ -114,62 +139,124 @@ const secondaryCta = computed(() => props.hero.secondaryCta)
       class="mt-10 flex flex-wrap items-center justify-center gap-5 animate-fade-up"
       style="animation-delay: 320ms"
     >
-      <a
+      <div
         v-for="link in socials"
         :key="link.href"
-        :href="link.href"
-        class="group inline-flex h-12 w-12 items-center justify-center rounded-full border border-transparent bg-white/80 text-sage-600 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-sage-400 hover:text-sage-700 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sage-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
-        :aria-label="link.label"
+        class="flex items-center gap-3"
       >
-        <span class="sr-only">{{ link.label }}</span>
-        <svg
-          v-if="link.label.toLowerCase().includes('github')"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="h-5 w-5 transition duration-300 group-hover:scale-105"
-          aria-hidden="true"
+        <a
+          :href="link.href"
+          class="group inline-flex h-12 w-12 items-center justify-center rounded-full border border-transparent bg-white/80 text-sage-600 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-sage-400 hover:text-sage-700 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sage-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
+          :aria-label="link.label"
         >
-          <path
-            d="M9 19c-4 1.5-4-2-6-2m12 4v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0018 3.77 5.07 5.07 0 0017.91 1S16.73.65 14 2.48a13.38 13.38 0 00-5 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 3.77a5.44 5.44 0 00-1.5 3.79c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"
-          />
-        </svg>
-        <svg
-          v-else-if="link.label.toLowerCase().includes('linkedin')"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="h-5 w-5 transition duration-300 group-hover:scale-105"
-          aria-hidden="true"
+          <span class="sr-only">{{ link.label }}</span>
+          <svg
+            v-if="link.label.toLowerCase().includes('github')"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-5 w-5 transition duration-300 group-hover:scale-105"
+            aria-hidden="true"
+          >
+            <path
+              d="M9 19c-4 1.5-4-2-6-2m12 4v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0018 3.77 5.07 5.07 0 0017.91 1S16.73.65 14 2.48a13.38 13.38 0 00-5 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 3.77a5.44 5.44 0 00-1.5 3.79c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"
+            />
+          </svg>
+          <svg
+            v-else-if="link.label.toLowerCase().includes('linkedin')"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-5 w-5 transition duration-300 group-hover:scale-105"
+            aria-hidden="true"
+          >
+            <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z" />
+            <rect x="2" y="9" width="4" height="12" />
+            <circle cx="4" cy="4" r="2" />
+          </svg>
+          <svg
+            v-else
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-5 w-5 transition duration-300 group-hover:scale-105"
+            aria-hidden="true"
+          >
+            <rect x="2" y="5" width="20" height="14" rx="2" />
+            <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
+          </svg>
+        </a>
+
+        <button
+          v-if="link.label.toLowerCase().includes('email')"
+          type="button"
+          class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-sage-300 bg-white/70 text-sage-600 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-sage-500 hover:text-sage-700 hover:shadow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sage-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
+          @click="copyEmail(link.href)"
+          :aria-label="copyState === 'copied' ? 'Email copied' : 'Copy email address'"
         >
-          <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z" />
-          <rect x="2" y="9" width="4" height="12" />
-          <circle cx="4" cy="4" r="2" />
-        </svg>
-        <svg
-          v-else
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="h-5 w-5 transition duration-300 group-hover:scale-105"
-          aria-hidden="true"
-        >
-          <rect x="2" y="5" width="20" height="14" rx="2" />
-          <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
-        </svg>
-      </a>
+          <svg
+            v-if="copyState === 'copied'"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-5 w-5"
+            aria-hidden="true"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <svg
+            v-else-if="copyState === 'error'"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-5 w-5"
+            aria-hidden="true"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+          <svg
+            v-else
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-5 w-5"
+            aria-hidden="true"
+          >
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+          </svg>
+        </button>
+      </div>
     </div>
+
+    <p class="sr-only" aria-live="polite">
+      <template v-if="copyState === 'copied'">Email address copied to clipboard.</template>
+      <template v-else-if="copyState === 'error'">Copy failed. Please copy manually.</template>
+    </p>
   </section>
 </template>
