@@ -1,7 +1,20 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { ContactContent } from '~/types/content'
+import { useClipboard } from '~/composables/useClipboard'
 
 const props = defineProps<{ contact: ContactContent }>()
+
+const emailHref = computed(() => (props.contact.email ? `mailto:${props.contact.email}` : ''))
+const { state: emailCopyState, copy: copyEmailToClipboard } = useClipboard()
+
+const copyEmail = async () => {
+  if (!props.contact.email) {
+    return
+  }
+
+  await copyEmailToClipboard(props.contact.email)
+}
 </script>
 
 <template>
@@ -13,14 +26,104 @@ const props = defineProps<{ contact: ContactContent }>()
         <NuxtLink :href="props.contact.resumeUrl" class="contact__button contact__button--primary">
           Download Résumé
         </NuxtLink>
-        <NuxtLink :href="`mailto:${props.contact.email}`" class="contact__button contact__button--secondary">
-          Email Anthony
-        </NuxtLink>
+        <div class="contact__dual-action">
+          <a
+            :href="emailHref"
+            class="contact__button contact__button--secondary"
+            aria-label="Open email client to contact Anthony"
+          >
+            Email Anthony
+          </a>
+          <button
+            type="button"
+            class="contact__button contact__button--ghost"
+            :aria-label="
+              emailCopyState === 'copied'
+                ? 'Email copied to clipboard'
+                : emailCopyState === 'error'
+                  ? 'Copy email address manually'
+                  : 'Copy email address'
+            "
+            @click="copyEmail"
+          >
+            <span v-if="emailCopyState === 'copied'">Copied</span>
+            <span v-else-if="emailCopyState === 'error'">Copy failed</span>
+            <span v-else>Copy Email</span>
+          </button>
+        </div>
       </div>
       <ul class="contact__links">
         <li>
           <span>Email</span>
-          <a :href="`mailto:${props.contact.email}`">{{ props.contact.email }}</a>
+          <div class="contact__link-group">
+            <a :href="emailHref">{{ props.contact.email }}</a>
+            <button
+              type="button"
+              class="contact__copy"
+              :aria-label="
+                emailCopyState === 'copied'
+                  ? 'Email copied to clipboard'
+                  : emailCopyState === 'error'
+                    ? 'Copy email address manually'
+                    : 'Copy email address'
+              "
+              @click="copyEmail"
+            >
+              <svg
+                v-if="emailCopyState === 'copied'"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="contact__copy-icon"
+                aria-hidden="true"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <svg
+                v-else-if="emailCopyState === 'error'"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="contact__copy-icon"
+                aria-hidden="true"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              <svg
+                v-else
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="contact__copy-icon"
+                aria-hidden="true"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+              </svg>
+              <span class="sr-only">
+                {{
+                  emailCopyState === 'copied'
+                    ? 'Email copied to clipboard'
+                    : emailCopyState === 'error'
+                      ? 'Copy email address manually'
+                      : 'Copy email address'
+                }}
+              </span>
+            </button>
+          </div>
         </li>
         <li v-if="props.contact.github">
           <span>GitHub</span>
@@ -32,6 +135,15 @@ const props = defineProps<{ contact: ContactContent }>()
         </li>
       </ul>
       <p class="contact__availability">{{ props.contact.availability }}</p>
+      <p class="sr-only" aria-live="polite">
+        {{
+          emailCopyState === 'copied'
+            ? 'Email copied to clipboard.'
+            : emailCopyState === 'error'
+              ? 'Copy failed. Please copy manually.'
+              : ''
+        }}
+      </p>
     </div>
   </footer>
 </template>
@@ -75,6 +187,12 @@ const props = defineProps<{ contact: ContactContent }>()
   gap: var(--space-sm);
 }
 
+.contact__dual-action {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
 .contact__button {
   padding: 0.9rem 1.75rem;
   border-radius: var(--radius-pill);
@@ -91,6 +209,13 @@ const props = defineProps<{ contact: ContactContent }>()
 .contact__button--secondary {
   border: 1px solid rgba(255, 255, 255, 0.7);
   color: #fff;
+}
+
+.contact__button--ghost {
+  border: 1px dashed rgba(255, 255, 255, 0.6);
+  color: #fff;
+  background: transparent;
+  padding-inline: 1.4rem;
 }
 
 .contact__button:hover {
@@ -121,6 +246,37 @@ const props = defineProps<{ contact: ContactContent }>()
 .contact__links a {
   color: #fff;
   text-decoration: underline;
+}
+
+.contact__link-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.contact__copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 1px dashed rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.contact__copy:hover,
+.contact__copy:focus-visible {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.75);
+}
+
+.contact__copy-icon {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .contact__availability {

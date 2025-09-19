@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed } from 'vue'
 import type { HeroContent } from '~/types/content'
+import { useClipboard } from '~/composables/useClipboard'
 
 const props = defineProps<{ hero: HeroContent }>()
 
@@ -8,54 +9,17 @@ const socials = computed(() => props.hero.social ?? [])
 const description = computed(() => props.hero.subheadline ?? '')
 const metrics = computed(() => props.hero.metrics ?? [])
 
-const copyState = ref<'idle' | 'copied' | 'error'>('idle')
-let copyTimeout: ReturnType<typeof setTimeout> | null = null
-
-const resetCopyState = () => {
-  if (copyTimeout) {
-    clearTimeout(copyTimeout)
-    copyTimeout = null
-  }
-  copyState.value = 'idle'
-}
+const { state: copyState, copy: copyToClipboard } = useClipboard()
 
 const copyEmail = async (href: string) => {
   const email = href.startsWith('mailto:') ? href.replace('mailto:', '') : href
+
   if (!email) {
     return
   }
 
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(email)
-    } else {
-      const textarea = document.createElement('textarea')
-      textarea.value = email
-      textarea.setAttribute('readonly', '')
-      textarea.style.position = 'absolute'
-      textarea.style.left = '-9999px'
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
-    }
-    copyState.value = 'copied'
-  } catch (error) {
-    console.error('Failed to copy email', error)
-    copyState.value = 'error'
-  } finally {
-    if (copyTimeout) {
-      clearTimeout(copyTimeout)
-    }
-    copyTimeout = setTimeout(resetCopyState, 2500)
-  }
+  await copyToClipboard(email)
 }
-
-onBeforeUnmount(() => {
-  if (copyTimeout) {
-    clearTimeout(copyTimeout)
-  }
-})
 </script>
 
 <template>
