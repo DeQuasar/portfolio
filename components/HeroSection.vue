@@ -1,20 +1,24 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import type { HeroContent } from '~/types/content'
 import { useClipboard } from '~/composables/useClipboard'
+import { onClickOutside, useEventListener } from '@vueuse/core'
 
 const props = defineProps<{ hero: HeroContent }>()
 
 const socials = computed(() => props.hero.social ?? [])
 const description = computed(() => props.hero.subheadline ?? '')
 const metrics = computed(() => props.hero.metrics ?? [])
+const emailLink = computed(() => socials.value.find((link) => link.label?.toLowerCase().includes('email')) ?? null)
+const otherSocials = computed(() => socials.value.filter((link) => !link.label?.toLowerCase().includes('email')))
 
 const { state: copyState, copy: copyToClipboard, reset: resetCopyState } = useClipboard()
 const activeEmailHref = ref<string | null>(null)
 const emailTriggerEl = ref<HTMLElement | null>(null)
-const emailPopoverEl = ref<HTMLElement | null>(null)
-const emailPopoverId = 'email-popover'
-const emailTriggerId = 'email-trigger'
+const emailPanelEl = ref<HTMLElement | null>(null)
+const emailCopyButtonEl = ref<HTMLButtonElement | null>(null)
+
+const showEmailPanel = computed(() => Boolean(activeEmailHref.value))
 
 const copyEmail = async (href: string) => {
   const email = href.startsWith('mailto:') ? href.replace('mailto:', '') : href
@@ -26,55 +30,47 @@ const copyEmail = async (href: string) => {
   await copyToClipboard(email)
 }
 
-const closeEmailPopover = () => {
-  activeEmailHref.value = null
-  resetCopyState()
-}
-
-const toggleEmailPopover = async (href: string) => {
-  if (activeEmailHref.value === href) {
-    closeEmailPopover()
-    return
-  }
-
+const openEmailPanel = async (href: string) => {
   resetCopyState()
   activeEmailHref.value = href
   await nextTick()
-  emailPopoverEl.value?.querySelector<HTMLElement>('a, button')?.focus()
+  emailCopyButtonEl.value?.focus()
 }
 
-const handlePointerDown = (event: PointerEvent) => {
-  if (!activeEmailHref.value) {
+const closeEmailPanel = () => {
+  if (!showEmailPanel.value) {
     return
   }
-
-  const target = event.target as Node
-  if (emailTriggerEl.value?.contains(target) || emailPopoverEl.value?.contains(target)) {
-    return
-  }
-  closeEmailPopover()
+  activeEmailHref.value = null
+  resetCopyState()
+  nextTick(() => {
+    emailTriggerEl.value?.focus()
+  })
 }
 
-const handleKeydown = (event: KeyboardEvent) => {
-  if (!activeEmailHref.value) {
+const toggleEmailPanel = async (href: string) => {
+  if (activeEmailHref.value) {
+    closeEmailPanel()
+  } else {
+    await openEmailPanel(href)
+  }
+}
+
+onClickOutside(emailPanelEl, () => {
+  if (showEmailPanel.value) {
+    closeEmailPanel()
+  }
+})
+
+useEventListener(document, 'keydown', (event) => {
+  if (!showEmailPanel.value) {
     return
   }
 
   if (event.key === 'Escape') {
     event.preventDefault()
-    closeEmailPopover()
-    emailTriggerEl.value?.focus()
+    closeEmailPanel()
   }
-}
-
-onMounted(() => {
-  document.addEventListener('pointerdown', handlePointerDown)
-  document.addEventListener('keydown', handleKeydown)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener('pointerdown', handlePointerDown)
-  document.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -156,27 +152,100 @@ onBeforeUnmount(() => {
 
     <div
       v-if="socials.length"
-      class="mt-10 flex flex-wrap items-center justify-center gap-5 animate-fade-up"
+      class="mt-10 flex w-full max-w-xl flex-col items-center animate-fade-up"
       style="animation-delay: 320ms"
     >
-      <div
-        v-for="link in socials"
-        :key="link.href"
-        class="relative flex items-center justify-center"
-      >
-        <template v-if="link.label.toLowerCase().includes('email')">
+      <transition name="fade" mode="out-in">
+        <div
+          v-if="showEmailPanel && activeEmailHref"
+          key="email-inline"
+          ref="emailPanelEl"
+          role="group"
+          class="flex flex-wrap items-center justify-center gap-3"
+          aria-label="Email options"
+        >
           <button
-            :id="emailTriggerId"
+            type="button"
+            ref="emailCopyButtonEl"
+            class="inline-flex items-center gap-2 rounded-full bg-sage-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sage-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/60"
+            @click="copyEmail(activeEmailHref)"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="h-4 w-4"
+              aria-hidden="true"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+            </svg>
+            <span>
+              {{ copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy failed' : 'Copy email' }}
+            </span>
+          </button>
+          <a
+            :href="activeEmailHref"
+            class="inline-flex items-center gap-2 rounded-full border border-sage-300 bg-white/80 px-5 py-2 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-500 hover:text-sage-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/40"
+            @click="closeEmailPanel"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="h-4 w-4"
+              aria-hidden="true"
+            >
+              <path d="M7 17l9-9" />
+              <path d="M7 7h10v10" />
+            </svg>
+            <span>Email Anthony</span>
+          </a>
+          <button
+            type="button"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-sage-300 bg-white/80 text-sage-500 transition hover:border-sage-500 hover:text-sage-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/40"
+            @click="closeEmailPanel"
+            aria-label="Cancel email options"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="h-4 w-4"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div
+          v-else
+          key="social-links"
+          class="flex flex-wrap items-center justify-center gap-5"
+        >
+          <button
+            v-if="emailLink"
+            :key="emailLink.href"
             ref="emailTriggerEl"
             type="button"
             class="group inline-flex h-12 w-12 items-center justify-center rounded-full border border-sage-300 bg-white/80 text-sage-600 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-sage-500 hover:text-sage-700 hover:shadow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sage-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
-            :aria-label="'Email options'"
-            aria-haspopup="menu"
-            :aria-expanded="activeEmailHref === link.href"
-            :aria-controls="activeEmailHref === link.href ? emailPopoverId : undefined"
-            @click="toggleEmailPopover(link.href)"
+            :aria-label="'View email options'"
+            @click="toggleEmailPanel(emailLink.href)"
           >
-            <span class="sr-only">{{ link.label }}</span>
+            <span class="sr-only">{{ emailLink.label }}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -192,107 +261,16 @@ onBeforeUnmount(() => {
               <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
             </svg>
           </button>
-
-          <transition name="fade">
-            <div
-              v-if="activeEmailHref === link.href"
-              :id="emailPopoverId"
-              ref="emailPopoverEl"
-              role="menu"
-              :aria-labelledby="emailTriggerId"
-              class="absolute top-14 left-1/2 z-20 w-56 -translate-x-1/2 rounded-2xl border border-sage-200/70 bg-white p-3 text-left shadow-xl"
-            >
-              <p class="px-3 text-sm font-semibold text-sage-700">Email Anthony</p>
-              <div class="mt-2 grid gap-2">
-                <a
-                  :href="link.href"
-                  role="menuitem"
-                  class="flex items-center justify-between rounded-xl bg-sage-50 px-3 py-2 text-sm font-medium text-sage-700 transition hover:bg-sage-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/50"
-                  @click="closeEmailPopover"
-                >
-                  <span>Open email client</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.6"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="h-4 w-4"
-                    aria-hidden="true"
-                  >
-                    <path d="M7 17l9-9" />
-                    <path d="M7 7h10v10" />
-                  </svg>
-                </a>
-                <button
-                  type="button"
-                  role="menuitem"
-                  class="flex items-center justify-between rounded-xl border border-sage-200 px-3 py-2 text-sm font-medium text-sage-600 transition hover:border-sage-400 hover:text-sage-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/50"
-                  @click="copyEmail(link.href)"
-                >
-                  <span>
-                    {{ copyState === 'copied' ? 'Copied to clipboard' : copyState === 'error' ? 'Copy failed, try again' : 'Copy email address' }}
-                  </span>
-                  <svg
-                    v-if="copyState === 'copied'"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="h-4 w-4 text-sage-600"
-                    aria-hidden="true"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <svg
-                    v-else-if="copyState === 'error'"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="h-4 w-4 text-rose-500"
-                    aria-hidden="true"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                  <svg
-                    v-else
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="h-4 w-4"
-                    aria-hidden="true"
-                  >
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </transition>
-        </template>
-        <template v-else>
           <a
+            v-for="link in otherSocials"
+            :key="link.href"
             :href="link.href"
             class="group inline-flex h-12 w-12 items-center justify-center rounded-full border border-transparent bg-white/80 text-sage-600 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-sage-400 hover:text-sage-700 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sage-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
             :aria-label="link.label"
           >
             <span class="sr-only">{{ link.label }}</span>
             <svg
-              v-if="link.label.toLowerCase().includes('github')"
+              v-if="link.label?.toLowerCase().includes('github')"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
@@ -308,7 +286,7 @@ onBeforeUnmount(() => {
               />
             </svg>
             <svg
-              v-else-if="link.label.toLowerCase().includes('linkedin')"
+              v-else-if="link.label?.toLowerCase().includes('linkedin')"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
@@ -339,8 +317,8 @@ onBeforeUnmount(() => {
               <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
             </svg>
           </a>
-        </template>
-      </div>
+        </div>
+      </transition>
     </div>
 
     <p class="sr-only" aria-live="polite">
