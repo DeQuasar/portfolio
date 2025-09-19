@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Alex Chen - Interactive Resume</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&amp;family=Source+Sans+Pro:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-color-start: #4A6C4D;
+            --primary-color-end: #6E8B6D;
+            --primary-gradient: linear-gradient(to right, var(--primary-color-start), var(--primary-color-end));
+            --shadow-color: rgba(74, 108, 77, 0.15);
+        }
+        .bg-primary-gradient {
+            background-image: var(--primary-gradient);
+        }
+        .text-primary-gradient {
+            background-image: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+        .soft-shadow {
+            box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
+        }
+        .soft-shadow-lg {
+            box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -4px var(--shadow-color);
+        }
+        .soft-shadow-xl {
+            box-shadow: 0 20px 25px -5px var(--shadow-color), 0 8px 10px -6px var(--shadow-color);
+        }
+        .soft-shadow-2xl {
+            box-shadow: 0 25px 50px -12px var(--shadow-color);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24
+        }
+        .skill-tag {
+            transition: all 0.2s ease-in-out;
+        }
+        .skill-tag:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding-top 0.5s ease-in-out;
+        }
+        .accordion-content.open {
+            max-height: 1000px;padding-top: 1.5rem;
+        }
+        .project-indicator {
+            transition: transform 0.3s ease-in-out;
+        }
+        .open .project-indicator {
+            transform: rotate(90deg);
+        }
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-start": "var(--primary-color-start)",
+                        "primary-end": "var(--primary-color-end)",
+                        "background-light": "#f7f9f7",
+                        "background-dark": "#181a18",
+                        "text-light": "#333333",
+                        "text-dark": "#e0e0e0",
+                    },
+                    fontFamily: {
+                        "display": ["Lora", "serif"],
+                        "body": ["Source Sans Pro", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-body text-text-light dark:text-text-dark antialiased">
+<div class="group/design-root relative" x-data="{ openExperience: null, modalOpen: false, modalData: {} }">
+<main class="container mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+<div class="max-w-4xl mx-auto">
+<section class="mb-16 text-center" id="hero">
+<h1 class="text-6xl md:text-7xl font-black font-display text-primary-gradient tracking-tight">Alex Chen</h1>
+<p class="text-xl md:text-2xl font-body text-gray-700 dark:text-gray-300 mt-2">Senior Full-Stack Engineer</p>
+<p class="text-lg md:text-xl font-body text-gray-600 dark:text-gray-400 mt-6 max-w-3xl mx-auto">Crafting authentic, high-impact web solutions with Vue.js &amp; Laravel. Over 12 years of experience shipping scalable products and driving measurable results.</p>
+<div class="mt-10 flex items-center justify-center gap-4">
+<a class="bg-primary-gradient text-white rounded-full h-12 px-8 text-base font-bold tracking-wider hover:opacity-90 hover:soft-shadow-xl hover:scale-105 transition-all duration-300 transform inline-flex items-center gap-2" href="#">
+<span class="material-symbols-outlined">download</span>
+                        Resume PDF
+                    </a>
+<a class="bg-white dark:bg-gray-800/50 text-primary-start dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full h-12 px-8 text-base font-bold tracking-wider hover:bg-gray-50 dark:hover:bg-gray-800 hover:soft-shadow-xl hover:scale-105 transition-all duration-300 transform inline-flex items-center gap-2" href="mailto:alex.chen.dev@email.com">
+<span class="material-symbols-outlined">email</span>
+                        Get In Touch
+                    </a>
+</div>
+<div class="mt-10">
+<div class="flex items-center justify-center gap-6">
+<a class="text-gray-500 dark:text-gray-400 hover:text-primary-start dark:hover:text-primary-start transition-all duration-300 transform hover:scale-110" href="#">
+<svg aria-hidden="true" class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3v9zM6.5 8.25A1.75 1.75 0 118.25 6.5 1.75 1.75 0 016.5 8.25zM19 19h-3v-4.75c0-1.4-.5-2.25-1.75-2.25S12.5 13.1 12.5 14.5V19h-3v-9h2.9v1.3h.1c.4-.7 1.4-1.3 2.9-1.3 3.1 0 3.6 2 3.6 4.6V19z"></path></svg>
+</a>
+<a class="text-gray-500 dark:text-gray-400 hover:text-primary-start dark:hover:text-primary-start transition-all duration-300 transform hover:scale-110" href="#">
+<svg aria-hidden="true" class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.165 6.839 9.489.5.092.682-.218.682-.482 0-.237-.009-.868-.014-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.156-1.11-1.465-1.11-1.465-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.252-4.555-1.112-4.555-4.943 0-1.091.39-1.984 1.029-2.685-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.549 9.549 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.701 1.028 1.594 1.028 2.685 0 3.84-2.337 4.687-4.565 4.935.359.309.678.922.678 1.859 0 1.338-.012 2.419-.012 2.746 0 .267.18.577.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" fill-rule="evenodd"></path></svg>
+</a>
+</div>
+</div>
+</section>
+<section class="mb-24 scroll-mt-24" id="experience">
+<h2 class="text-4xl font-bold font-display tracking-tight text-gray-900 dark:text-white mb-4 text-center">Experience</h2>
+<div class="w-24 h-1.5 bg-primary-gradient rounded-full mb-12 mx-auto"></div>
+<div class="space-y-8">
+<div class="bg-white dark:bg-gray-800/50 rounded-xl soft-shadow-lg overflow-hidden transition-all duration-300">
+<div :class="{ 'open': openExperience === 'innovate' }" @click="openExperience = (openExperience === 'innovate' ? null : 'innovate')" class="p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="text-xl font-bold text-primary-gradient">Senior Full-Stack Engineer</h3>
+<p class="text-gray-600 dark:text-gray-400 font-semibold">Innovate Inc.</p>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-500 font-medium">2018 - Present</p>
+</div>
+<ul class="space-y-2 text-gray-700 dark:text-gray-300 list-disc list-inside">
+<li>Led development of a new enterprise dashboard unifying fragmented data streams.</li>
+<li>Architected and implemented a scalable microservices infrastructure.</li>
+<li>Mentored a team of 5 mid-level engineers, improving code quality and velocity.</li>
+</ul>
+<div class="mt-6">
+<button class="bg-primary-start/10 text-primary-start dark:bg-primary-end/20 dark:text-primary-end font-semibold py-2 px-4 rounded-full inline-flex items-center gap-2 transition-all duration-300 hover:bg-primary-start/20 hover:scale-105 transform">
+<span class="material-symbols-outlined text-lg">folder_open</span>
+<span>View Projects</span>
+<span :class="{ 'rotate-90': openExperience === 'innovate' }" class="material-symbols-outlined project-indicator ml-2">chevron_right</span>
+</button>
+</div>
+</div>
+<div :class="{ 'open': openExperience === 'innovate' }" @click.stop="" class="accordion-content px-6 pb-6" x-show.transition.duration.500ms="openExperience === 'innovate'">
+<div class="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-6">
+<div class="bg-background-light dark:bg-background-dark p-4 rounded-lg soft-shadow">
+<h5 class="font-bold text-gray-800 dark:text-gray-200">Enterprise Dashboard</h5>
+<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Unified internal tools for data-driven decisions.</p>
+<button @click="modalOpen = true; modalData = { title: 'Enterprise Dashboard (+30% OpEx)', problem: 'Legacy internal tools were inefficient and siloed, hindering data-driven decision-making.', contribution: 'Architected and led the development of a unified Vue.js SPA with a Laravel backend, featuring real-time data visualization.', impact: 'Achieved a 30% increase in operational efficiency and provided critical business insights.', links: [{ text: 'Live Demo', url: '#', icon: 'link' }, { text: 'GitHub', url: '#', icon: 'code' }] }" class="mt-4 bg-primary-start text-white text-sm font-bold py-2 px-4 rounded-full inline-flex items-center gap-2 transition-all duration-200 transform hover:scale-105 hover:bg-primary-end">Learn More</button>
+</div>
+<div class="bg-background-light dark:bg-background-dark p-4 rounded-lg soft-shadow">
+<h5 class="font-bold text-gray-800 dark:text-gray-200">Microservices Transition</h5>
+<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Improved scalability and deployment speed.</p>
+<button @click="modalOpen = true; modalData = { title: 'Microservices Transition', problem: 'Monolithic architecture hindered scalability and slowed feature deployment cycles.', contribution: 'Led transition to microservices using Docker, Laravel, and Node.js.', impact: 'Improved application scalability and fault isolation, accelerating time-to-market.', links: [] }" class="mt-4 bg-primary-start text-white text-sm font-bold py-2 px-4 rounded-full inline-flex items-center gap-2 transition-all duration-200 transform hover:scale-105 hover:bg-primary-end">Learn More</button>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800/50 rounded-xl soft-shadow-lg overflow-hidden transition-all duration-300">
+<div :class="{ 'open': openExperience === 'creative' }" @click="openExperience = (openExperience === 'creative' ? null : 'creative')" class="p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="text-xl font-bold text-primary-gradient">Full-Stack Developer</h3>
+<p class="text-gray-600 dark:text-gray-400 font-semibold">Creative Solutions</p>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-500 font-medium">2014 - 2018</p>
+</div>
+<ul class="space-y-2 text-gray-700 dark:text-gray-300 list-disc list-inside">
+<li>Re-platformed a major e-commerce site, boosting mobile conversions by 40%.</li>
+<li>Mentored junior developers on best practices for version control and agile methodologies.</li>
+<li>Collaborated with the design team to ensure technical feasibility of UI/UX designs.</li>
+</ul>
+<div class="mt-6">
+<button class="bg-primary-start/10 text-primary-start dark:bg-primary-end/20 dark:text-primary-end font-semibold py-2 px-4 rounded-full inline-flex items-center gap-2 transition-all duration-300 hover:bg-primary-start/20 hover:scale-105 transform">
+<span class="material-symbols-outlined text-lg">folder_open</span>
+<span>View Projects</span>
+<span :class="{ 'rotate-90': openExperience === 'creative' }" class="material-symbols-outlined project-indicator ml-2">chevron_right</span>
+</button>
+</div>
+</div>
+<div :class="{ 'open': openExperience === 'creative' }" @click.stop="" class="accordion-content px-6 pb-6" x-show.transition.duration.500ms="openExperience === 'creative'">
+<div class="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-6">
+<div class="bg-background-light dark:bg-background-dark p-4 rounded-lg soft-shadow">
+<h5 class="font-bold text-gray-800 dark:text-gray-200">E-commerce Re-platforming</h5>
+<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Modernized platform, leading to significant sales growth.</p>
+<button @click="modalOpen = true; modalData = { title: 'E-commerce Re-platforming (+25% Sales)', problem: 'Legacy e-commerce platform suffered from poor performance and declining conversion rates.', contribution: 'Managed end-to-end re-platforming using Laravel and Vue.js, implementing a modern UI and secure checkout.', impact: 'Generated a 25% increase in total sales, a 40% rise in mobile conversions, and a 15% improvement in page load time.', links: [{ text: 'View Case Study', url: '#', icon: 'link' }] }" class="mt-4 bg-primary-start text-white text-sm font-bold py-2 px-4 rounded-full inline-flex items-center gap-2 transition-all duration-200 transform hover:scale-105 hover:bg-primary-end">Learn More</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-24 scroll-mt-24" id="skills">
+<h2 class="text-4xl font-bold font-display tracking-tight text-gray-900 dark:text-white mb-4 text-center">Skill Stack</h2>
+<div class="w-24 h-1.5 bg-primary-gradient rounded-full mb-12 mx-auto"></div>
+<div class="space-y-8">
+<div>
+<h3 class="font-bold text-2xl mb-4 text-center text-primary-gradient tracking-wide">Frontend</h3>
+<div class="flex flex-wrap justify-center gap-2">
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">Vue.js</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">JavaScript (ES6+)</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">HTML5</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">CSS3</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">Tailwind CSS</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">Alpine.js</span>
+</div>
+</div>
+<div>
+<h3 class="font-bold text-2xl mb-4 text-center text-primary-gradient tracking-wide">Backend</h3>
+<div class="flex flex-wrap justify-center gap-2">
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">Laravel</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">PHP</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">Node.js</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">REST APIs</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">GraphQL</span>
+</div>
+</div>
+<div>
+<h3 class="font-bold text-2xl mb-4 text-center text-primary-gradient tracking-wide">Databases &amp; DevOps</h3>
+<div class="flex flex-wrap justify-center gap-2">
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">MySQL</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">PostgreSQL</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">Docker</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">Git</span>
+<span class="skill-tag bg-primary-start/10 text-primary-start dark:bg-primary-start/20 dark:text-primary-end rounded-full px-4 py-1.5 text-sm font-semibold">CI/CD</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<div :class="{ 'opacity-100 visible': modalOpen, 'opacity-0 invisible': !modalOpen }" @keydown.escape.window="modalOpen = false" class="modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-60" x-cloak="" x-show="modalOpen">
+<div @click="modalOpen = false" class="absolute inset-0"></div>
+<div @click.stop="" class="modal-content relative bg-white dark:bg-gray-800 rounded-xl soft-shadow-2xl w-full max-w-2xl mx-auto" x-show="modalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:leave="ease-in duration-200" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100">
+<div class="p-8">
+<div class="flex justify-between items-start">
+<h3 class="text-2xl font-bold font-display text-primary-gradient" x-text="modalData.title"></h3>
+<button @click="modalOpen = false" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="mt-6 space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
+<div class="space-y-3 border-l-2 border-primary-start/30 pl-6 py-2">
+<div>
+<h4 class="font-bold text-primary-start">Problem:</h4>
+<p class="text-gray-600 dark:text-gray-400" x-text="modalData.problem"></p>
+</div>
+<div>
+<h4 class="font-bold text-primary-start">Contribution:</h4>
+<p class="text-gray-600 dark:text-gray-400" x-text="modalData.contribution"></p>
+</div>
+<div>
+<h4 class="font-bold text-primary-start">Impact:</h4>
+<p class="text-gray-600 dark:text-gray-400" x-text="modalData.impact"></p>
+</div>
+</div>
+<div class="flex items-center gap-4 mt-6 pl-6" x-show="modalData.links &amp;&amp; modalData.links.length &gt; 0">
+<template :key="link.text" x-for="link in modalData.links">
+<a :href="link.url" class="bg-primary-start/10 hover:bg-primary-start/20 text-primary-start font-bold py-2 px-4 rounded-full inline-flex items-center gap-2 transition-all duration-200 transform hover:scale-105">
+<template x-if="link.icon === 'link'">
+<span class="material-symbols-outlined text-lg">link</span>
+</template>
+<template x-if="link.icon === 'code'">
+<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.165 6.839 9.489.5.092.682-.218.682-.482 0-.237-.009-.868-.014-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.156-1.11-1.465-1.11-1.465-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.252-4.555-1.112-4.555-4.943 0-1.091.39-1.984 1.029-2.685-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.549 9.549 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.701 1.028 1.594 1.028 2.685 0 3.84-2.337 4.687-4.565 4.935.359.309.678.922.678 1.859 0 1.338-.012 2.419-.012 2.746 0 .267.18.577.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z"></path></svg>
+</template>
+<span x-text="link.text"></span>
+</a>
+</template>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script defer="" src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+<script defer="" src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</div>
+
+</body></html>
