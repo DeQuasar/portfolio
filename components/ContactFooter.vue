@@ -38,6 +38,11 @@ const copyEmail = async () => {
           </AppLink>
           <AppButton
             variant="ghost"
+            class="min-w-[7.5rem] justify-center"
+            :class="[
+              emailCopyState === 'copied' && 'border-white/70 bg-white/15 text-white backdrop-blur-sm',
+              emailCopyState === 'error' && 'border-rose-200 bg-rose-500 text-white'
+            ]"
             :aria-label="
               emailCopyState === 'copied'
                 ? 'Email copied to clipboard'
@@ -51,26 +56,22 @@ const copyEmail = async () => {
             <span v-else-if="emailCopyState === 'error'">Copy failed</span>
             <span v-else>Copy Email</span>
           </AppButton>
-          <Transition name="fade-slide">
-            <span
-              v-if="emailCopyState === 'copied' || emailCopyState === 'error'"
-              class="contact__feedback"
-            >
-              {{ emailCopyState === 'copied' ? 'Email copied' : 'Copy failed' }}
-            </span>
-          </Transition>
         </div>
       </div>
       <ul class="contact__links">
         <li>
           <span>Email</span>
           <div class="contact__link-group">
-          <AppLink :href="emailHref" variant="minimal" class="contact__link">
-            {{ props.contact.email }}
-          </AppLink>
-          <AppButton
-            variant="icon"
+            <AppLink :href="emailHref" variant="minimal" class="contact__link">
+              {{ props.contact.email }}
+            </AppLink>
+            <AppButton
+              variant="icon"
               class="contact__copy"
+              :class="[
+                emailCopyState === 'copied' && 'border-white/80 bg-white/25 text-white',
+                emailCopyState === 'error' && 'border-rose-200 bg-rose-500 text-white'
+              ]"
               :aria-label="
                 emailCopyState === 'copied'
                   ? 'Email copied to clipboard'
@@ -134,14 +135,6 @@ const copyEmail = async () => {
                 }}
               </span>
             </AppButton>
-            <Transition name="fade-slide">
-              <span
-                v-if="emailCopyState === 'copied' || emailCopyState === 'error'"
-                class="contact__feedback contact__feedback--inline"
-              >
-                {{ emailCopyState === 'copied' ? 'Copied' : 'Copy failed' }}
-              </span>
-            </Transition>
           </div>
         </li>
         <li v-if="props.contact.github">
@@ -276,22 +269,6 @@ const copyEmail = async () => {
 .contact__copy-icon {
   width: 1.1rem;
   height: 1.1rem;
-}
-
-.contact__feedback {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border-radius: 999px;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-}
-
-.contact__feedback--inline {
-  background: rgba(255, 255, 255, 0.16);
 }
 
 .contact__availability {

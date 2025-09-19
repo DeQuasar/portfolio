@@ -164,23 +164,73 @@ useEventListener(document, 'keydown', (event) => {
           class="flex flex-wrap items-center justify-center gap-3"
           aria-label="Email options"
         >
-          <AppButton ref="emailCopyButtonEl" variant="primary" class="px-5 py-2" @click="copyEmail(activeEmailHref)">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="h-4 w-4"
-              aria-hidden="true"
-            >
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-            </svg>
-            <span>
-              {{ copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy failed' : 'Copy email' }}
+          <AppButton
+            ref="emailCopyButtonEl"
+            variant="primary"
+            class="px-5 py-2 min-w-[8.5rem] transition-shadow"
+            :class="[
+              copyState === 'copied' && 'ring-2 ring-sage-200/80 shadow-[0_0_0_4px_rgba(74,108,77,0.12)]',
+              copyState === 'error' && 'ring-2 ring-rose-300/80 bg-rose-600 hover:bg-rose-600'
+            ]"
+            @click="copyEmail(activeEmailHref)"
+          >
+            <span class="relative flex items-center gap-2">
+              <span class="grid h-4 w-4 place-items-center">
+                <Transition name="fade" mode="out-in">
+                  <svg
+                    v-if="copyState === 'copied'"
+                    key="copied"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <svg
+                    v-else-if="copyState === 'error'"
+                    key="error"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                  <svg
+                    v-else
+                    key="idle"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                  </svg>
+                </Transition>
+              </span>
+              <Transition name="fade" mode="out-in">
+                <span :key="copyState">
+                  {{ copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Try again' : 'Copy email' }}
+                </span>
+              </Transition>
             </span>
           </AppButton>
           <AppLink :href="activeEmailHref" variant="secondary" class="px-5 py-2" @click="closeEmailPanel">
@@ -221,45 +271,6 @@ useEventListener(document, 'keydown', (event) => {
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </AppButton>
-          <Transition name="fade-slide">
-            <div
-              v-if="copyState === 'copied' || copyState === 'error'"
-              class="flex items-center gap-2 rounded-full border border-sage-200 bg-white/85 px-3 py-1 text-xs font-semibold text-sage-600 shadow-sm"
-            >
-              <svg
-                v-if="copyState === 'copied'"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="h-3.5 w-3.5 text-sage-500"
-                aria-hidden="true"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              <svg
-                v-else
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="h-3.5 w-3.5 text-rose-500"
-                aria-hidden="true"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-              <span>
-                {{ copyState === 'copied' ? 'Email copied' : 'Copy failed' }}
-              </span>
-            </div>
-          </Transition>
         </div>
         <div
           v-else
