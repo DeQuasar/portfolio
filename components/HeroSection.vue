@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed } from 'vue'
 import type { HeroContent } from '~/types/content'
 
 const props = defineProps<{ hero: HeroContent }>()
@@ -8,120 +8,32 @@ const socials = computed(() => props.hero.social ?? [])
 const description = computed(() => props.hero.subheadline ?? '')
 const metrics = computed(() => props.hero.metrics ?? [])
 const secondaryCta = computed(() => props.hero.secondaryCta)
-const quickContactEmail = computed(() => {
-  const href = secondaryCta.value?.href ?? ''
-  if (href.startsWith('mailto:')) {
-    return href.replace('mailto:', '')
-  }
-  return href
-})
-
-const heroRef = ref<HTMLElement | null>(null)
-const metricsVisible = ref(false)
-const reduceMotion = ref(false)
-
-let observer: IntersectionObserver | null = null
-let motionQuery: MediaQueryList | null = null
-
-const cleanupObserver = () => {
-  if (observer) {
-    observer.disconnect()
-    observer = null
-  }
-}
-
-const setupObserver = () => {
-  cleanupObserver()
-
-  if (reduceMotion.value) {
-    metricsVisible.value = true
-    return
-  }
-
-  if (!heroRef.value) {
-    return
-  }
-
-  observer = new IntersectionObserver((entries) => {
-    metricsVisible.value = entries.some((entry) => entry.isIntersecting && entry.intersectionRatio > 0.35)
-  }, { threshold: [0.2, 0.35, 0.6] })
-
-  observer.observe(heroRef.value)
-}
-
-const cleanupMotionQuery = () => {
-  if (motionQuery) {
-    if ('removeEventListener' in motionQuery) {
-      motionQuery.removeEventListener('change', handleMotionChange)
-    } else if ('removeListener' in motionQuery) {
-      motionQuery.removeListener(handleMotionChange)
-    }
-    motionQuery = null
-  }
-}
-
-const handleMotionChange = (event: MediaQueryListEvent) => {
-  reduceMotion.value = event.matches
-  if (reduceMotion.value) {
-    metricsVisible.value = true
-    cleanupObserver()
-  } else {
-    setupObserver()
-  }
-}
-
-onMounted(() => {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-  reduceMotion.value = motionQuery.matches
-
-  if ('addEventListener' in motionQuery) {
-    motionQuery.addEventListener('change', handleMotionChange)
-  } else if ('addListener' in motionQuery) {
-    motionQuery.addListener(handleMotionChange)
-  }
-
-  if (reduceMotion.value) {
-    metricsVisible.value = true
-  } else {
-    setupObserver()
-  }
-})
-
-onBeforeUnmount(() => {
-  cleanupObserver()
-  cleanupMotionQuery()
-})
 </script>
 
 <template>
   <section
-    ref="heroRef"
-    class="relative isolate flex flex-col items-center overflow-hidden rounded-[2.75rem] bg-white/80 px-6 py-16 text-center shadow-card sm:px-10"
+    class="relative isolate flex flex-col items-center overflow-hidden rounded-[2rem] bg-white/85 px-6 py-12 text-center shadow-card sm:px-10"
   >
     <span
       class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-white via-sage-50/85 to-sage-100/20"
       aria-hidden="true"
     ></span>
     <span
-      class="pointer-events-none absolute -left-1/3 top-[-220px] h-64 w-64 -translate-y-6 rounded-full bg-sage-200/40 blur-3xl"
+      class="pointer-events-none absolute -left-1/4 top-[-200px] h-56 w-56 -translate-y-6 rounded-full bg-sage-200/35 blur-3xl"
       aria-hidden="true"
     ></span>
     <span
-      class="pointer-events-none absolute -right-1/4 bottom-[-180px] h-72 w-72 rounded-full bg-sage-300/25 blur-[140px]"
+      class="pointer-events-none absolute -right-1/5 bottom-[-160px] h-64 w-64 rounded-full bg-sage-300/20 blur-[120px]"
       aria-hidden="true"
     ></span>
     <h1
-      class="font-display font-semibold tracking-tight text-sage-700 animate-fade-up text-[clamp(2.5rem,6vw,3.5rem)]"
+      class="font-display font-semibold tracking-tight text-sage-700 animate-fade-up text-[clamp(2.25rem,5vw,3.25rem)]"
       style="animation-delay: 40ms"
     >
       {{ props.hero.name }}
     </h1>
     <p
-      class="mt-2 font-display text-sage-600 animate-fade-up text-[clamp(1.1rem,2.8vw,1.75rem)]"
+      class="mt-2 font-display text-sage-600 animate-fade-up text-[clamp(1.05rem,2.4vw,1.55rem)]"
       style="animation-delay: 120ms"
     >
       {{ props.hero.role }}
@@ -136,27 +48,27 @@ onBeforeUnmount(() => {
 
     <dl
       v-if="metrics.length"
-      class="mt-8 flex flex-wrap justify-center gap-3"
+      class="mt-6 flex flex-wrap justify-center gap-3 animate-fade-up"
+      style="animation-delay: 240ms"
     >
       <div
-        v-for="(metric, index) in metrics"
+        v-for="metric in metrics"
         :key="metric.label"
-        class="group flex min-w-[190px] flex-col items-center gap-1 rounded-full border border-sage-200 bg-white/95 px-5 py-3 text-sm shadow-sm transition-all duration-500 hover:border-sage-500 hover:shadow-md focus-within:border-sage-500"
-        :class="(metricsVisible || reduceMotion) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'"
-        :style="{ transitionDelay: `${index * 90 + 200}ms` }"
+        class="flex items-center gap-3 rounded-full border border-sage-200/80 bg-white/90 px-4 py-2 text-sm text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
       >
+        <span class="h-1.5 w-1.5 rounded-full bg-sage-500" aria-hidden="true"></span>
         <dt class="text-xs uppercase tracking-wider text-sage-500">
           {{ metric.label }}
         </dt>
-        <dd class="text-base font-semibold text-sage-700">
+        <dd class="font-semibold text-sage-700">
           {{ metric.value }}
         </dd>
       </div>
     </dl>
 
     <div
-      class="mt-10 flex flex-wrap items-center justify-center gap-4 animate-fade-up"
-      style="animation-delay: 300ms"
+      class="mt-8 flex flex-wrap items-center justify-center gap-4 animate-fade-up"
+      style="animation-delay: 280ms"
     >
       <a
         :href="props.hero.primaryCta.href"
@@ -175,8 +87,7 @@ onBeforeUnmount(() => {
       <a
         v-if="secondaryCta"
         :href="secondaryCta.href"
-        :aria-label="quickContactEmail ? `${secondaryCta.label} at ${quickContactEmail}` : secondaryCta.label"
-        class="group inline-flex items-center gap-2 rounded-full border border-sage-500/20 bg-white/80 px-4 py-2 text-sm font-semibold text-sage-600 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-sage-500 hover:text-sage-700 hover:shadow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sage-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
+        class="inline-flex items-center gap-2 rounded-full border border-sage-400/40 bg-white/80 px-4 py-2 text-sm font-semibold text-sage-600 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-sage-500 hover:text-sage-700 hover:shadow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sage-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -186,7 +97,7 @@ onBeforeUnmount(() => {
           stroke-width="1.8"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="h-5 w-5 text-sage-500 transition duration-300 group-hover:text-sage-600"
+          class="h-5 w-5 text-sage-500 transition duration-300"
           aria-hidden="true"
         >
           <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -195,20 +106,13 @@ onBeforeUnmount(() => {
         <span class="font-semibold text-sage-600">
           {{ secondaryCta.label }}
         </span>
-        <span
-          v-if="quickContactEmail"
-          class="max-w-0 overflow-hidden text-xs text-sage-500 transition-all duration-300 group-hover:max-w-[14rem] group-focus-visible:max-w-[14rem]"
-          aria-hidden="true"
-        >
-          {{ quickContactEmail }}
-        </span>
       </a>
     </div>
 
     <div
       v-if="socials.length"
-      class="mt-12 flex flex-wrap items-center justify-center gap-5 animate-fade-up"
-      style="animation-delay: 360ms"
+      class="mt-10 flex flex-wrap items-center justify-center gap-5 animate-fade-up"
+      style="animation-delay: 320ms"
     >
       <a
         v-for="link in socials"
