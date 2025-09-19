@@ -3,6 +3,8 @@ import { computed, nextTick, ref } from 'vue'
 import type { HeroContent } from '~/types/content'
 import { useClipboard } from '~/composables/useClipboard'
 import { onClickOutside, useEventListener } from '@vueuse/core'
+import AppButton from '~/components/ui/AppButton.vue'
+import AppLink from '~/components/ui/AppLink.vue'
 
 const props = defineProps<{ hero: HeroContent }>()
 
@@ -14,9 +16,9 @@ const otherSocials = computed(() => socials.value.filter((link) => !link.label?.
 
 const { state: copyState, copy: copyToClipboard, reset: resetCopyState } = useClipboard()
 const activeEmailHref = ref<string | null>(null)
-const emailTriggerEl = ref<HTMLElement | null>(null)
+const emailTriggerEl = ref<InstanceType<typeof AppButton> | null>(null)
 const emailPanelEl = ref<HTMLElement | null>(null)
-const emailCopyButtonEl = ref<HTMLButtonElement | null>(null)
+const emailCopyButtonEl = ref<InstanceType<typeof AppButton> | null>(null)
 
 const showEmailPanel = computed(() => Boolean(activeEmailHref.value))
 
@@ -130,13 +132,11 @@ useEventListener(document, 'keydown', (event) => {
       </div>
     </dl>
 
-    <div
-      class="mt-8 flex flex-wrap items-center justify-center gap-4 animate-fade-up"
-      style="animation-delay: 280ms"
-    >
-      <a
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-4 animate-fade-up" style="animation-delay: 280ms">
+      <AppLink
         :href="props.hero.primaryCta.href"
-        class="inline-flex items-center gap-2 rounded-full bg-sage-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-transform duration-300 hover:-translate-y-0.5 hover:bg-sage-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sage-600/30 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
+        variant="primary"
+        class="shadow-card"
         aria-label="Download résumé"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5" aria-hidden="true">
@@ -147,7 +147,7 @@ useEventListener(document, 'keydown', (event) => {
           />
         </svg>
         {{ props.hero.primaryCta.label }}
-      </a>
+      </AppLink>
     </div>
 
     <div
@@ -164,12 +164,7 @@ useEventListener(document, 'keydown', (event) => {
           class="flex flex-wrap items-center justify-center gap-3"
           aria-label="Email options"
         >
-          <button
-            type="button"
-            ref="emailCopyButtonEl"
-            class="inline-flex items-center gap-2 rounded-full bg-sage-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sage-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/60"
-            @click="copyEmail(activeEmailHref)"
-          >
+          <AppButton ref="emailCopyButtonEl" variant="primary" class="px-5 py-2" @click="copyEmail(activeEmailHref)">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -187,12 +182,8 @@ useEventListener(document, 'keydown', (event) => {
             <span>
               {{ copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy failed' : 'Copy email' }}
             </span>
-          </button>
-          <a
-            :href="activeEmailHref"
-            class="inline-flex items-center gap-2 rounded-full border border-sage-300 bg-white/80 px-5 py-2 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-500 hover:text-sage-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/40"
-            @click="closeEmailPanel"
-          >
+          </AppButton>
+          <AppLink :href="activeEmailHref" variant="secondary" class="px-5 py-2" @click="closeEmailPanel">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -208,10 +199,10 @@ useEventListener(document, 'keydown', (event) => {
               <path d="M7 7h10v10" />
             </svg>
             <span>Email Anthony</span>
-          </a>
-          <button
-            type="button"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-sage-300 bg-white/80 text-sage-500 transition hover:border-sage-500 hover:text-sage-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/40"
+          </AppLink>
+          <AppButton
+            variant="icon"
+            class="h-10 w-10 border-sage-300"
             @click="closeEmailPanel"
             aria-label="Cancel email options"
           >
@@ -229,19 +220,19 @@ useEventListener(document, 'keydown', (event) => {
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
-          </button>
+          </AppButton>
         </div>
         <div
           v-else
           key="social-links"
           class="flex flex-wrap items-center justify-center gap-5"
         >
-          <button
+          <AppButton
             v-if="emailLink"
             :key="emailLink.href"
             ref="emailTriggerEl"
-            type="button"
-            class="group inline-flex h-12 w-12 items-center justify-center rounded-full border border-sage-300 bg-white/80 text-sage-600 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-sage-500 hover:text-sage-700 hover:shadow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sage-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
+            variant="icon"
+            class="group"
             :aria-label="'View email options'"
             @click="toggleEmailPanel(emailLink.href)"
           >
@@ -260,12 +251,13 @@ useEventListener(document, 'keydown', (event) => {
               <rect x="2" y="5" width="20" height="14" rx="2" />
               <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
             </svg>
-          </button>
-          <a
+          </AppButton>
+          <AppLink
             v-for="link in otherSocials"
             :key="link.href"
             :href="link.href"
-            class="group inline-flex h-12 w-12 items-center justify-center rounded-full border border-transparent bg-white/80 text-sage-600 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-sage-400 hover:text-sage-700 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sage-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
+            variant="icon"
+            class="group"
             :aria-label="link.label"
           >
             <span class="sr-only">{{ link.label }}</span>
@@ -316,7 +308,7 @@ useEventListener(document, 'keydown', (event) => {
               <rect x="2" y="5" width="20" height="14" rx="2" />
               <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
             </svg>
-          </a>
+          </AppLink>
         </div>
       </transition>
     </div>

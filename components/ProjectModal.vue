@@ -14,7 +14,9 @@ const emit = defineEmits<{ close: [] }>()
     <transition name="fade">
       <div v-if="props.open" class="modal" @click.self="emit('close')">
         <div class="modal__content">
-          <button class="modal__close" @click="emit('close')">×</button>
+          <AppButton variant="icon" class="modal__close" @click="emit('close')" aria-label="Close project details">
+            ×
+          </AppButton>
           <h3>{{ props.project?.title }}</h3>
           <div class="modal__section">
             <h4>Problem</h4>
@@ -29,15 +31,17 @@ const emit = defineEmits<{ close: [] }>()
             <p>{{ props.project?.impact }}</p>
           </div>
           <div v-if="props.project?.links?.length" class="modal__links">
-            <NuxtLink
+            <AppLink
               v-for="link in props.project?.links"
               :key="link.text"
               :href="link.url"
               target="_blank"
               rel="noopener"
+              variant="minimal"
+              class="modal__link"
             >
               {{ link.text }}
-            </NuxtLink>
+            </AppLink>
           </div>
         </div>
       </div>
@@ -82,10 +86,15 @@ const emit = defineEmits<{ close: [] }>()
   position: absolute;
   right: 1rem;
   top: 1rem;
+  font-size: 1.5rem;
+  color: var(--color-text-muted);
   background: transparent;
   border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
+  box-shadow: none;
+}
+
+.modal__close:hover {
+  color: var(--color-text-primary);
 }
 
 .modal__section h4 {
@@ -102,7 +111,7 @@ const emit = defineEmits<{ close: [] }>()
   flex-wrap: wrap;
 }
 
-.modal__links a {
+.modal__link {
   color: var(--color-primary-start);
   font-weight: 600;
 }

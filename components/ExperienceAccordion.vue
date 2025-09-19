@@ -55,9 +55,9 @@ const closeModal = () => {
               >
                 <h4>{{ project.title }}</h4>
                 <p>{{ project.summary }}</p>
-                <button type="button" @click="openModal(project)">
+                <AppButton variant="secondary" class="experience__project-button" type="button" @click="openModal(project)">
                   Learn more
-                </button>
+                </AppButton>
               </div>
             </div>
           </div>
@@ -166,18 +166,7 @@ const closeModal = () => {
   font-size: 1.1rem;
 }
 
-.experience__project-card button {
+.experience__project-button {
   justify-self: start;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--color-primary-start);
-  background: transparent;
-  color: var(--color-primary-start);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.experience__project-card button:hover {
-  background: rgba(74, 108, 77, 0.08);
 }
 </style>

@@ -23,9 +23,9 @@ const props = defineProps<{ highlights: HighlightContent[] }>()
           <span class="highlight-card__confidentiality" v-if="item.confidentiality">
             {{ item.confidentiality }}
           </span>
-          <NuxtLink v-if="item.cta" :href="item.cta.href" class="highlight-card__cta">
+          <AppLink v-if="item.cta" :href="item.cta.href" variant="minimal" class="highlight-card__cta">
             {{ item.cta.label }}
-          </NuxtLink>
+          </AppLink>
         </div>
       </article>
     </div>

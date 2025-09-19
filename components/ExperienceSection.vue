@@ -94,12 +94,13 @@ const entries = computed(() => props.experience.entries ?? [])
               v-if="project.links?.length"
               class="flex flex-wrap gap-3"
             >
-              <NuxtLink
+              <AppLink
                 v-for="link in project.links"
                 :key="link.url"
                 :href="link.url"
-                class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-sm font-semibold text-sage-600 shadow-sm transition hover:text-sage-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-600 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50"
-              >
+                variant="secondary"
+                class="px-3 py-2"
+                >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -115,7 +116,7 @@ const entries = computed(() => props.experience.entries ?? [])
                   <path d="M14 11a5 5 0 00-7.54-.54l-1.92 1.92a4 4 0 105.66 5.66l.88-.88" />
                 </svg>
                 <span>{{ link.text }}</span>
-              </NuxtLink>
+              </AppLink>
             </div>
           </div>
         </div>

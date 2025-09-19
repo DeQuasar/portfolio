@@ -23,19 +23,20 @@ const copyEmail = async () => {
       <h2>Let’s work together</h2>
       <p v-if="props.contact.message" class="contact__body">{{ props.contact.message }}</p>
       <div class="contact__cta">
-        <NuxtLink :href="props.contact.resumeUrl" class="contact__button contact__button--primary">
+        <AppLink :href="props.contact.resumeUrl" variant="primary" class="contact__button contact__button--primary">
           Download Résumé
-        </NuxtLink>
+        </AppLink>
         <div class="contact__dual-action">
-          <a
+          <AppLink
             :href="emailHref"
+            variant="secondary"
             class="contact__button contact__button--secondary"
             aria-label="Open email client to contact Anthony"
           >
             Email Anthony
-          </a>
-          <button
-            type="button"
+          </AppLink>
+          <AppButton
+            variant="ghost"
             class="contact__button contact__button--ghost"
             :aria-label="
               emailCopyState === 'copied'
@@ -49,16 +50,18 @@ const copyEmail = async () => {
             <span v-if="emailCopyState === 'copied'">Copied</span>
             <span v-else-if="emailCopyState === 'error'">Copy failed</span>
             <span v-else>Copy Email</span>
-          </button>
+          </AppButton>
         </div>
       </div>
       <ul class="contact__links">
         <li>
           <span>Email</span>
           <div class="contact__link-group">
-            <a :href="emailHref">{{ props.contact.email }}</a>
-            <button
-              type="button"
+            <AppLink :href="emailHref" variant="minimal" class="contact__link">
+              {{ props.contact.email }}
+            </AppLink>
+            <AppButton
+              variant="icon"
               class="contact__copy"
               :aria-label="
                 emailCopyState === 'copied'
@@ -122,16 +125,26 @@ const copyEmail = async () => {
                       : 'Copy email address'
                 }}
               </span>
-            </button>
+            </AppButton>
           </div>
         </li>
         <li v-if="props.contact.github">
           <span>GitHub</span>
-          <a :href="props.contact.github" target="_blank" rel="noopener">{{ props.contact.github }}</a>
+          <AppLink :href="props.contact.github" target="_blank" rel="noopener" variant="minimal" class="contact__link">
+            {{ props.contact.github }}
+          </AppLink>
         </li>
         <li v-if="props.contact.linkedin">
           <span>LinkedIn</span>
-          <a :href="props.contact.linkedin" target="_blank" rel="noopener">{{ props.contact.linkedin }}</a>
+          <AppLink
+            :href="props.contact.linkedin"
+            target="_blank"
+            rel="noopener"
+            variant="minimal"
+            class="contact__link"
+          >
+            {{ props.contact.linkedin }}
+          </AppLink>
         </li>
       </ul>
       <p class="contact__availability">{{ props.contact.availability }}</p>
@@ -243,7 +256,7 @@ const copyEmail = async () => {
   font-weight: 600;
 }
 
-.contact__links a {
+.contact__link {
   color: #fff;
   text-decoration: underline;
 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import AppButton from '~/components/ui/AppButton.vue'
 
 const route = useRoute()
 
@@ -32,7 +33,7 @@ const parsedDestination = computed(() => {
 })
 
 const destinationHost = computed(() => parsedDestination.value?.hostname ?? null)
-const continueButtonRef = ref<HTMLButtonElement | null>(null)
+const continueButtonRef = ref<InstanceType<typeof AppButton> | null>(null)
 
 const handleContinue = () => {
   const target = parsedDestination.value
@@ -81,21 +82,12 @@ onMounted(() => {
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
-        <button
-          ref="continueButtonRef"
-          type="button"
-          class="inline-flex items-center gap-2 rounded-full bg-sage-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sage-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/60"
-          @click="handleContinue"
-        >
+        <AppButton ref="continueButtonRef" variant="primary" class="px-6 py-2.5" @click="handleContinue">
           Continue
-        </button>
-        <button
-          type="button"
-          class="inline-flex items-center gap-2 rounded-full border border-sage-300 bg-white px-6 py-2.5 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-500 hover:text-sage-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/40"
-          @click="handleCancel"
-        >
+        </AppButton>
+        <AppButton variant="secondary" class="px-6 py-2.5" @click="handleCancel">
           Cancel
-        </button>
+        </AppButton>
       </div>
     </section>
   </main>
