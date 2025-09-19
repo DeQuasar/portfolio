@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { $fetch, setup } from '@nuxt/test-utils'
 import { JSDOM } from 'jsdom'
-import axe from 'axe-core'
+import axe, { type RunOptions, type AxeResults } from 'axe-core'
 import { fileURLToPath } from 'node:url'
 
 await setup({ rootDir: fileURLToPath(new URL('../', import.meta.url)) })
@@ -9,30 +9,76 @@ await setup({ rootDir: fileURLToPath(new URL('../', import.meta.url)) })
 describe('homepage accessibility', () => {
   it('has no detectable a11y violations', async () => {
     const html = await $fetch('/')
-    const dom = new JSDOM(html, {
-      pretendToBeVisual: true,
-      runScripts: 'outside-only'
+    const results = await runAxe(html, {
+      resultTypes: ['violations', 'incomplete']
     })
-    const { window } = dom
 
+    const issues = [
+      ...results.violations.map((issue) => ({ type: 'violation' as const, issue })),
+      ...results.incomplete.map((issue) => ({ type: 'incomplete' as const, issue }))
+    ]
+    const messages = issues.map(({ type, issue }) => formatIssue(issue, type))
+
+    expect(issues, messages.join('\n\n')).toHaveLength(0)
+  })
+})
+
+async function runAxe (html: string, options?: RunOptions): Promise<AxeResults> {
+  const dom = new JSDOM(html, {
+    pretendToBeVisual: true,
+    runScripts: 'outside-only'
+  })
+  const { window } = dom
+
+  if (typeof window.document.elementFromPoint !== 'function') {
+    window.document.elementFromPoint = ((() => window.document.body || window.document.documentElement) as typeof window.document.elementFromPoint)
+  }
+
+  if (typeof window.document.elementsFromPoint !== 'function') {
+    window.document.elementsFromPoint = (((_x: number, _y: number) => {
+      const element = window.document.elementFromPoint(0, 0)
+      return element ? [element] : []
+    }) as typeof window.document.elementsFromPoint)
+  }
+
+  if (window.HTMLCanvasElement?.prototype?.getContext) {
+    window.HTMLCanvasElement.prototype.getContext = () => {
+      const context = {
+        clearRect: () => {},
+        fillRect: () => {},
+        getImageData: () => ({ data: new Uint8ClampedArray(4) }),
+        putImageData: () => {},
+        drawImage: () => {},
+        createImageData: () => ({ data: new Uint8ClampedArray(4) }),
+        measureText: () => ({ width: 0 })
+      }
+      return context as unknown as CanvasRenderingContext2D
+    }
+  }
+
+  try {
     window.eval(axe.source)
     const axeInstance = (window as unknown as { axe: typeof axe }).axe
 
-    const results = await axeInstance.run(window.document, {
-      rules: {
-        'color-contrast': { enabled: false }
-      }
+    return await axeInstance.run(window.document, {
+      reporter: 'v2',
+      ...options
     })
-
+  } finally {
     dom.window.close()
+  }
+}
 
-    const messages = results.violations.map((violation) => {
-      const nodes = violation.nodes
-        .map((node) => `  - ${node.html}`)
-        .join('\n')
-      return `${violation.id}: ${violation.help}\n${nodes}`
+function formatIssue (issue: AxeResults['violations'][number] | AxeResults['incomplete'][number], type: 'violation' | 'incomplete'): string {
+  const nodes = issue.nodes
+    .map((node) => {
+      const target = node.target.join(' ')
+      return `  - ${target}\n      ${node.html.trim()}`
     })
+    .join('\n')
 
-    expect(results.violations, messages.join('\n\n')).toHaveLength(0)
-  })
-})
+  const impact = issue.impact ? ` [${issue.impact}]` : ''
+  const helpUrl = issue.helpUrl ? `\nHelp: ${issue.helpUrl}` : ''
+
+  return `${type.toUpperCase()}: ${issue.id}${impact}\n${issue.help}${helpUrl}\n${nodes}`
+}
