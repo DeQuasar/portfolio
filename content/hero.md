@@ -2,7 +2,7 @@
 name: Anthony Protano
 role: Senior Software Developer
 headline: Building dependable web platforms with modern PHP and Vue.
-subheadline: Senior software developer with 6+ years building scalable applications, solving complex problems, and leading reliable delivery across PHP and JavaScript stacks.
+subheadline: Senior software developer with 6+ years of experience building scalable web applications with modern PHP and JavaScript frameworks. Skilled in solving complex problems, designing reliable systems, and writing clean, maintainable code. Experienced with CI/CD pipelines and effective collaboration across teams to deliver high-quality software.
 metrics:
   - label: Years shipping production software
     value: "6+"
