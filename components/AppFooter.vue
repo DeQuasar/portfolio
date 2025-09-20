@@ -8,9 +8,6 @@ const currentYear = new Date().getFullYear()
       <p class="font-semibold text-sage-700">
         © {{ currentYear }} Anthony Protano — Senior Software Developer.
       </p>
-      <p class="text-sage-600">
-        Powered by Nuxt 3 + Tailwind CSS with a clock that keeps itself honest.
-      </p>
     </div>
   </footer>
 </template>
