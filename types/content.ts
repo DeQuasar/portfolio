@@ -72,6 +72,7 @@ export interface ExperienceEntry {
   period: string
   summary: string[]
   projects: ExperienceProject[]
+  toolkit?: string[]
 }
 
 export interface ExperienceContent {

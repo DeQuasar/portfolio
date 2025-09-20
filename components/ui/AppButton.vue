@@ -21,13 +21,13 @@ const baseClasses =
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-sage-600 text-white shadow-md px-6 py-3 hover:bg-sage-700 hover:-translate-y-0.5 focus-visible:ring-opacity-60',
+    'bg-sage-600 text-white shadow-md px-6 py-3 hover:bg-sage-700 hover:shadow-lg focus-visible:ring-opacity-60',
   secondary:
     'border border-sage-300 bg-white/85 text-sage-600 shadow-sm px-5 py-2.5 hover:border-sage-500 hover:text-sage-700',
   ghost:
     'border border-dashed border-sage-300 bg-white/60 text-sage-500 px-4 py-2 hover:border-sage-500 hover:text-sage-700',
   icon:
-    'h-12 w-12 rounded-full border border-sage-300 bg-white/80 text-sage-600 shadow-sm hover:border-sage-500 hover:text-sage-700',
+    'h-12 w-12 rounded-full border border-sage-300 bg-white/85 text-sage-600 shadow-sm transition-all duration-200 hover:border-sage-500 hover:bg-white hover:text-sage-700 hover:shadow-md',
   minimal:
     'px-4 py-2 text-sage-500 hover:text-sage-700 font-medium',
 }

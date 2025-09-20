@@ -73,3 +73,19 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## UI regression tests
+
+Run the Vitest-powered suite (including the Playwright UI spec) within a preconfigured container so no local browser tooling is required:
+
+```bash
+npm run test:ui:container
+```
+
+The command spins up the official Playwright image, installs project dependencies inside an isolated volume, and executes `npm test -- --run`. When you pass custom Vitest flags, include `--run` yourself, for example to execute a single spec:
+
+```bash
+npm run test:ui:container -- --run tests/hero-email-tooltip.ui.spec.ts
+```
+
+By default the container executes Chromium, Firefox, and WebKit runs so Chrome, Firefox, and Safari engines stay covered. Override with `PLAYWRIGHT_BROWSERS` if you need a narrower slice (for example, `PLAYWRIGHT_BROWSERS=chromium`).

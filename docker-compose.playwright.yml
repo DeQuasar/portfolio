@@ -1,0 +1,16 @@
+services:
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.47.0-jammy
+    user: "${PLAYWRIGHT_UID:-1000}:${PLAYWRIGHT_GID:-1000}"
+    working_dir: /workspace
+    volumes:
+      - .:/workspace:delegated
+    tmpfs:
+      - /workspace/node_modules:uid=${PLAYWRIGHT_UID:-1000},gid=${PLAYWRIGHT_GID:-1000},mode=1777
+    environment:
+      NUXT_TELEMETRY_DISABLED: "1"
+      PLAYWRIGHT_VERSION: "1.47.0"
+      PLAYWRIGHT_BROWSERS: "${PLAYWRIGHT_BROWSERS:-}"
+      PLAYWRIGHT_BROWSER: "${PLAYWRIGHT_BROWSER:-}"
+    entrypoint: ["/bin/bash", "/workspace/docker/playwright/entrypoint.sh"]
+    shm_size: 1gb
