@@ -14,7 +14,7 @@ const { data: experience } = await useExperienceContent()
     <div class="relative mx-auto flex w-full max-w-5xl flex-col gap-20 px-4 sm:px-6">
       <HeroSection v-if="hero" :hero="hero" />
       <ExperienceSection v-if="experience" :experience="experience" />
-      <SkillStack v-if="skills" :skills="skills" />
+      <SkillStack v-if="skills" :skills="skills" :experience="experience" />
     </div>
   </main>
 </template>

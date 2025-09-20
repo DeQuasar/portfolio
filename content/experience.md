@@ -6,12 +6,33 @@ entries:
     location: Oklahoma City, OK (Remote)
     period: June 2023 – Present
     toolkit:
+      - PHP
       - Laravel
-      - Vue 3
+      - JavaScript
+      - TypeScript
+      - Vue.js
+      - Tailwind CSS
+      - InertiaJS
+      - PostgreSQL
+      - MySQL
+      - Docker
+      - GitHub
+      - GitHub Actions
+      - Composer
+      - npm
+      - Vite
       - Sentry
+      - Renovatebot
       - Laravel Shift
-      - Renovate
-      - Incident response
+      - Laravel Pint
+      - PHPStan / Larastan
+      - RectorPHP
+      - ESLint
+      - Stylelint
+      - PHP-CS-Fixer
+      - PHPUnit
+      - Pest
+      - Vitest
     summary:
       - Maintain 25+ GitHub repositories spanning production applications and shared internal packages, handling dependency updates and versioning across projects.
       - Diagnose and resolve production issues under SLA across diverse client applications, scoping and delivering fixes independently with minimal escalation.
@@ -30,11 +51,27 @@ entries:
     location: Winter Park, FL (Remote)
     period: September 2022 – June 2023
     toolkit:
+      - PHP
       - Laravel
-      - Vue 3
+      - JavaScript
+      - TypeScript
+      - Vue.js
+      - Tailwind CSS
+      - PostgreSQL
+      - MySQL
+      - Docker
+      - Git
+      - GitHub
+      - GitHub Actions
+      - Webpack
+      - Composer
+      - npm
+      - ESLint
+      - Laravel Pint
+      - PHPUnit
+      - Pest
       - SQL tuning
       - Mentorship
-      - CI/CD
     summary:
       - Designed and built the backend for a complex lease visualization feature in Laravel and mentored a teammate through the Vue.js UI implementation.
       - Improved time-series query performance by ~70% through a rewrite from Eloquent logic to recursive SQL.
@@ -52,15 +89,27 @@ entries:
     location: Oklahoma City, OK
     period: October 2020 – September 2022
     toolkit:
+      - PHP
       - Laravel
-      - Vue 3
-      - Inertia
-      - Flutter
+      - JavaScript
+      - TypeScript
+      - Vue.js
+      - InertiaJS
+      - Tailwind CSS
+      - Docker
+      - Git
+      - GitHub
+      - Composer
+      - npm
+      - Webpack
+      - GitHub Actions
+      - PHPUnit
+      - Pest
       - Team leadership
     summary:
       - Architected and led MVP delivery of a digital mental health intake system with Laravel, Vue 3, and InertiaJS, providing ongoing enhancements post-launch.
-      - Directed a four-person team delivering updates to a European-built interactive 3D event platform (React, Three.js) by establishing a new environment and shipping features on schedule.
-      - Scoped and launched a fintech mobile app rewrite transitioning from Vue Cordova to Flutter, aligning stakeholders and handing off the MVP release.
+      - Directed a four-person team delivering updates to a European-built interactive 3D event platform by establishing a new environment and shipping features on schedule.
+      - Scoped and launched a fintech mobile app rewrite transitioning from Vue Cordova to a modern cross-platform stack, aligning stakeholders and handing off the MVP release.
       - Mentored developers across the team on Laravel, PHP, Vue, and Tailwind CSS best practices.
     projects:
       - title: Mental health intake platform
@@ -75,11 +124,22 @@ entries:
     location: Oklahoma City, OK
     period: September 2019 – October 2020
     toolkit:
-      - Vue 2
-      - Vuex
-      - SCSS
-      - WordPress
+      - PHP
       - Laravel
+      - JavaScript
+      - Vue.js
+      - Vuex
+      - HTML5
+      - CSS
+      - SCSS
+      - Tailwind CSS
+      - WordPress
+      - Docker
+      - Git
+      - GitHub
+      - Composer
+      - npm
+      - Jest
     summary:
       - Built a single-page application for a national sports organization using Vue 2, Vuex, SCSS, and Bootstrap with real-time state handling and responsive layouts.
       - Developed and enhanced features across multiple WordPress sites leveraging Advanced Custom Fields, custom post types, and Gutenberg blocks.
@@ -92,7 +152,23 @@ entries:
     location: Oklahoma City, OK
     period: May 2018 – September 2019
     toolkit:
+      - PHP
+      - Laravel
+      - JavaScript
       - Vue.js
+      - HTML5
+      - CSS
+      - SCSS
+      - Tailwind CSS
+      - PostgreSQL
+      - MySQL
+      - MariaDB
+      - Docker
+      - Git
+      - GitHub
+      - Composer
+      - npm
+      - Webpack
       - Stripe
       - Algolia
       - API integrations
@@ -108,12 +184,22 @@ entries:
     location: Oklahoma City, OK
     period: January 2018 – May 2018
     toolkit:
+      - PHP
       - Slim PHP
+      - JavaScript
       - Vue.js
+      - HTML5
+      - CSS
+      - SCSS
+      - Docker
+      - Git
+      - GitHub
+      - Composer
+      - npm
       - WebSockets
       - WordPress
     summary:
       - Migrated the Black Belt Magazine website from a legacy WordPress stack to modern hosting with improved stability, security, and content management.
-      - Built a real-time event sign-in kiosk system using Slim PHP, Vue.js, and CSS3 with WebSocket communication to sync check-ins across kiosks and dashboards.
+      - Built a real-time event sign-in kiosk system using Slim PHP, Vue.js, and CSS with WebSocket communication to sync check-ins across kiosks and dashboards.
     projects: []
 ---

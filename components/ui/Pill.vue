@@ -23,8 +23,8 @@ const props = withDefaults(
 )
 
 const toneClasses: Record<Tone, string> = {
-  sage: 'bg-sage-100/90 text-sage-600 border border-sage-200/70',
-  neutral: 'bg-white/90 text-sage-600 border border-sage-200/60'
+  sage: 'bg-sage-100 text-sage-600 border border-sage-200',
+  neutral: 'bg-white text-sage-600 border border-sage-200'
 }
 
 const sizeClasses: Record<Size, string> = {

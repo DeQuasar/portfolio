@@ -21,6 +21,7 @@ const entries = computed(() => props.experience.entries ?? [])
       <CardSurface
         v-for="entry in entries"
         :key="entry.slug"
+        :id="`experience-${entry.slug}`"
         class="flex flex-col gap-6"
         hoverable
       >
@@ -35,23 +36,22 @@ const entries = computed(() => props.experience.entries ?? [])
           </p>
         </header>
 
-        <div
+        <ul
           v-if="entry.toolkit?.length"
           class="flex flex-wrap gap-2"
-          role="list"
           aria-label="Key tools and focus areas"
         >
-          <Pill
-            v-for="tool in entry.toolkit"
-            :key="tool"
-            tone="neutral"
-            size="sm"
-            uppercase
-            class="items-center gap-1.5 tracking-[0.18em] text-sage-600/95"
-          >
-            {{ tool }}
-          </Pill>
-        </div>
+          <li v-for="tool in entry.toolkit" :key="tool" class="list-none">
+            <Pill
+              tone="neutral"
+              size="sm"
+              uppercase
+              class="items-center gap-1.5 tracking-[0.18em] text-sage-600/95"
+            >
+              {{ tool }}
+            </Pill>
+          </li>
+        </ul>
 
         <ul
           v-if="entry.summary?.length"

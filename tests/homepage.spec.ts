@@ -12,7 +12,7 @@ describe('homepage content', () => {
 
     expect(html).toContain('Anthony Protano')
     expect(html).toContain('Experience')
-    expect(html).toContain('Skill Stack')
+    expect(html).toContain('Skills &amp; Tools')
     expect(html).toContain('Senior Software Developer')
   })
 })

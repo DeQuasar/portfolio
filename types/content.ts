@@ -34,8 +34,26 @@ export interface ProjectContent {
   availability?: string
 }
 
+export interface SkillCoreGroup {
+  title: string
+  skills: string[]
+  description?: string
+}
+
+export interface SkillCore {
+  description?: string
+  groups: SkillCoreGroup[]
+}
+
+export interface SkillCategory {
+  title: string
+  match: string[]
+  description?: string
+}
+
 export interface SkillsContent {
-  categories: Array<{ title: string; skills: string[] }>
+  core?: SkillCore
+  categories: SkillCategory[]
   intro?: string
 }
 

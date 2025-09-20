@@ -1,43 +1,73 @@
 ---
+core:
+  description: The tools I reach for first when building, shipping, and validating modern web products.
+  groups:
+    - title: Backend Platform
+      description: Trusted stack for APIs, background jobs, and domain logic.
+      skills:
+        - PHP
+        - Laravel
+    - title: Frontend Application
+      description: Typing-first client stack for rich product surfaces.
+      skills:
+        - JavaScript
+        - TypeScript
+        - Vue.js
+    - title: Interface Layer
+      description: Styling system for accessible, maintainable UI.
+      skills:
+        - CSS
+        - Tailwind CSS
 categories:
-  - title: Languages & Frameworks
-    skills:
+  - title: Product Engineering
+    description: Frontend and application frameworks that keep user-facing work fast and polished.
+    match:
       - PHP
       - Laravel
-      - JavaScript
       - Vue.js
-      - HTML5
-      - CSS3
-      - SCSS
-      - Tailwind CSS
       - InertiaJS
-  - title: Databases
-    skills:
+      - JavaScript
+      - TypeScript
+      - HTML5
+      - CSS
+      - Tailwind CSS
+      - SCSS
+      - Vuex
+  - title: Data & Integrations
+    description: Datastores and third-party services I maintain in production.
+    match:
       - PostgreSQL
       - MySQL
       - MariaDB
-  - title: DevOps & Tools
-    skills:
+      - Stripe
+      - Algolia
+      - API integrations
+      - WebSockets
+      - CMS architecture
+  - title: Delivery & Platform Operations
+    description: Deployment and automation tooling that protects velocity and uptime.
+    match:
       - Docker
+      - GitHub Actions
+      - Renovatebot
       - Git
-      - GitHub
-      - CI/CD (GitHub Actions)
-      - Webpack
-      - Vite
       - Composer
       - npm
-      - Renovatebot
-  - title: Code Quality & Testing
-    skills:
-      - ESLint
-      - Stylelint
+      - Vite
+      - Webpack
+      - Laravel Shift
+      - Sentry
+  - title: Quality Automation
+    description: Testing and code-quality gates that keep releases stable.
+    match:
+      - Pest
+      - PHPUnit
+      - Laravel Pint
+      - Vitest
       - PHPStan / Larastan
       - RectorPHP
-      - Laravel Pint
+      - ESLint
+      - Stylelint
       - PHP-CS-Fixer
-      - PHPUnit
-      - Pest
-      - Vitest
-      - Jest
 intro: Senior software developer focused on dependable delivery, testing discipline, and collaborative engineering environments.
 ---
