@@ -345,7 +345,7 @@ useEventListener(document, 'keydown', (event) => {
 
       <div
         v-if="socials.length"
-        class="mt-10 flex w-full max-w-xl flex-col items-center animate-fade-up"
+        class="mt-10 flex w-full max-w-xl flex-col items-center animate-fade-up mx-auto"
         style="animation-delay: 230ms"
       >
         <transition name="fade" mode="out-in">

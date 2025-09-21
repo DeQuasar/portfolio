@@ -28,7 +28,7 @@ const variantClasses: Record<NonNullable<typeof props.variant>, string> = {
   ghost:
     'border border-dashed border-sage-300 bg-white/60 text-sage-500 px-4 py-2 hover:border-sage-500 hover:text-sage-700',
   icon:
-    'h-12 w-12 rounded-full border border-sage-300 bg-white/85 text-sage-600 shadow-sm transition-all duration-200 hover:border-sage-500 hover:bg-white hover:text-sage-700 hover:shadow-md',
+    'inline-flex h-12 w-12 items-center justify-center !gap-0 rounded-full border border-sage-300 bg-white/85 text-sage-600 shadow-sm transition-all duration-200 hover:border-sage-500 hover:bg-white hover:text-sage-700 hover:shadow-md',
   minimal:
     'px-0 py-0 text-sage-600 font-medium hover:text-sage-700',
   cta:
