@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import CardSurface from '~/components/ui/CardSurface.vue'
 import SectionHeader from '~/components/ui/SectionHeader.vue'
 import type { ExperienceContent } from '~/types/content'
@@ -11,6 +11,135 @@ const props = defineProps<{
 }>()
 
 const entries = computed(() => props.experience.entries ?? [])
+
+const activeSlug = ref<string | null>(null)
+const cardElements = new Map<string, HTMLElement>()
+let rafId: number | null = null
+
+const activeHighlightStyle = Object.freeze({
+  '--card-glow': 'rgba(32, 198, 140, 0.82)',
+  '--card-glow-ambient': 'rgba(16, 82, 58, 0.68)',
+  '--card-core': 'rgba(22, 154, 104, 0.96)'
+})
+
+const inactiveHighlightStyle = Object.freeze({
+  '--card-glow': 'rgba(32, 198, 140, 0)',
+  '--card-glow-ambient': 'rgba(18, 94, 68, 0)',
+  '--card-core': 'rgba(9, 52, 38, 0)'
+})
+
+const glowOverlayStyle = Object.freeze({
+  background: 'radial-gradient(circle at center, var(--card-core) 0%, var(--card-glow) 34%, rgba(32, 198, 140, 0.28) 56%, transparent 72%)',
+  boxShadow: '0 28px 72px -30px var(--card-glow-ambient), 0 0 38px -10px rgba(32, 198, 140, 0.55)'
+})
+
+const resolveCardElement = (value: Element | { $el?: Element } | null) => {
+  if (!value) {
+    return null
+  }
+  if (value instanceof HTMLElement) {
+    return value
+  }
+  const candidate = (value as { $el?: Element }).$el
+  return candidate instanceof HTMLElement ? candidate : null
+}
+
+const computeActiveSlug = () => {
+  rafId = null
+  if (typeof window === 'undefined' || cardElements.size === 0) {
+    activeSlug.value = entries.value[0]?.slug ?? null
+    return
+  }
+
+  const viewportHeight = window.innerHeight || 0
+  const viewportCenter = viewportHeight / 2
+
+  let bestSlug: string | null = null
+  let bestDistance = Number.POSITIVE_INFINITY
+
+  cardElements.forEach((el, slug) => {
+    const rect = el.getBoundingClientRect()
+    if (rect.bottom <= 0 || rect.top >= viewportHeight) {
+      return
+    }
+
+    const cardCenter = rect.top + rect.height / 2
+    const distance = Math.abs(cardCenter - viewportCenter)
+
+    if (distance < bestDistance) {
+      bestDistance = distance
+      bestSlug = slug
+    }
+  })
+
+  if (bestSlug) {
+    activeSlug.value = bestSlug
+  } else {
+    activeSlug.value = entries.value[0]?.slug ?? null
+  }
+}
+
+const scheduleCompute = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  if (rafId !== null) {
+    return
+  }
+  rafId = window.requestAnimationFrame(computeActiveSlug)
+}
+
+const registerCard = (slug: string) => (el: Element | { $el?: Element } | null) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  if (!el) {
+    cardElements.delete(slug)
+    scheduleCompute()
+    return
+  }
+
+  const element = resolveCardElement(el)
+  if (element) {
+    cardElements.set(slug, element)
+    scheduleCompute()
+  }
+}
+
+const handleViewportChange = () => {
+  scheduleCompute()
+}
+
+const isEntryVisible = (slug: string) => {
+  if (typeof window === 'undefined') {
+    return true
+  }
+  return activeSlug.value === slug
+}
+
+onMounted(() => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.addEventListener('scroll', handleViewportChange, { passive: true })
+  window.addEventListener('resize', handleViewportChange)
+  scheduleCompute()
+})
+
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('scroll', handleViewportChange)
+    window.removeEventListener('resize', handleViewportChange)
+    if (rafId !== null) {
+      window.cancelAnimationFrame(rafId)
+    }
+  }
+  cardElements.clear()
+  activeSlug.value = null
+})
+
 </script>
 
 <template>
@@ -22,16 +151,31 @@ const entries = computed(() => props.experience.entries ?? [])
         v-for="entry in entries"
         :key="entry.slug"
         :id="`experience-${entry.slug}`"
-        class="flex flex-col gap-6"
-        hoverable
+        :ref="registerCard(entry.slug)"
+        class="group relative flex flex-col gap-6 overflow-hidden border border-sage-200/70 bg-white transition-shadow duration-300 ease-out shadow-[0_18px_44px_-30px_rgba(28,40,31,0.35)]"
+        :class="isEntryVisible(entry.slug)
+          ? 'shadow-[0_38px_120px_-32px_rgba(18,45,32,0.92),0_28px_72px_-30px_rgba(20,118,82,0.78),0_0_48px_-8px_rgba(40,210,150,0.42),inset_0_0_0_2px_rgba(34,196,138,0.85)]'
+          : ''
+        "
+        :style="isEntryVisible(entry.slug) ? activeHighlightStyle : inactiveHighlightStyle"
       >
-        <header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <span
+          class="pointer-events-none absolute inset-[-6%] -z-10 rounded-[inherit] transition-opacity duration-300 ease-out"
+          :class="isEntryVisible(entry.slug) ? 'opacity-95' : 'opacity-0'"
+          :style="glowOverlayStyle"
+        ></span>
+        <header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between transition-colors duration-500">
           <div class="space-y-1.5">
-            <h3 class="font-display text-xl font-semibold text-sage-700">{{ entry.role }}</h3>
-            <p class="text-sm font-semibold text-sage-600">{{ entry.organization }}</p>
+            <h3
+              class="flex items-center font-display text-xl font-semibold text-sage-600"
+              :class="isEntryVisible(entry.slug) ? 'text-sage-900' : ''"
+            >
+              <span>{{ entry.role }}</span>
+            </h3>
+            <p class="text-sm font-semibold transition-colors duration-500" :class="isEntryVisible(entry.slug) ? 'text-sage-600' : 'text-sage-500'">{{ entry.organization }}</p>
             <p v-if="entry.location" class="text-sm text-sage-500">{{ entry.location }}</p>
           </div>
-          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-500/90">
+          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-500/90 transition-colors duration-500" :class="isEntryVisible(entry.slug) ? 'text-sage-600' : ''">
             {{ entry.period }}
           </p>
         </header>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Shadow Focus Moodboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f4f7f5;
+      color: #1d2a24;
+    }
+
+    body {
+      margin: 0;
+      padding: 48px 32px 96px;
+      display: grid;
+      gap: 48px;
+      line-height: 1.55;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .grid {
+      display: grid;
+      gap: 28px;
+    }
+
+    .swatch-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      padding: 20px;
+      border-radius: 18px;
+      background: #ffffff;
+      display: grid;
+      gap: 10px;
+      min-height: 140px;
+      align-content: center;
+      transition: box-shadow 180ms ease;
+    }
+
+    .tag {
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #4f6b60;
+    }
+
+    .caption {
+      font-size: 0.95rem;
+      color: #2f4439;
+    }
+
+    /* USWDS depth ladder */
+    .shadow-1 {
+      box-shadow: 0 1px 2px rgba(15, 36, 30, 0.12);
+    }
+
+    .shadow-2 {
+      box-shadow: 0 1px 2px rgba(15, 36, 30, 0.14), 0 2px 4px rgba(15, 36, 30, 0.12);
+    }
+
+    .shadow-3 {
+      box-shadow: 0 2px 4px rgba(15, 36, 30, 0.14), 0 4px 6px rgba(15, 36, 30, 0.12);
+    }
+
+    .shadow-4 {
+      box-shadow: 0 3px 6px rgba(15, 36, 30, 0.16), 0 8px 12px rgba(15, 36, 30, 0.12);
+    }
+
+    .shadow-5 {
+      box-shadow: 0 6px 12px rgba(15, 36, 30, 0.20), 0 16px 28px rgba(15, 36, 30, 0.16);
+    }
+
+    /* Dual-tone glow inspired by Soueidan */
+    .dual-shadow {
+      position: relative;
+      background: linear-gradient(145deg, #103a2f, #0c2d24);
+      color: #e9f6f0;
+      box-shadow:
+        0 0 0 2px rgba(12, 79, 60, 0.18),
+        0 12px 26px rgba(11, 108, 80, 0.35),
+        0 0 18px 12px rgba(123, 231, 184, 0.08);
+    }
+
+    .dual-shadow::after {
+      content: "Focus-visible";
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: rgba(233, 246, 240, 0.72);
+    }
+
+    /* Accessible outline fallback */
+    .outline-shadow {
+      box-shadow: 0 0 0 4px rgba(28, 185, 129, 0.85), 0 12px 22px rgba(16, 58, 47, 0.25);
+      outline: 3px solid rgba(255, 255, 255, 0.65);
+      outline-offset: -5px;
+    }
+
+    /* Material minimal layered depth */
+    .material-shadow {
+      box-shadow:
+        0 12px 24px rgba(9, 52, 40, 0.28),
+        0 3px 8px rgba(123, 231, 184, 0.32);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.85rem;
+      color: #365244;
+    }
+
+    .legend span {
+      background: rgba(12, 107, 79, 0.12);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        background: #0e1a15;
+        color: #f4fff8;
+      }
+      body {
+        color: #d6f1e5;
+      }
+      .card {
+        background: #13241d;
+      }
+      .caption {
+        color: #c7e3d7;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="grid">
+    <h1>Shadow-Only Focus Treatments</h1>
+    <p class="caption">Reusable shadow recipes that keep focus states legible without borders, animation, or scaling. Use the color legend to track palette consistency with the existing sage theme.</p>
+    <div class="legend">
+      <span>#0F241E — base shadow tone</span>
+      <span>#0B6C50 — primary tint</span>
+      <span>#7BE7B8 — spectral glow</span>
+    </div>
+  </header>
+
+  <section class="grid">
+    <div class="tag">USWDS depth ladder</div>
+    <p class="caption">Five-step elevation ladder derived from USWDS tokens. Map shadow-3 to resting cards and shadow-5 to the IntersectionObserver target so only one card reads as "active" at a time.</p>
+    <div class="swatch-row">
+      <div class="card shadow-1">
+        <strong>Shadow 1</strong>
+        <span>0 1px 2px @ 12%</span>
+      </div>
+      <div class="card shadow-2">
+        <strong>Shadow 2</strong>
+        <span>Adds 0 2px 4px @ 12%</span>
+      </div>
+      <div class="card shadow-3">
+        <strong>Shadow 3</strong>
+        <span>Pairs 2px + 6px blur</span>
+      </div>
+      <div class="card shadow-4">
+        <strong>Shadow 4</strong>
+        <span>Higher contrast mid layer</span>
+      </div>
+      <div class="card shadow-5">
+        <strong>Shadow 5</strong>
+        <span>Peak focus state</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="tag">Dual-tone focus glow</div>
+    <p class="caption">Gradient inner panel plus a dual shadow stack echoing Sara Soueidan's focus-indicator guidance. Treat this as the "one-at-a-time" card state and ensure the green channel checks at 3:1 against the resting card.</p>
+    <div class="swatch-row">
+      <div class="card dual-shadow">
+        <strong>Glow Focus</strong>
+        <span>box-shadow: 0 0 0 2px rgba(12,79,60,18%)</span>
+        <span>0 12px 26px rgba(11,108,80,35%)</span>
+        <span>0 0 18px 12px rgba(123,231,184,8%)</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="tag">Outline fallback</div>
+    <p class="caption">For reduced-motion users or print styles, pair a soft interior outline with a dense outer shadow—mirroring examples from Access Guide's "visible focus" treatments.</p>
+    <div class="swatch-row">
+      <div class="card outline-shadow">
+        <strong>Accessibility Fallback</strong>
+        <span>Outline-offset keeps layout fixed</span>
+        <span>Shadow carries green cue</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="tag">Material minimal dual stack</div>
+    <p class="caption">Material Minimal suggests combining a cool core shadow with a tinted ambient. Translate that into your theme using sage tints for an alternate active state.</p>
+    <div class="swatch-row">
+      <div class="card material-shadow">
+        <strong>Tinted Elevation</strong>
+        <span>0 12px 24px rgba(9,52,40,28%)</span>
+        <span>+ 0 3px 8px rgba(123,231,184,32%)</span>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

@@ -1,5 +1,5 @@
-export default defineNuxtPlugin((nuxtApp) => {
-  if (process.server) {
+export const setupExternalLinkGuard = (nuxtApp: { hooks: { hook: (name: string, cb: () => void) => void } }) => {
+  if (typeof window === 'undefined') {
     return
   }
 
@@ -18,7 +18,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
 
     if (event.button !== 0) {
-      // Only intercept primary button clicks
       return
     }
 
@@ -45,11 +44,10 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     event.preventDefault()
 
-    const confirmationUrl = `/leaving?to=${encodeURIComponent(anchor.href)}`
-    const newWindow = window.open(confirmationUrl, '_blank', 'noopener=yes')
+    const newWindow = window.open(anchor.href, '_blank', 'noopener=yes')
 
     if (!newWindow) {
-      window.location.href = confirmationUrl
+      window.location.href = anchor.href
     }
   }
 
@@ -60,4 +58,12 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.hooks.hook('app:unmounted', () => {
     document.removeEventListener('click', handleClick, listenerOptions)
   })
+}
+
+export default defineNuxtPlugin((nuxtApp) => {
+  if (process.server) {
+    return
+  }
+
+  setupExternalLinkGuard(nuxtApp)
 })

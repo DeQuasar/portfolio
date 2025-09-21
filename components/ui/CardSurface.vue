@@ -39,7 +39,7 @@ const baseClasses = computed(() => [
   'bg-white shadow-card',
   roundedClasses[props.rounded],
   paddingClasses[props.padding],
-  props.hoverable && 'transition-shadow hover:shadow-lg',
+  props.hoverable && 'transition-shadow',
   props.surfaceClass
 ])
 </script>
