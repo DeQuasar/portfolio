@@ -24,6 +24,7 @@ const CLIPBOARD_RESET_DELAY = TOOLTIP_PROGRESS_DURATION + TOOLTIP_REST_DELAY
 const { state: copyState, copy: copyToClipboard, reset: resetCopyState } = useClipboard(CLIPBOARD_RESET_DELAY)
 const activeEmailHref = ref<string | null>(null)
 const activePanelSource = ref<'hero' | 'nav' | null>(null)
+const lastNavScrollY = ref(typeof window !== 'undefined' ? window.scrollY : 0)
 const emailTriggerEl = ref<InstanceType<typeof AppButton> | null>(null)
 const navEmailTriggerEl = ref<InstanceType<typeof AppButton> | null>(null)
 const emailPanelEl = ref<HTMLElement | null>(null)
@@ -240,6 +241,22 @@ useEventListener(document, 'keydown', (event) => {
     closeEmailPanel()
   }
 })
+
+if (process.client) {
+  lastNavScrollY.value = window.scrollY
+  useEventListener(window, 'scroll', () => {
+    if (!showNavEmailPanel.value) {
+      lastNavScrollY.value = window.scrollY
+      return
+    }
+
+    const current = window.scrollY
+    if (Math.abs(current - lastNavScrollY.value) > 6) {
+      closeEmailPanel()
+    }
+    lastNavScrollY.value = current
+  }, { passive: true })
+}
 </script>
 
 <template>
