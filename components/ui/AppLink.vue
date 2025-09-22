@@ -17,6 +17,10 @@ const props = withDefaults(
   },
 )
 
+const emit = defineEmits<{
+  (event: 'click', payload: MouseEvent): void
+}>()
+
 const baseClasses =
   'inline-flex items-center justify-center gap-2 rounded-full font-semibold cursor-pointer transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/45 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50'
 
@@ -46,7 +50,13 @@ const rel = computed(() => {
 </script>
 
 <template>
-  <a :href="props.href" :target="props.target" :rel="rel" :class="classes">
+  <a
+    :href="props.href"
+    :target="props.target"
+    :rel="rel"
+    :class="classes"
+    @click="emit('click', $event)"
+  >
     <slot />
   </a>
 </template>

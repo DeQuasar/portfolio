@@ -225,6 +225,10 @@ const toggleNavEmailPanel = async (href: string) => {
   }
 }
 
+const handleMailtoLink = () => {
+  closeEmailPanel({ preserveCopyState: true })
+}
+
 onClickOutside(emailPanelEl, () => {
   if (showEmailPanel.value) {
     closeEmailPanel()
@@ -375,6 +379,7 @@ if (process.client) {
                       :href="emailLink.href"
                       variant="minimal"
                       class="justify-between rounded-xl px-4 py-2 text-sm font-semibold text-sage-500 hover:text-sage-600"
+                      @click="handleMailtoLink"
                     >
                       <span>Open in mail app</span>
                       <svg
