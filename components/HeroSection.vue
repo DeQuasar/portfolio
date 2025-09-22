@@ -146,15 +146,14 @@ const tooltipHeading = computed(() => {
 
 const activeTooltipPreset = computed(() => (tooltipVariant.value === 'error' ? tooltipPresets.error : tooltipPresets.success))
 
-const showHeroEmailPanel = computed(() => activePanelSource.value === 'hero')
 const showNavEmailPanel = computed(() => activePanelSource.value === 'nav')
-const showEmailPanel = computed(() => activePanelSource.value !== null)
+const showEmailPanel = computed(() => showNavEmailPanel.value)
 
 watch(copyState, (state) => {
   ;(globalThis as typeof globalThis & { __heroTooltipState__?: typeof state }).__heroTooltipState__ = state
 }, { immediate: true })
 
-watch([tooltipVariant, showHeroEmailPanel], async () => {
+watch(tooltipVariant, async () => {
   await nextTick()
   updateFloating()
 })
@@ -207,14 +206,6 @@ const closeEmailPanel = (options?: { preserveCopyState?: boolean }) => {
       navEmailTriggerEl.value?.focus()
     }
   })
-}
-
-const toggleHeroEmailPanel = async (href: string) => {
-  if (showHeroEmailPanel.value) {
-    closeEmailPanel()
-  } else {
-    await openEmailPanel(href, 'hero')
-  }
 }
 
 const toggleNavEmailPanel = async (href: string) => {
@@ -582,25 +573,65 @@ if (process.client) {
               key="email-inline"
               ref="emailPanelEl"
               role="group"
-              class="flex w-full max-w-sm flex-wrap items-center justify-center gap-3 rounded-2xl border border-sage-200/70 bg-white/92 px-3.5 py-3 shadow-sm"
+              class="flex flex-wrap items-center justify-center gap-2.5"
               aria-label="Email options"
             >
-              <AppButton
-                ref="emailCopyButtonEl"
-                variant="primary"
-                class="relative px-5 py-2 transition-shadow"
-                :class="[
-                  copyState === 'copied' && 'ring-2 ring-sage-200/80 shadow-[0_0_0_4px_rgba(74,108,77,0.12)]',
-                  copyState === 'error' && 'ring-2 ring-rose-300/80 bg-rose-600 hover:bg-rose-600'
-                ]"
-                @click="copyEmail(activeEmailHref)"
-              >
-                <span class="relative flex items-center gap-2">
-                  <span class="grid h-4 w-4 place-items-center">
-                    <Transition name="fade" mode="out-in">
+              <div class="relative">
+                <AppButton
+                  ref="emailCopyButtonEl"
+                  variant="primary"
+                  class="flex items-center gap-2 rounded-full px-5 py-2 text-sm shadow-md transition hover:shadow-lg"
+                  :class="[
+                    copyState === 'copied' && 'ring-2 ring-sage-200/80 shadow-[0_0_0_4px_rgba(74,108,77,0.12)]',
+                    copyState === 'error' && 'ring-2 ring-rose-300/80 bg-rose-600 hover:bg-rose-600'
+                  ]"
+                  @click="copyEmail(activeEmailHref)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="M3 7l8.89 5.56a2 2 0 002.22 0L23 7" />
+                  </svg>
+                  <span>Copy email</span>
+                </AppButton>
+                <Transition name="tooltip-fade">
+                  <div
+                    v-if="tooltipVariant !== 'idle'"
+                    ref="tooltipBubbleEl"
+                    class="absolute z-[80] inline-grid w-52 grid-cols-[auto_1fr] items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-sm font-semibold tracking-[0.01em]"
+                    :style="[
+                      floatingStyles,
+                      {
+                        background: activeTooltipPreset.background,
+                        borderColor: activeTooltipPreset.borderColor,
+                        boxShadow: activeTooltipPreset.bubbleShadow,
+                        color: activeTooltipPreset.textColor
+                      }
+                    ]"
+                    data-testid="email-tooltip"
+                    :data-variant="tooltipVariant === 'error' ? 'error' : 'success'"
+                    role="status"
+                  >
+                    <span
+                      class="grid h-8 w-8 place-items-center rounded-full text-current"
+                      :style="{
+                        background: activeTooltipPreset.iconBackground,
+                        boxShadow: activeTooltipPreset.iconShadow,
+                        color: activeTooltipPreset.textColor
+                      }"
+                      aria-hidden="true"
+                    >
                       <svg
-                        v-if="copyState === 'copied'"
-                        key="copied"
+                        v-if="tooltipVariant === 'success'"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
                         fill="none"
@@ -609,13 +640,11 @@ if (process.client) {
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         class="h-4 w-4"
-                        aria-hidden="true"
                       >
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                       <svg
-                        v-else-if="copyState === 'error'"
-                        key="error"
+                        v-else-if="tooltipVariant === 'error'"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
                         fill="none"
@@ -624,14 +653,12 @@ if (process.client) {
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         class="h-4 w-4"
-                        aria-hidden="true"
                       >
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
                       </svg>
                       <svg
                         v-else
-                        key="idle"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
                         fill="none"
@@ -640,20 +667,33 @@ if (process.client) {
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         class="h-4 w-4"
-                        aria-hidden="true"
                       >
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                        <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                        <rect x="3" y="5" width="18" height="14" rx="2" />
+                        <path d="M3 7l8.89 5.56a2 2 0 002.22 0L23 7" />
                       </svg>
-                    </Transition>
-                  </span>
-                  <span class="font-medium">Copy email</span>
-                </span>
-              </AppButton>
+                    </span>
+                    <span>
+                      {{ tooltipHeading }}
+                    </span>
+                    <span
+                      ref="tooltipArrowEl"
+                      class="pointer-events-none absolute h-3 w-3 rotate-45 border"
+                      :style="[
+                        tooltipArrowStyle,
+                        {
+                          background: activeTooltipPreset.background,
+                          borderColor: activeTooltipPreset.borderColor,
+                          boxShadow: activeTooltipPreset.arrowShadow
+                        }
+                      ]"
+                    ></span>
+                  </div>
+                </Transition>
+              </div>
               <AppLink
-                :href="emailLink?.href"
+                :href="emailLink.href"
                 variant="secondary"
-                class="flex items-center gap-2 rounded-full border-sage-200 bg-white/95 px-5 py-2 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
+                class="flex items-center gap-2 rounded-full border-sage-200/70 bg-white/90 px-5 py-2 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
                 @click="handleMailtoLink"
               >
                 <svg
@@ -674,7 +714,7 @@ if (process.client) {
               </AppLink>
               <AppButton
                 variant="icon"
-                class="h-10 w-10 border-sage-300"
+                class="!h-10 !w-10 border-sage-200/60 bg-white/80 text-sage-600 transition hover:border-sage-400"
                 @click="closeEmailPanel"
                 aria-label="Close email options"
               >
