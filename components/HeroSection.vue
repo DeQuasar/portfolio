@@ -158,6 +158,12 @@ watch([tooltipVariant, showHeroEmailPanel], async () => {
   updateFloating()
 })
 
+watch(showStickyNav, (isSticky) => {
+  if (!isSticky && activePanelSource.value === 'nav') {
+    closeEmailPanel()
+  }
+})
+
 const copyEmail = async (href: string | null) => {
   if (!href) {
     return
