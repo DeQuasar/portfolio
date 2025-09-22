@@ -23,7 +23,9 @@ const CLIPBOARD_RESET_DELAY = TOOLTIP_PROGRESS_DURATION + TOOLTIP_REST_DELAY
 
 const { state: copyState, copy: copyToClipboard, reset: resetCopyState } = useClipboard(CLIPBOARD_RESET_DELAY)
 const activeEmailHref = ref<string | null>(null)
+const activePanelSource = ref<'hero' | 'nav' | null>(null)
 const emailTriggerEl = ref<InstanceType<typeof AppButton> | null>(null)
+const navEmailTriggerEl = ref<InstanceType<typeof AppButton> | null>(null)
 const emailPanelEl = ref<HTMLElement | null>(null)
 const emailCopyButtonEl = ref<InstanceType<typeof AppButton> | null>(null)
 const tooltipPresets = {
@@ -143,13 +145,15 @@ const tooltipHeading = computed(() => {
 
 const activeTooltipPreset = computed(() => (tooltipVariant.value === 'error' ? tooltipPresets.error : tooltipPresets.success))
 
-const showEmailPanel = computed(() => Boolean(activeEmailHref.value))
+const showHeroEmailPanel = computed(() => activePanelSource.value === 'hero')
+const showNavEmailPanel = computed(() => activePanelSource.value === 'nav')
+const showEmailPanel = computed(() => activePanelSource.value !== null)
 
 watch(copyState, (state) => {
   ;(globalThis as typeof globalThis & { __heroTooltipState__?: typeof state }).__heroTooltipState__ = state
 }, { immediate: true })
 
-watch([tooltipVariant, showEmailPanel], async () => {
+watch([tooltipVariant, showHeroEmailPanel], async () => {
   await nextTick()
   updateFloating()
 })
@@ -169,31 +173,48 @@ const copyEmail = async (href: string | null) => {
   closeEmailPanel({ preserveCopyState: true })
 }
 
-const openEmailPanel = async (href: string) => {
+const openEmailPanel = async (href: string, source: 'hero' | 'nav') => {
   resetCopyState()
   activeEmailHref.value = href
+  activePanelSource.value = source
   await nextTick()
-  emailCopyButtonEl.value?.focus()
+  if (source === 'hero') {
+    emailCopyButtonEl.value?.focus()
+  }
 }
 
 const closeEmailPanel = (options?: { preserveCopyState?: boolean }) => {
   if (!showEmailPanel.value) {
     return
   }
+  const previousSource = activePanelSource.value
   activeEmailHref.value = null
+  activePanelSource.value = null
   if (!options?.preserveCopyState) {
     resetCopyState()
   }
   nextTick(() => {
-    emailTriggerEl.value?.focus()
+    if (previousSource === 'hero') {
+      emailTriggerEl.value?.focus()
+    } else if (previousSource === 'nav') {
+      navEmailTriggerEl.value?.focus()
+    }
   })
 }
 
-const toggleEmailPanel = async (href: string) => {
-  if (activeEmailHref.value) {
+const toggleHeroEmailPanel = async (href: string) => {
+  if (showHeroEmailPanel.value) {
     closeEmailPanel()
   } else {
-    await openEmailPanel(href)
+    await openEmailPanel(href, 'hero')
+  }
+}
+
+const toggleNavEmailPanel = async (href: string) => {
+  if (showNavEmailPanel.value) {
+    closeEmailPanel()
+  } else {
+    await openEmailPanel(href, 'nav')
   }
 }
 
@@ -254,10 +275,11 @@ useEventListener(document, 'keydown', (event) => {
             <div class="flex items-center gap-1.5 sm:gap-2">
               <div v-if="emailLink" class="relative inline-flex">
                 <AppButton
+                  ref="navEmailTriggerEl"
                   variant="icon"
                   class="!h-10 !w-10 border-sage-200/70 bg-white text-sage-600 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-sage-400 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 sm:!h-11 sm:!w-11"
                   :aria-label="'Toggle email options'"
-                  @click="toggleEmailPanel(emailLink.href)"
+                  @click="toggleNavEmailPanel(emailLink.href)"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -277,7 +299,7 @@ useEventListener(document, 'keydown', (event) => {
 
                 <Transition name="fade">
                   <div
-                    v-if="showEmailPanel && activeEmailHref"
+                    v-if="showNavEmailPanel && activeEmailHref"
                     ref="emailPanelEl"
                     class="absolute right-0 top-[calc(100%+0.75rem)] z-[110] flex w-60 flex-col gap-2 rounded-2xl border border-sage-200/80 bg-white/96 p-3 shadow-xl backdrop-blur"
                     role="group"
@@ -528,7 +550,7 @@ useEventListener(document, 'keydown', (event) => {
           <p id="hero-socials-label" class="sr-only">Primary social links</p>
           <transition name="fade" mode="out-in">
             <div
-              v-if="showEmailPanel && activeEmailHref"
+              v-if="showHeroEmailPanel && activeEmailHref"
               key="email-inline"
               ref="emailPanelEl"
               role="group"
@@ -635,7 +657,7 @@ useEventListener(document, 'keydown', (event) => {
                   variant="icon"
                   class="group"
                   :aria-label="'View email options'"
-                  @click="toggleEmailPanel(emailLink.href)"
+                  @click="toggleHeroEmailPanel(emailLink.href)"
                 >
                   <span class="sr-only">{{ emailLink.label }}</span>
                   <svg
