@@ -252,8 +252,106 @@ useEventListener(document, 'keydown', (event) => {
               </span>
             </AppLink>
             <div class="flex items-center gap-1.5 sm:gap-2">
+              <div v-if="emailLink" class="relative inline-flex">
+                <AppButton
+                  variant="icon"
+                  class="!h-10 !w-10 border-sage-200/70 bg-white text-sage-600 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-sage-400 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 sm:!h-11 sm:!w-11"
+                  :aria-label="'Toggle email options'"
+                  @click="toggleEmailPanel(emailLink.href)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
+                  </svg>
+                </AppButton>
+
+                <Transition name="fade">
+                  <div
+                    v-if="showEmailPanel && activeEmailHref"
+                    ref="emailPanelEl"
+                    class="absolute right-0 top-[calc(100%+0.75rem)] z-[110] flex w-60 flex-col gap-2 rounded-2xl border border-sage-200/80 bg-white/96 p-3 shadow-xl backdrop-blur"
+                    role="group"
+                    aria-label="Email options"
+                  >
+                    <AppButton
+                      ref="emailCopyButtonEl"
+                      variant="secondary"
+                      class="justify-between rounded-xl border-sage-200 bg-white/92 px-4 py-2.5 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
+                      :class="copyState === 'copied' && 'border-sage-400 text-sage-700 shadow-[0_0_24px_-12px_rgba(74,108,77,0.45)]'"
+                      @click="copyEmail(activeEmailHref)"
+                    >
+                      <span>Copy email address</span>
+                      <Transition name="fade" mode="out-in">
+                        <svg
+                          v-if="copyState === 'copied'"
+                          key="nav-copied"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="h-4 w-4"
+                          aria-hidden="true"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <svg
+                          v-else
+                          key="nav-idle"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="h-4 w-4"
+                          aria-hidden="true"
+                        >
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                        </svg>
+                      </Transition>
+                    </AppButton>
+                    <AppLink
+                      v-if="emailLink"
+                      :href="emailLink.href"
+                      variant="minimal"
+                      class="justify-between rounded-xl px-4 py-2 text-sm font-semibold text-sage-500 hover:text-sage-600"
+                    >
+                      <span>Open in mail app</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="h-4 w-4"
+                        aria-hidden="true"
+                      >
+                        <path d="M7 17L17 7" />
+                        <polyline points="7 7 17 7 17 17" />
+                      </svg>
+                    </AppLink>
+                  </div>
+                </Transition>
+              </div>
               <AppLink
-                v-for="link in socials"
+                v-for="link in otherSocials"
                 :key="link.href"
                 :href="link.href"
                 :aria-label="link.label"
@@ -434,7 +532,7 @@ useEventListener(document, 'keydown', (event) => {
               key="email-inline"
               ref="emailPanelEl"
               role="group"
-              class="flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-sage-200/70 bg-white/92 px-3.5 py-3 shadow-sm"
+              class="flex w-full max-w-sm flex-wrap items-center justify-center gap-3 rounded-2xl border border-sage-200/70 bg-white/92 px-3.5 py-3 shadow-sm"
               aria-label="Email options"
             >
               <AppButton
@@ -560,7 +658,7 @@ useEventListener(document, 'keydown', (event) => {
                   <div
                     v-if="tooltipVariant !== 'idle'"
                     ref="tooltipBubbleEl"
-                    class="absolute z-[80] inline-grid w-48 grid-cols-[auto_1fr] items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-sm font-semibold tracking-[0.01em]"
+                    class="absolute z-[80] inline-grid w-52 grid-cols-[auto_1fr] items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-sm font-semibold tracking-[0.01em]"
                     :style="[
                       floatingStyles,
                       {
@@ -583,10 +681,50 @@ useEventListener(document, 'keydown', (event) => {
                       }"
                       aria-hidden="true"
                     >
-                      <component :is="activeTooltipPreset.icon" class="h-4 w-4" />
+                      <svg
+                        v-if="tooltipVariant === 'success'"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="h-4 w-4"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <svg
+                        v-else-if="tooltipVariant === 'error'"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="h-4 w-4"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                      <svg
+                        v-else
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="h-4 w-4"
+                      >
+                        <rect x="3" y="5" width="18" height="14" rx="2" />
+                        <path d="M3 7l8.89 5.56a2 2 0 002.22 0L23 7" />
+                      </svg>
                     </span>
                     <span>
-                      {{ activeTooltipPreset.label }}
+                      {{ tooltipHeading }}
                     </span>
                     <span
                       ref="tooltipArrowEl"
