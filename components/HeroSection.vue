@@ -74,6 +74,16 @@ const heroTextureSvg = encodeURIComponent(`
   </svg>
 `)
 
+const heroNoiseSvg = encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+    <filter id="n" x="0" y="0">
+      <feTurbulence type="fractalNoise" baseFrequency="1.28" numOctaves="3" stitchTiles="stitch" />
+    </filter>
+    <rect width="120" height="120" fill="#2F4632" opacity="0" />
+    <rect width="120" height="120" filter="url(#n)" opacity="0.42" />
+  </svg>
+`)
+
 const heroBackdropStyle = computed(() => ({
   backgroundColor: '#18291f'
 }))
@@ -88,6 +98,12 @@ const heroTextureOverlayStyle = computed(() => ({
   backgroundSize: '160% 160%, 140% 140%, 118% 118%, 820px 820px',
   backgroundPosition: '12% 120px, 80% calc(100% + 140px), center, 52% 180px',
   backgroundRepeat: 'no-repeat, no-repeat, no-repeat, no-repeat'
+}))
+
+const heroNoiseOverlayStyle = computed(() => ({
+  backgroundImage: `url("data:image/svg+xml,${heroNoiseSvg}")`,
+  backgroundSize: '280px',
+  backgroundPosition: 'center'
 }))
 
 const referenceEl = computed(() => emailTriggerEl.value?.el ?? null)
@@ -307,7 +323,12 @@ useEventListener(document, 'keydown', (event) => {
   >
     <span
       :style="heroTextureOverlayStyle"
-      class="pointer-events-none absolute inset-0 -z-10 opacity-90"
+      class="pointer-events-none absolute inset-0 -z-10 opacity-80 sm:opacity-90"
+      aria-hidden="true"
+    ></span>
+    <span
+      :style="heroNoiseOverlayStyle"
+      class="pointer-events-none absolute inset-0 -z-10 opacity-[0.08] mix-blend-soft-light"
       aria-hidden="true"
     ></span>
     <span
@@ -320,11 +341,19 @@ useEventListener(document, 'keydown', (event) => {
       aria-hidden="true"
     ></span>
     <span
-      class="pointer-events-none absolute -left-[240px] -top-[260px] -z-10 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(106,145,108,0.49)_0%,rgba(106,145,108,0)_72%)] opacity-80 blur-[44px]"
+      class="pointer-events-none absolute -left-[240px] -top-[260px] -z-10 hidden h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(106,145,108,0.49)_0%,rgba(106,145,108,0)_72%)] opacity-80 blur-[44px] sm:block"
       aria-hidden="true"
     ></span>
     <span
-      class="pointer-events-none absolute -right-[280px] -bottom-[280px] -z-10 h-[560px] w-[560px] rounded-full bg-[radial-gradient(circle,rgba(63,91,67,0.56)_0%,rgba(63,91,67,0)_74%)] opacity-85 blur-[52px]"
+      class="pointer-events-none absolute -right-[280px] -bottom-[280px] -z-10 hidden h-[560px] w-[560px] rounded-full bg-[radial-gradient(circle,rgba(63,91,67,0.56)_0%,rgba(63,91,67,0)_74%)] opacity-85 blur-[52px] sm:block"
+      aria-hidden="true"
+    ></span>
+    <span
+      class="pointer-events-none absolute -left-16 top-[32%] h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(104,150,112,0.48)_0%,rgba(104,150,112,0)_72%)] opacity-75 blur-[46px] sm:hidden"
+      aria-hidden="true"
+    ></span>
+    <span
+      class="pointer-events-none absolute bottom-[-160px] right-[-80px] h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(63,91,67,0.5)_0%,rgba(63,91,67,0)_74%)] opacity-80 blur-[48px] sm:hidden"
       aria-hidden="true"
     ></span>
     <span
@@ -336,7 +365,7 @@ useEventListener(document, 'keydown', (event) => {
       aria-hidden="true"
     ></span>
     <div
-      class="relative z-10 w-full max-w-4xl rounded-[1.9rem] border border-white/65 bg-white/96 px-6 py-10 shadow-[0_42px_110px_-58px_rgba(17,31,22,0.7)] backdrop-blur-md sm:px-10"
+      class="relative z-10 w-full max-w-4xl rounded-[1.9rem] border border-white/75 bg-white/98 px-6 py-10 shadow-[0_48px_120px_-62px_rgba(17,31,22,0.72)] backdrop-blur-lg sm:px-10"
     >
       <span
         class="pointer-events-none absolute -right-20 -top-24 -z-10 h-56 w-56 rounded-full bg-[radial-gradient(circle,_rgba(108,180,138,0.45)_0%,_rgba(108,180,138,0)_68%)]"
@@ -356,7 +385,7 @@ useEventListener(document, 'keydown', (event) => {
       ></span>
 
       <div class="relative flex flex-col items-center gap-8 text-center">
-        <h1 class="font-display text-[clamp(2.2rem,4.3vw,3.3rem)] font-semibold leading-[1.08] text-sage-800">
+        <h1 class="font-display text-[clamp(2.2rem,4.3vw,3.3rem)] font-semibold leading-[1.08] text-sage-900">
           {{ props.hero.name }}
         </h1>
         <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sage-500/90">
@@ -370,12 +399,12 @@ useEventListener(document, 'keydown', (event) => {
           <AppLink
             :href="props.hero.primaryCta.href"
             variant="cta"
-            class="group relative overflow-hidden"
+            class="group relative overflow-hidden rounded-full border border-sage-200/80 bg-gradient-to-r from-sage-500/90 via-sage-500/80 to-sage-500/90 px-6 py-2 text-sm font-semibold text-white shadow-[0_18px_34px_-18px_rgba(46,79,51,0.65)] transition duration-200"
             aria-label="Download résumé"
           >
-            <span class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.34),transparent_60%)] opacity-80 transition-opacity duration-200 group-hover:opacity-100"></span>
+            <span class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.4),transparent_62%)] opacity-75 transition-opacity duration-200 group-hover:opacity-95"></span>
             <span class="relative flex items-center gap-2.5">
-              <span class="grid h-7 w-7 place-items-center rounded-full bg-white/28 text-white shadow-inner transition duration-200 group-hover:bg-white/36">
+              <span class="grid h-7 w-7 place-items-center rounded-full bg-white/24 text-white shadow-inner transition duration-200 group-hover:bg-white/32">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -392,12 +421,13 @@ useEventListener(document, 'keydown', (event) => {
                   <path d="M5 19h14" />
                 </svg>
               </span>
-              <span class="text-sm">{{ props.hero.primaryCta.label }}</span>
+              <span class="text-sm tracking-[0.16em] uppercase">{{ props.hero.primaryCta.label }}</span>
             </span>
           </AppLink>
         </div>
 
         <div v-if="socials.length" class="w-full max-w-lg">
+          <p id="hero-socials-label" class="sr-only">Primary social links</p>
           <transition name="fade" mode="out-in">
             <div
               v-if="showEmailPanel && activeEmailHref"
@@ -497,9 +527,11 @@ useEventListener(document, 'keydown', (event) => {
             <div
               v-else
               key="social-links"
-              class="flex flex-wrap items-center justify-center gap-5"
+              class="flex flex-wrap items-center justify-center gap-4"
+              role="list"
+              aria-labelledby="hero-socials-label"
             >
-              <div v-if="emailLink" :key="emailLink.href" class="relative inline-flex">
+              <div v-if="emailLink" :key="emailLink.href" class="relative inline-flex" role="listitem">
                 <AppButton
                   ref="emailTriggerEl"
                   variant="icon"
@@ -578,7 +610,8 @@ useEventListener(document, 'keydown', (event) => {
                 :href="link.href"
                 :aria-label="link.label"
                 variant="icon"
-                class="!h-12 !w-12 border-sage-200/70 bg-white text-sage-600 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-sage-400 sm:!h-12 sm:!w-12"
+                role="listitem"
+                class="!h-12 !w-12 border-sage-200/70 bg-white text-sage-600 opacity-90 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:opacity-100 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:opacity-100 sm:!h-12 sm:!w-12"
               >
                 <span class="sr-only">{{ link.label }}</span>
                 <svg
