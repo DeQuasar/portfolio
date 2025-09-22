@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import CardSurface from '~/components/ui/CardSurface.vue'
 import SectionHeader from '~/components/ui/SectionHeader.vue'
 import type { ExperienceContent } from '~/types/content'
@@ -12,7 +12,7 @@ const props = defineProps<{
 
 const entries = computed(() => props.experience.entries ?? [])
 
-const activeSlug = ref<string | null>(null)
+const activeSlug = ref<string | null>(entries.value[0]?.slug ?? null)
 const cardElements = new Map<string, HTMLElement>()
 let rafId: number | null = null
 
@@ -111,12 +111,18 @@ const handleViewportChange = () => {
   scheduleCompute()
 }
 
-const isEntryVisible = (slug: string) => {
-  if (typeof window === 'undefined') {
-    return true
+const isEntryVisible = (slug: string) => activeSlug.value === slug
+
+watch(entries, (nextEntries) => {
+  if (!nextEntries.length) {
+    activeSlug.value = null
+    return
   }
-  return activeSlug.value === slug
-}
+
+  if (!nextEntries.some((entry) => entry.slug === activeSlug.value)) {
+    activeSlug.value = nextEntries[0]?.slug ?? null
+  }
+}, { immediate: true })
 
 onMounted(() => {
   if (typeof window === 'undefined') {

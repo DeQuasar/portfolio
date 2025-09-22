@@ -5,8 +5,7 @@ services:
     working_dir: /workspace
     volumes:
       - .:/workspace:delegated
-    tmpfs:
-      - /workspace/node_modules:uid=${PLAYWRIGHT_UID:-1000},gid=${PLAYWRIGHT_GID:-1000},mode=1777
+      - ./.playwright/node_modules:/workspace/node_modules
     environment:
       NUXT_TELEMETRY_DISABLED: "1"
       PLAYWRIGHT_VERSION: "1.47.0"

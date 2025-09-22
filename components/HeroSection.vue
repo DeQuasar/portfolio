@@ -147,7 +147,8 @@ const tooltipHeading = computed(() => {
 const activeTooltipPreset = computed(() => (tooltipVariant.value === 'error' ? tooltipPresets.error : tooltipPresets.success))
 
 const showNavEmailPanel = computed(() => activePanelSource.value === 'nav')
-const showEmailPanel = computed(() => showNavEmailPanel.value)
+const showHeroEmailPanel = computed(() => activePanelSource.value === 'hero')
+const showEmailPanel = computed(() => activePanelSource.value !== null)
 
 watch(copyState, (state) => {
   ;(globalThis as typeof globalThis & { __heroTooltipState__?: typeof state }).__heroTooltipState__ = state
@@ -159,6 +160,11 @@ watch(tooltipVariant, async () => {
 })
 
 watch(showStickyNav, (isSticky) => {
+  if (isSticky && activePanelSource.value === 'hero') {
+    closeEmailPanel({ returnFocus: false })
+    return
+  }
+
   if (!isSticky && activePanelSource.value === 'nav') {
     closeEmailPanel()
   }
@@ -189,7 +195,7 @@ const openEmailPanel = async (href: string, source: 'hero' | 'nav') => {
   }
 }
 
-const closeEmailPanel = (options?: { preserveCopyState?: boolean }) => {
+const closeEmailPanel = (options?: { preserveCopyState?: boolean, returnFocus?: boolean }) => {
   if (!showEmailPanel.value) {
     return
   }
@@ -199,13 +205,35 @@ const closeEmailPanel = (options?: { preserveCopyState?: boolean }) => {
   if (!options?.preserveCopyState) {
     resetCopyState()
   }
+  const shouldReturnFocus = options?.returnFocus ?? true
+  const restoreScroll = process.client && shouldReturnFocus
+    ? (() => {
+        const { scrollX, scrollY } = window
+        return () => {
+          window.scrollTo({ left: scrollX, top: scrollY })
+        }
+      })()
+    : null
+
   nextTick(() => {
-    if (previousSource === 'hero') {
-      emailTriggerEl.value?.focus()
-    } else if (previousSource === 'nav') {
-      navEmailTriggerEl.value?.focus()
+    if (!shouldReturnFocus) {
+      return
     }
+    if (previousSource === 'hero') {
+      emailTriggerEl.value?.focus({ preventScroll: true })
+    } else if (previousSource === 'nav') {
+      navEmailTriggerEl.value?.focus({ preventScroll: true })
+    }
+    restoreScroll?.()
   })
+}
+
+const toggleHeroEmailPanel = async (href: string) => {
+  if (showHeroEmailPanel.value) {
+    closeEmailPanel()
+  } else {
+    await openEmailPanel(href, 'hero')
+  }
 }
 
 const toggleNavEmailPanel = async (href: string) => {
@@ -565,181 +593,18 @@ if (process.client) {
           </AppLink>
         </div>
 
-        <div v-if="socials.length" class="w-full max-w-lg">
+        <div
+          v-if="socials.length"
+          class="w-full max-w-lg"
+        >
           <p id="hero-socials-label" class="sr-only">Primary social links</p>
-          <transition name="fade" mode="out-in">
+          <div class="relative min-h-[4.5rem]" data-testid="hero-socials-root">
             <div
-              v-if="showHeroEmailPanel && activeEmailHref"
-              key="email-inline"
-              ref="emailPanelEl"
-              role="group"
-              class="flex flex-wrap items-center justify-center gap-2.5"
-              aria-label="Email options"
-            >
-              <div class="relative">
-                <AppButton
-                  ref="emailCopyButtonEl"
-                  variant="primary"
-                  class="flex items-center gap-2 rounded-full px-5 py-2 text-sm shadow-md transition hover:shadow-lg"
-                  :class="[
-                    copyState === 'copied' && 'ring-2 ring-sage-200/80 shadow-[0_0_0_4px_rgba(74,108,77,0.12)]',
-                    copyState === 'error' && 'ring-2 ring-rose-300/80 bg-rose-600 hover:bg-rose-600'
-                  ]"
-                  @click="copyEmail(activeEmailHref)"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="h-4 w-4"
-                    aria-hidden="true"
-                  >
-                    <rect x="3" y="5" width="18" height="14" rx="2" />
-                    <path d="M3 7l8.89 5.56a2 2 0 002.22 0L23 7" />
-                  </svg>
-                  <span>Copy email</span>
-                </AppButton>
-                <Transition name="tooltip-fade">
-                  <div
-                    v-if="tooltipVariant !== 'idle'"
-                    ref="tooltipBubbleEl"
-                    class="absolute z-[80] inline-grid w-52 grid-cols-[auto_1fr] items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-sm font-semibold tracking-[0.01em]"
-                    :style="[
-                      floatingStyles,
-                      {
-                        background: activeTooltipPreset.background,
-                        borderColor: activeTooltipPreset.borderColor,
-                        boxShadow: activeTooltipPreset.bubbleShadow,
-                        color: activeTooltipPreset.textColor
-                      }
-                    ]"
-                    data-testid="email-tooltip"
-                    :data-variant="tooltipVariant === 'error' ? 'error' : 'success'"
-                    role="status"
-                  >
-                    <span
-                      class="grid h-8 w-8 place-items-center rounded-full text-current"
-                      :style="{
-                        background: activeTooltipPreset.iconBackground,
-                        boxShadow: activeTooltipPreset.iconShadow,
-                        color: activeTooltipPreset.textColor
-                      }"
-                      aria-hidden="true"
-                    >
-                      <svg
-                        v-if="tooltipVariant === 'success'"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="h-4 w-4"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      <svg
-                        v-else-if="tooltipVariant === 'error'"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="h-4 w-4"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                      <svg
-                        v-else
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="h-4 w-4"
-                      >
-                        <rect x="3" y="5" width="18" height="14" rx="2" />
-                        <path d="M3 7l8.89 5.56a2 2 0 002.22 0L23 7" />
-                      </svg>
-                    </span>
-                    <span>
-                      {{ tooltipHeading }}
-                    </span>
-                    <span
-                      ref="tooltipArrowEl"
-                      class="pointer-events-none absolute h-3 w-3 rotate-45 border"
-                      :style="[
-                        tooltipArrowStyle,
-                        {
-                          background: activeTooltipPreset.background,
-                          borderColor: activeTooltipPreset.borderColor,
-                          boxShadow: activeTooltipPreset.arrowShadow
-                        }
-                      ]"
-                    ></span>
-                  </div>
-                </Transition>
-              </div>
-              <AppLink
-                :href="emailLink.href"
-                variant="secondary"
-                class="flex items-center gap-2 rounded-full border-sage-200/70 bg-white/90 px-5 py-2 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
-                @click="handleMailtoLink"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="h-4 w-4"
-                  aria-hidden="true"
-                >
-                  <path d="M7 17L17 7" />
-                  <polyline points="7 7 17 7 17 17" />
-                </svg>
-                <span>Open mail app</span>
-              </AppLink>
-              <AppButton
-                variant="icon"
-                class="!h-10 !w-10 border-sage-200/60 bg-white/80 text-sage-600 transition hover:border-sage-400"
-                @click="closeEmailPanel"
-                aria-label="Close email options"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="h-4 w-4"
-                  aria-hidden="true"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </AppButton>
-            </div>
-            <div
-              v-else
-              key="social-links"
-              class="flex flex-wrap items-center justify-center gap-4"
+              class="flex min-h-[4.5rem] flex-wrap items-center justify-center gap-4 transition-opacity duration-200"
               role="list"
-              aria-labelledby="hero-socials-label"
+              :aria-labelledby="showHeroEmailPanel && activeEmailHref ? undefined : 'hero-socials-label'"
+              :aria-hidden="showHeroEmailPanel && activeEmailHref ? 'true' : 'false'"
+              :class="showHeroEmailPanel && activeEmailHref ? 'pointer-events-none opacity-0' : 'opacity-100'"
             >
               <div v-if="emailLink" :key="emailLink.href" class="relative inline-flex" role="listitem">
                 <AppButton
@@ -877,42 +742,130 @@ if (process.client) {
                 >
                   <path
                     d="M9 19c-4 1.5-4-2-6-2m12 4v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0018 3.77 5.07 5.07 0 0017.91 1S16.73.65 14 2.48a13.38 13.38 0 00-5 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 3.77a5.44 5.44 0 00-1.5 3.79c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"
-                />
-              </svg>
-              <svg
-                v-else-if="link.label?.toLowerCase().includes('linkedin')"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="h-5 w-5"
-                aria-hidden="true"
-              >
-                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z" />
-                <rect x="2" y="9" width="4" height="12" />
-                <circle cx="4" cy="4" r="2" />
-              </svg>
-              <svg
-                v-else
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="h-5 w-5"
-                aria-hidden="true"
-              >
-                <rect x="2" y="5" width="20" height="14" rx="2" />
-                <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
-              </svg>
-            </AppLink>
+                  />
+                </svg>
+                <svg
+                  v-else-if="link.label?.toLowerCase().includes('linkedin')"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z" />
+                  <rect x="2" y="9" width="4" height="12" />
+                  <circle cx="4" cy="4" r="2" />
+                </svg>
+                <svg
+                  v-else
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
+                </svg>
+              </AppLink>
             </div>
-          </transition>
+
+            <transition name="fade">
+              <div
+                v-if="showHeroEmailPanel && activeEmailHref"
+                key="email-inline"
+                class="pointer-events-auto absolute inset-0 flex min-h-[4.5rem] w-full items-center justify-center"
+                aria-labelledby="hero-socials-label"
+              >
+                <div
+                  ref="emailPanelEl"
+                  role="group"
+                  aria-label="Email options"
+                  class="flex flex-wrap items-center justify-center gap-3"
+                >
+                  <AppButton
+                    ref="emailCopyButtonEl"
+                    variant="primary"
+                    class="flex h-12 items-center gap-2 rounded-full !px-6 !py-0 text-sm shadow-md transition hover:shadow-lg"
+                    :class="[
+                      copyState === 'copied' && 'ring-2 ring-sage-200/80 shadow-[0_0_0_4px_rgba(74,108,77,0.12)]',
+                      copyState === 'error' && 'ring-2 ring-rose-300/80 bg-rose-600 hover:bg-rose-600'
+                    ]"
+                    @click="copyEmail(activeEmailHref)"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="5" width="18" height="14" rx="2" />
+                      <path d="M3 7l8.89 5.56a2 2 0 002.22 0L23 7" />
+                    </svg>
+                    <span>Copy email</span>
+                  </AppButton>
+
+                  <AppLink
+                    :href="emailLink.href"
+                    variant="secondary"
+                    class="flex h-12 items-center gap-2 rounded-full border-sage-200/70 bg-white/90 !px-6 !py-0 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
+                    @click="handleMailtoLink"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <path d="M7 17L17 7" />
+                      <polyline points="7 7 17 7 17 17" />
+                    </svg>
+                    <span>Open mail app</span>
+                  </AppLink>
+
+                  <AppButton
+                    variant="icon"
+                    class="!h-12 !w-12 border-sage-200/60 bg-white/80 text-sage-600 transition hover:border-sage-400"
+                    @click="closeEmailPanel"
+                    aria-label="Close email options"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </AppButton>
+                </div>
+              </div>
+            </transition>
+          </div>
         </div>
 
         </div>

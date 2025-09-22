@@ -36,8 +36,8 @@ const classes = computed(() => [baseClasses, variantClasses[props.variant], prop
 
 const buttonRef = ref<HTMLButtonElement | null>(null)
 
-const focus = () => {
-  buttonRef.value?.focus()
+const focus = (options?: FocusOptions) => {
+  buttonRef.value?.focus(options)
 }
 
 defineExpose({
