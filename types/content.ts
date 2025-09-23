@@ -73,6 +73,20 @@ export interface ContactContent {
   message?: string
 }
 
+export interface ExperienceProjectMedia {
+  type: 'image' | 'icon'
+  src: string
+  alt?: string
+}
+
+export interface ExperienceProjectHighlight {
+  id?: string
+  label?: string
+  problem: string
+  contribution: string
+  impact: string
+}
+
 export interface ExperienceProject {
   title: string
   summary: string
@@ -80,6 +94,8 @@ export interface ExperienceProject {
   contribution: string
   impact: string
   links: Array<{ text: string; url: string }>
+  media?: ExperienceProjectMedia[]
+  highlights?: ExperienceProjectHighlight[]
 }
 
 export interface ExperienceEntry {

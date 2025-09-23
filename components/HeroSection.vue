@@ -10,10 +10,16 @@ import AppLink from '~/components/ui/AppLink.vue'
 
 const props = defineProps<{ hero: HeroContent }>()
 
-const socials = computed(() => props.hero.social ?? [])
+const socialsRaw = computed(() => props.hero.social ?? [])
+const normalizedSocials = computed(() => socialsRaw.value.map((link) => {
+  const iconKey = (link.icon || link.label || '').toLowerCase()
+  const isEmail = iconKey.includes('email') || link.href.startsWith('mailto:')
+  return { ...link, iconKey, isEmail }
+}))
+const socials = computed(() => normalizedSocials.value)
 const description = computed(() => props.hero.subheadline ?? '')
-const emailLink = computed(() => socials.value.find((link) => link.label?.toLowerCase().includes('email')) ?? null)
-const otherSocials = computed(() => socials.value.filter((link) => !link.label?.toLowerCase().includes('email')))
+const emailLink = computed(() => normalizedSocials.value.find((link) => link.isEmail) ?? null)
+const otherSocials = computed(() => normalizedSocials.value.filter((link) => !link.isEmail))
 
 const runtimeConfig = useRuntimeConfig()
 
@@ -429,7 +435,7 @@ if (process.client) {
               >
                 <span class="sr-only">{{ link.label }}</span>
                 <svg
-                  v-if="link.label?.toLowerCase().includes('github')"
+                  v-if="link.iconKey?.includes('github') || link.href.toLowerCase().includes('github')"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
@@ -445,7 +451,7 @@ if (process.client) {
                   />
                 </svg>
                 <svg
-                  v-else-if="link.label?.toLowerCase().includes('linkedin')"
+                  v-else-if="link.iconKey?.includes('linkedin') || link.href.toLowerCase().includes('linkedin')"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
@@ -729,7 +735,7 @@ if (process.client) {
               >
                 <span class="sr-only">{{ link.label }}</span>
                 <svg
-                  v-if="link.label?.toLowerCase().includes('github')"
+                  v-if="link.iconKey?.includes('github') || link.href.toLowerCase().includes('github')"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
@@ -745,7 +751,7 @@ if (process.client) {
                   />
                 </svg>
                 <svg
-                  v-else-if="link.label?.toLowerCase().includes('linkedin')"
+                  v-else-if="link.iconKey?.includes('linkedin') || link.href.toLowerCase().includes('linkedin')"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
