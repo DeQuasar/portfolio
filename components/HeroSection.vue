@@ -605,14 +605,13 @@ if (process.client) {
         >
           <p id="hero-socials-label" class="sr-only">Primary social links</p>
           <div class="relative min-h-[4.5rem]" data-testid="hero-socials-root">
-            <div
+            <ul
               class="flex min-h-[4.5rem] flex-wrap items-center justify-center gap-4 transition-opacity duration-200"
-              role="list"
               :aria-labelledby="showHeroEmailPanel && activeEmailHref ? undefined : 'hero-socials-label'"
               :aria-hidden="showHeroEmailPanel && activeEmailHref ? 'true' : 'false'"
               :class="showHeroEmailPanel && activeEmailHref ? 'pointer-events-none opacity-0' : 'opacity-100'"
             >
-              <div v-if="emailLink" :key="emailLink.href" class="relative inline-flex" role="listitem">
+              <li v-if="emailLink" :key="emailLink.href" class="relative inline-flex">
                 <AppButton
                   ref="emailTriggerEl"
                   variant="icon"
@@ -720,69 +719,71 @@ if (process.client) {
                           boxShadow: activeTooltipPreset.arrowShadow
                         }
                       ]"
-                    ></span>
+                  ></span>
                   </div>
                 </Transition>
-              </div>
-              <AppLink
+              </li>
+              <li
                 v-for="link in otherSocials"
                 :key="link.href"
-                :href="link.href"
-                :aria-label="link.label"
-                variant="icon"
-                role="listitem"
-                class="!h-12 !w-12 border-sage-200/70 bg-white text-sage-600 opacity-90 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:opacity-100 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:opacity-100 sm:!h-12 sm:!w-12"
+                class="inline-flex"
               >
-                <span class="sr-only">{{ link.label }}</span>
-                <svg
-                  v-if="link.iconKey?.includes('github') || link.href.toLowerCase().includes('github')"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="h-5 w-5"
-                  aria-hidden="true"
+                <AppLink
+                  :href="link.href"
+                  :aria-label="link.label"
+                  variant="icon"
+                  class="!h-12 !w-12 border-sage-200/70 bg-white text-sage-600 opacity-90 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:opacity-100 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:opacity-100 sm:!h-12 sm:!w-12"
                 >
-                  <path
-                    d="M9 19c-4 1.5-4-2-6-2m12 4v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0018 3.77 5.07 5.07 0 0017.91 1S16.73.65 14 2.48a13.38 13.38 0 00-5 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 3.77a5.44 5.44 0 00-1.5 3.79c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"
-                  />
-                </svg>
-                <svg
-                  v-else-if="link.iconKey?.includes('linkedin') || link.href.toLowerCase().includes('linkedin')"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="h-5 w-5"
-                  aria-hidden="true"
-                >
-                  <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z" />
-                  <rect x="2" y="9" width="4" height="12" />
-                  <circle cx="4" cy="4" r="2" />
-                </svg>
-                <svg
-                  v-else
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="h-5 w-5"
-                  aria-hidden="true"
-                >
-                  <rect x="2" y="5" width="20" height="14" rx="2" />
-                  <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
-                </svg>
-              </AppLink>
-            </div>
+                  <span class="sr-only">{{ link.label }}</span>
+                  <svg
+                    v-if="link.iconKey?.includes('github') || link.href.toLowerCase().includes('github')"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M9 19c-4 1.5-4-2-6-2m12 4v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0018 3.77 5.07 5.07 0 0017.91 1S16.73.65 14 2.48a13.38 13.38 0 00-5 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 3.77a5.44 5.44 0 00-1.5 3.79c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"
+                  /></svg>
+                  <svg
+                    v-else-if="link.iconKey?.includes('linkedin') || link.href.toLowerCase().includes('linkedin')"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z" />
+                    <rect x="2" y="9" width="4" height="12" />
+                    <circle cx="4" cy="4" r="2" />
+                  </svg>
+                  <svg
+                    v-else
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
+                  </svg>
+                </AppLink>
+              </li>
+            </ul>
 
             <transition name="fade">
               <div
