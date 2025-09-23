@@ -1,1 +1,1 @@
-npm run test:smoke
+pnpm test:smoke
