@@ -22,6 +22,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Clean Nuxt content cache
+        run: rm -rf .data
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
