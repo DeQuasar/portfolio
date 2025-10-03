@@ -12,6 +12,8 @@ node_modules
 package-lock.json
 .playwright
 .playwright-tools
+.serena
+.vitest-artifacts
 
 # Logs
 logs
