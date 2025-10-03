@@ -92,6 +92,11 @@ Check out the [deployment documentation](https://nuxt.com/docs/getting-started/d
 - Tags that end with `-preview` (for example `v1.3.0-preview`) trigger the same pipeline but deploy to the Cloudflare Pages branch named `preview`. Point any preview-only custom domain (for example `preview.anthonyprotano.com`) at that environment in the Pages dashboard once and each subsequent preview tag will refresh it.
 - Preview tags skip the GitHub Release step so that only production releases appear on the Releases page.
 
+### Managing preview access with Terraform
+
+- Terraform configuration under `infra/terraform/cloudflare` manages the Cloudflare Access application and allow/deny policies that guard the preview domain. Import the existing resources (see that folder's README) before running `terraform apply` so Terraform takes ownership.
+- Adjust `preview_allowed_emails` via `tfvars` to extend or shrink the preview allow list; Terraform updates the Access policies while leaving the fallback deny rule intact.
+
 ### Local function testing
 
 Cloudflare's `wrangler pages dev` command can run the static bundle and functions locally:

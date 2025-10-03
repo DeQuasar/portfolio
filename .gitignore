@@ -25,6 +25,11 @@ logs
 .fleet
 .idea
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
 # Local env files
 .env
 .env.*
