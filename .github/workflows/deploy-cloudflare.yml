@@ -50,6 +50,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: ${{ env.CLOUDFLARE_PROJECT_NAME }}
           directory: .output/public
+          branch: main
 
       - name: Publish GitHub release notes
         uses: softprops/action-gh-release@v2
