@@ -76,23 +76,28 @@ Check out the [deployment documentation](https://nuxt.com/docs/getting-started/d
 
 ## Cloudflare Pages deployment
 
-- The site is generated statically with `pnpm build` and deployed to Cloudflare Pages alongside the `/functions/download/resume.ts` handler, which streams `public/resume.pdf` back to the browser without leaving the portfolio.
+- The site is generated statically with `pnpm generate` and deployed to Cloudflare Pages alongside the `/functions/download/resume.ts` handler, which streams `public/resume.pdf` back to the browser without leaving the portfolio.
 - GitHub Actions deploy only when a semver tag is pushed (for example `v1.2.3`) so we avoid burning through Cloudflare's free build quota. The workflow uses the `cloudflare/pages-action` to upload `.output/public` plus the `functions/` directory in one release.
 - Make sure the following repository secrets exist before tagging a release: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (scoped to Pages > Edit), and `CLOUDFLARE_PROJECT_NAME` if the action references it.
 - Typical release flow:
   1. `pnpm test:ci`
-  2. (Optional) `pnpm build` + `wrangler pages dev .output/public --compatibility-date=$(date +%Y-%m-%d)` to smoke-test `/download/resume` locally.
+  2. (Optional) `pnpm generate` + `wrangler pages dev .output/public --compatibility-date=$(date +%Y-%m-%d)` to smoke-test `/download/resume` locally.
   3. Update `CHANGELOG.md` (if needed) and commit.
   4. `git tag vX.Y.Z`
   5. `git push origin vX.Y.Z`
   The tag push runs the pipeline, which deploys to Cloudflare Pages and publishes a GitHub Release with auto-generated notes.
+
+### Preview deployments on a subdomain
+
+- Tags that end with `-preview` (for example `v1.3.0-preview`) trigger the same pipeline but deploy to the Cloudflare Pages branch named `preview`. Point any preview-only custom domain (for example `preview.anthonyprotano.com`) at that environment in the Pages dashboard once and each subsequent preview tag will refresh it.
+- Preview tags skip the GitHub Release step so that only production releases appear on the Releases page.
 
 ### Local function testing
 
 Cloudflare's `wrangler pages dev` command can run the static bundle and functions locally:
 
 ```bash
-pnpm build
+pnpm generate
 wrangler pages dev .output/public --compatibility-date=$(date +%Y-%m-%d)
 ```
 
