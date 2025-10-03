@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*.*.*'
+      - 'v*.*.*-preview'
 
 permissions:
   contents: write
@@ -18,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_PROJECT_NAME: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+      IS_PREVIEW: ${{ contains(github.ref, '-preview') }}
+      CF_DEPLOY_BRANCH: ${{ contains(github.ref, '-preview') && github.ref_name || 'main' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,9 +53,10 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: ${{ env.CLOUDFLARE_PROJECT_NAME }}
           directory: .output/public
-          branch: main
+          branch: ${{ env.CF_DEPLOY_BRANCH }}
 
       - name: Publish GitHub release notes
+        if: ${{ env.IS_PREVIEW != 'true' }}
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
