@@ -81,10 +81,11 @@ Check out the [deployment documentation](https://nuxt.com/docs/getting-started/d
 - Make sure the following repository secrets exist before tagging a release: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (scoped to Pages > Edit), and `CLOUDFLARE_PROJECT_NAME` if the action references it.
 - Typical release flow:
   1. `pnpm test:ci`
-  2. Update `CHANGELOG.md` (if needed) and commit.
-  3. `git tag vX.Y.Z`
-  4. `git push origin vX.Y.Z`
-  The tag push triggers the CI workflow, which builds and publishes the static assets and the download function together.
+  2. (Optional) `pnpm build` + `wrangler pages dev .output/public --compatibility-date=$(date +%Y-%m-%d)` to smoke-test `/download/resume` locally.
+  3. Update `CHANGELOG.md` (if needed) and commit.
+  4. `git tag vX.Y.Z`
+  5. `git push origin vX.Y.Z`
+  The tag push runs the pipeline, which deploys to Cloudflare Pages and publishes a GitHub Release with auto-generated notes.
 
 ### Local function testing
 
