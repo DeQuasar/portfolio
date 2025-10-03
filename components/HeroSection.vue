@@ -4,6 +4,7 @@ import { useFloating, offset, flip, shift, arrow } from '@floating-ui/vue'
 import { autoUpdate } from '@floating-ui/dom'
 import type { HeroContent } from '~/types/content'
 import { useClipboard } from '~/composables/useClipboard'
+import { useResumeDownload, RESUME_DEFAULT_FILENAME } from '~/composables/useResumeDownload'
 import { onClickOutside, useEventListener, useIntersectionObserver } from '@vueuse/core'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppLink from '~/components/ui/AppLink.vue'
@@ -22,12 +23,63 @@ const emailLink = computed(() => normalizedSocials.value.find((link) => link.isE
 const otherSocials = computed(() => normalizedSocials.value.filter((link) => !link.isEmail))
 
 const runtimeConfig = useRuntimeConfig()
+const enableHeroTooltipTrace = Boolean((runtimeConfig.public as { heroTooltipTrace?: boolean }).heroTooltipTrace)
+
+type HeroTooltipTraceEntry = {
+  event: string
+  at: number
+  iso: string
+  payload: Record<string, unknown>
+}
+
+const recordHeroTooltipTrace = (event: string, payload: Record<string, unknown> = {}) => {
+  if (!process.client || !enableHeroTooltipTrace) {
+    return
+  }
+  const now = typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now()
+  const entry: HeroTooltipTraceEntry = {
+    event,
+    at: now,
+    iso: new Date().toISOString(),
+    payload
+  }
+  const target = globalThis as typeof globalThis & { __heroTooltipTrace__?: HeroTooltipTraceEntry[] }
+  const trace = target.__heroTooltipTrace__ ||= []
+  trace.push(entry)
+  if (trace.length > 120) {
+    trace.splice(0, trace.length - 120)
+  }
+  console.info('[hero tooltip trace]', { event, payload })
+}
 
 const TOOLTIP_PROGRESS_DURATION = Number(runtimeConfig.public.tooltipProgressDuration ?? 5000)
 const TOOLTIP_REST_DELAY = Number(runtimeConfig.public.tooltipRestDelay ?? 220)
 const CLIPBOARD_RESET_DELAY = TOOLTIP_PROGRESS_DURATION + TOOLTIP_REST_DELAY
 
 const { state: copyState, copy: copyToClipboard, reset: resetCopyState } = useClipboard(CLIPBOARD_RESET_DELAY)
+
+const {
+  download: downloadResume,
+  isDownloading: resumeIsDownloading,
+  announcement: resumeAnnouncementText,
+  progressPercent: resumeDownloadProgressDisplay
+} = useResumeDownload()
+
+const startResumeDownload = async (event?: MouseEvent | KeyboardEvent) => {
+  event?.preventDefault()
+  event?.stopPropagation()
+
+  const href = props.hero.primaryCta?.href
+  if (!href) {
+    return
+  }
+
+  try {
+    await downloadResume({ href, suggestedFilename: RESUME_DEFAULT_FILENAME })
+  } catch (error) {
+    console.error('Failed to download résumé', error)
+  }
+}
 const activeEmailHref = ref<string | null>(null)
 const activePanelSource = ref<'hero' | 'nav' | null>(null)
 const lastNavScrollY = ref(typeof window !== 'undefined' ? window.scrollY : 0)
@@ -157,6 +209,7 @@ const showHeroEmailPanel = computed(() => activePanelSource.value === 'hero')
 const showEmailPanel = computed(() => activePanelSource.value !== null)
 
 watch(copyState, (state) => {
+  recordHeroTooltipTrace('copy-state', { state })
   ;(globalThis as typeof globalThis & { __heroTooltipState__?: typeof state }).__heroTooltipState__ = state
 }, { immediate: true })
 
@@ -187,11 +240,14 @@ const copyEmail = async (href: string | null) => {
     return
   }
 
-  await copyToClipboard(email)
+  recordHeroTooltipTrace('copy-email:begin', { href, email })
+  const didCopy = await copyToClipboard(email)
+  recordHeroTooltipTrace('copy-email:end', { href, email, didCopy })
   closeEmailPanel({ preserveCopyState: true })
 }
 
 const openEmailPanel = async (href: string, source: 'hero' | 'nav') => {
+  recordHeroTooltipTrace('email-panel:open', { href, source })
   resetCopyState()
   activeEmailHref.value = href
   activePanelSource.value = source
@@ -206,6 +262,7 @@ const closeEmailPanel = (options?: { preserveCopyState?: boolean, returnFocus?: 
     return
   }
   const previousSource = activePanelSource.value
+  recordHeroTooltipTrace('email-panel:close', { previousSource, preserveCopyState: Boolean(options?.preserveCopyState), returnFocus: options?.returnFocus ?? true })
   activeEmailHref.value = null
   activePanelSource.value = null
   if (!options?.preserveCopyState) {
@@ -309,19 +366,55 @@ if (process.client) {
             <AppLink
               :href="props.hero.primaryCta.href"
               variant="cta"
-              class="group relative overflow-hidden px-4 py-1.5 text-[0.65rem] uppercase tracking-[0.18em]"
-              aria-label="Download résumé"
+              :class="[
+                'group relative overflow-hidden px-4 py-1.5 text-[0.65rem] uppercase tracking-[0.18em]',
+                resumeIsDownloading && 'pointer-events-none opacity-75'
+              ]"
+              :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
+              @click="startResumeDownload"
             >
               <span class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.28),transparent_55%)] opacity-70 transition-opacity duration-200 group-hover:opacity-90"></span>
               <span class="relative flex items-center gap-1.5">
                 <span class="grid h-6 w-6 place-items-center rounded-full bg-white/22 text-white shadow-inner">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-[0.95rem] w-[0.95rem]" aria-hidden="true">
+                  <svg
+                    v-if="!resumeIsDownloading"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-[0.95rem] w-[0.95rem]"
+                    aria-hidden="true"
+                  >
                     <path d="M12 4v9" />
                     <polyline points="8 9 12 13 16 9" />
                     <path d="M5 19h14" />
                   </svg>
+                  <svg
+                    v-else
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    class="h-[0.95rem] w-[0.95rem] animate-spin"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" opacity="0.3" />
+                    <path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" />
+                  </svg>
                 </span>
-                <span>Download Résumé</span>
+                <span class="flex items-center gap-1">
+                  <span>{{ props.hero.primaryCta.label }}</span>
+                  <span v-if="resumeDownloadProgressDisplay !== null" class="text-[0.62rem] font-semibold tracking-normal">
+                    {{ resumeDownloadProgressDisplay }}%
+                  </span>
+                </span>
+              </span>
+              <span v-if="resumeAnnouncementText" class="sr-only" role="status" aria-live="polite">
+                {{ resumeAnnouncementText }}
               </span>
             </AppLink>
             <div class="flex items-center gap-1.5 sm:gap-2">
@@ -572,13 +665,18 @@ if (process.client) {
           <AppLink
             :href="props.hero.primaryCta.href"
             variant="cta"
-            class="group relative overflow-hidden rounded-full border border-sage-200/80 bg-gradient-to-r from-sage-500/90 via-sage-500/80 to-sage-500/90 px-6 py-2 text-sm font-semibold text-white shadow-[0_18px_34px_-18px_rgba(46,79,51,0.65)] transition duration-200"
-            aria-label="Download résumé"
+            :class="[
+              'group relative overflow-hidden rounded-full border border-sage-200/80 bg-gradient-to-r from-sage-500/90 via-sage-500/80 to-sage-500/90 px-6 py-2 text-sm font-semibold text-white shadow-[0_18px_34px_-18px_rgba(46,79,51,0.65)] transition duration-200',
+              resumeIsDownloading && 'pointer-events-none brightness-95'
+            ]"
+            :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
+            @click="startResumeDownload"
           >
             <span class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.4),transparent_62%)] opacity-75 transition-opacity duration-200 group-hover:opacity-95"></span>
             <span class="relative flex items-center gap-2.5">
               <span class="grid h-7 w-7 place-items-center rounded-full bg-white/24 text-white shadow-inner transition duration-200 group-hover:bg-white/32">
                 <svg
+                  v-if="!resumeIsDownloading"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
@@ -593,8 +691,30 @@ if (process.client) {
                   <polyline points="8 9 12 13 16 9" />
                   <path d="M5 19h14" />
                 </svg>
+                <svg
+                  v-else
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  class="h-[1rem] w-[1rem] animate-spin"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" opacity="0.28" fill="none" />
+                  <path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" />
+                </svg>
               </span>
-              <span class="text-sm tracking-[0.16em] uppercase">{{ props.hero.primaryCta.label }}</span>
+              <span class="flex items-center gap-1.5 text-sm tracking-[0.16em] uppercase">
+                <span>{{ props.hero.primaryCta.label }}</span>
+                <span v-if="resumeDownloadProgressDisplay !== null" class="text-xs font-semibold tracking-normal">
+                  {{ resumeDownloadProgressDisplay }}%
+                </span>
+              </span>
+            </span>
+            <span v-if="resumeAnnouncementText" class="sr-only" role="status" aria-live="polite">
+              {{ resumeAnnouncementText }}
             </span>
           </AppLink>
         </div>

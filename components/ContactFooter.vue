@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { ContactContent } from '~/types/content'
 import { useClipboard } from '~/composables/useClipboard'
+import { useResumeDownload, RESUME_DEFAULT_FILENAME } from '~/composables/useResumeDownload'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppLink from '~/components/ui/AppLink.vue'
 import SectionHeader from '~/components/ui/SectionHeader.vue'
@@ -11,12 +12,35 @@ const props = defineProps<{ contact: ContactContent }>()
 const emailHref = computed(() => (props.contact.email ? `mailto:${props.contact.email}` : ''))
 const { state: emailCopyState, copy: copyEmailToClipboard } = useClipboard()
 
+const {
+  download: downloadResume,
+  isDownloading: resumeIsDownloading,
+  announcement: resumeAnnouncementText,
+  progressPercent: resumeDownloadProgressDisplay
+} = useResumeDownload()
+
 const copyEmail = async () => {
   if (!props.contact.email) {
     return
   }
 
   await copyEmailToClipboard(props.contact.email)
+}
+
+const startResumeDownload = async (event?: MouseEvent | KeyboardEvent) => {
+  event?.preventDefault()
+  event?.stopPropagation()
+
+  const href = props.contact.resumeUrl
+  if (!href) {
+    return
+  }
+
+  try {
+    await downloadResume({ href, suggestedFilename: RESUME_DEFAULT_FILENAME })
+  } catch (error) {
+    console.error('Failed to download résumé', error)
+  }
 }
 </script>
 
@@ -41,18 +65,56 @@ const copyEmail = async () => {
         <AppLink
           :href="props.contact.resumeUrl"
           variant="cta"
-          class="group relative overflow-hidden text-white shadow-[0_26px_52px_-26px_rgba(14,27,18,0.7)]"
+          :class="[
+            'group relative overflow-hidden text-white shadow-[0_26px_52px_-26px_rgba(14,27,18,0.7)]',
+            resumeIsDownloading && 'pointer-events-none opacity-90'
+          ]"
+          :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
+          @click="startResumeDownload"
         >
           <span class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.35),transparent_55%)] opacity-80 transition-opacity duration-200 group-hover:opacity-95"></span>
           <span class="relative flex items-center gap-2.5">
             <span class="grid h-7 w-7 place-items-center rounded-full bg-white/22 text-white shadow-inner transition duration-200 group-hover:bg-white/32">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="h-[1rem] w-[1rem]" aria-hidden="true">
+              <svg
+                v-if="!resumeIsDownloading"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-[1rem] w-[1rem]"
+                aria-hidden="true"
+              >
                 <path d="M12 4v9" />
                 <polyline points="8 9 12 13 16 9" />
                 <path d="M5 19h14" />
               </svg>
+              <svg
+                v-else
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                class="h-[1rem] w-[1rem] animate-spin"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" opacity="0.28" fill="none" />
+                <path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" />
+              </svg>
             </span>
-            <span class="text-sm">Download Résumé</span>
+            <span class="flex items-center gap-1 text-sm font-semibold uppercase tracking-[0.14em]">
+              <span>Download Résumé</span>
+              <span v-if="resumeDownloadProgressDisplay !== null" class="text-xs tracking-normal">
+                {{ resumeDownloadProgressDisplay }}%
+              </span>
+            </span>
+          </span>
+          <span v-if="resumeAnnouncementText" class="sr-only" role="status" aria-live="polite">
+            {{ resumeAnnouncementText }}
           </span>
         </AppLink>
         <div class="inline-flex items-center gap-2.5">

@@ -28,6 +28,7 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251003.0",
     "@nuxt/test-utils": "^3.19.2",
     "@tailwindcss/postcss": "^4.1.13",
     "@tailwindcss/vite": "^4.1.13",
