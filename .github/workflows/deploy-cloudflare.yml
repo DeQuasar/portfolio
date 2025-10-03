@@ -40,8 +40,8 @@ jobs:
       - name: Run tests
         run: pnpm test:ci
 
-      - name: Build static site
-        run: pnpm build
+      - name: Generate static site
+        run: pnpm generate
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
