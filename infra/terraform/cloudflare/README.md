@@ -21,12 +21,10 @@ The Access application and policies already exist in Cloudflare. Import them bef
 ```bash
 cd infra/terraform/cloudflare
 terraform init
-terraform import cloudflare_zero_trust_access_application.portfolio_preview 6cf53ee0e2e25f55dfd57201263e5d9c/034fe616-da9c-46a2-8b43-a24c70f026f3
-terraform import cloudflare_zero_trust_access_policy.preview_allow 6cf53ee0e2e25f55dfd57201263e5d9c/034fe616-da9c-46a2-8b43-a24c70f026f3/826d4a34-8c87-45a4-b61c-8aa6124fbb70
-terraform import cloudflare_zero_trust_access_policy.preview_deny 6cf53ee0e2e25f55dfd57201263e5d9c/034fe616-da9c-46a2-8b43-a24c70f026f3/5782eb0e-af3a-44e6-9ed3-295a5bd228dd
+terraform import cloudflare_zero_trust_access_application.portfolio_preview accounts/6cf53ee0e2e25f55dfd57201263e5d9c/034fe616-da9c-46a2-8b43-a24c70f026f3
 ```
 
-After importing, run `terraform plan` to confirm Terraform’s view matches what is currently deployed.
+After importing, run `terraform plan` to confirm Terraform’s view matches what is currently deployed. The embedded policies are managed through the Access application definition, so no additional imports are necessary.
 
 ## Updating the allow list
 
