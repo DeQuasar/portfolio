@@ -205,11 +205,6 @@ const tooltipHeading = computed(() => {
 const activeTooltipPreset = computed(() => (tooltipVariant.value === 'error' ? tooltipPresets.error : tooltipPresets.success))
 
 const showNavEmailPanel = computed(() => activePanelSource.value === 'nav')
-const navSafeAreaStyle = computed(() => ({
-  paddingTop: 'calc(env(safe-area-inset-top, 0px) + var(--nav-padding, 0.75rem))',
-  paddingLeft: 'calc(env(safe-area-inset-left, 0px) + var(--nav-horizontal, 1rem))',
-  paddingRight: 'calc(env(safe-area-inset-right, 0px) + var(--nav-horizontal, 1rem))'
-}))
 const showHeroEmailPanel = computed(() => activePanelSource.value === 'hero')
 const showEmailPanel = computed(() => activePanelSource.value !== null)
 
@@ -355,8 +350,7 @@ if (process.client) {
     <Transition name="fade">
       <nav
         v-if="showStickyNav"
-        :style="navSafeAreaStyle"
-        class="fixed inset-x-0 top-0 z-[95] flex justify-center pb-3 sm:pb-4 [--nav-padding:0.75rem] sm:[--nav-padding:1rem] [--nav-horizontal:1rem] sm:[--nav-horizontal:1.5rem]"
+        class="fixed inset-x-0 top-0 z-[95] flex justify-center pt-nav-safe px-nav-safe pb-3 sm:pb-4 [--nav-padding:0.75rem] sm:[--nav-padding:1rem] [--nav-horizontal:1rem] sm:[--nav-horizontal:1.5rem]"
         aria-label="Primary navigation"
       >
         <div
