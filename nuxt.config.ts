@@ -20,5 +20,10 @@ export default defineNuxtConfig({
   ],
   content: {
     highlight: false
+  },
+  nitro: {
+    prerender: {
+      ignore: ['/download/resume']
+    }
   }
 })

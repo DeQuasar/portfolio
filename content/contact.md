@@ -1,5 +1,5 @@
 ---
-resumeUrl: /resume.pdf
+resumeUrl: /download/resume
 email: tonypro999@gmail.com
 github: https://github.com/dequasar
 linkedin: https://www.linkedin.com/in/anthony-protano/

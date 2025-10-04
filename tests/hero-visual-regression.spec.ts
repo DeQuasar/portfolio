@@ -2,11 +2,15 @@ import { describe, it, expect } from 'vitest'
 import { $fetch, setup } from '@nuxt/test-utils'
 import { fileURLToPath } from 'node:url'
 
-await setup({
-  rootDir: fileURLToPath(new URL('../', import.meta.url))
-})
+const shouldRun = process.env.ENABLE_BROWSER_TESTS !== 'false'
 
-describe('hero visual regression', () => {
+if (shouldRun) {
+  await setup({
+    rootDir: fileURLToPath(new URL('../', import.meta.url))
+  })
+}
+
+(shouldRun ? describe : describe.skip)('hero visual regression', () => {
   it('does not reintroduce the thin top highlight seam', async () => {
     const html = await $fetch('/')
 

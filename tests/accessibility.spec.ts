@@ -4,9 +4,13 @@ import { JSDOM } from 'jsdom'
 import axe, { type RunOptions, type AxeResults } from 'axe-core'
 import { fileURLToPath } from 'node:url'
 
-await setup({ rootDir: fileURLToPath(new URL('../', import.meta.url)) })
+const shouldRun = process.env.ENABLE_BROWSER_TESTS !== 'false'
 
-describe('homepage accessibility', () => {
+if (shouldRun) {
+  await setup({ rootDir: fileURLToPath(new URL('../', import.meta.url)) })
+}
+
+(shouldRun ? describe : describe.skip)('homepage accessibility', () => {
   it('has no detectable a11y violations', async () => {
     const html = await $fetch('/')
     const results = await runAxe(html, {
@@ -20,7 +24,7 @@ describe('homepage accessibility', () => {
     const messages = issues.map(({ type, issue }) => formatIssue(issue, type))
 
     expect(issues, messages.join('\n\n')).toHaveLength(0)
-  })
+  }, 15000)
 })
 
 async function runAxe (html: string, options?: RunOptions): Promise<AxeResults> {

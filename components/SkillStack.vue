@@ -208,7 +208,7 @@ const coreDescription = computed(
     <div class="flex flex-col gap-16">
       <div v-if="coreGroups.length" class="flex flex-col gap-5">
         <header class="flex flex-col gap-2">
-          <span class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-500/90">Core Stack</span>
+          <span class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-600">Core Stack</span>
           <p class="text-sm leading-relaxed text-sage-600">{{ coreDescription }}</p>
         </header>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -221,7 +221,7 @@ const coreDescription = computed(
             class="flex h-full flex-col gap-4"
           >
             <header class="space-y-1.5">
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-500/80">Core Focus</p>
+              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-600">Core Focus</p>
               <h3 class="font-display text-[1.3rem] font-semibold text-sage-700">{{ group.title }}</h3>
               <p v-if="group.description" class="text-sm leading-relaxed text-sage-600">
                 {{ group.description }}
@@ -248,7 +248,7 @@ const coreDescription = computed(
 
       <div v-if="supportingCategories.categories.length" class="flex flex-col gap-6">
         <header class="flex flex-col gap-2">
-          <span class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-500/90">Supporting Toolkit</span>
+          <span class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-600">Supporting Toolkit</span>
           <p class="text-sm leading-relaxed text-sage-600">
             Everything that rounds out delivery around the core stack.
           </p>
@@ -263,7 +263,7 @@ const coreDescription = computed(
             class="flex h-full flex-col gap-5 text-left"
           >
             <div class="space-y-2">
-              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-500/80">Category</p>
+              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-600">Category</p>
               <h3 class="font-display text-[1.25rem] font-semibold text-sage-700">{{ category.title }}</h3>
               <p v-if="category.description" class="text-sm leading-relaxed text-sage-600">
                 {{ category.description }}
@@ -286,7 +286,7 @@ const coreDescription = computed(
 
       <div v-if="additionalSkills.length" class="flex flex-col gap-3">
         <header class="flex flex-col gap-2">
-          <span class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-500/90">Additional Tools</span>
+          <span class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-600">Additional Tools</span>
           <p class="text-sm leading-relaxed text-sage-600">
             Extras that surface less often but stay in rotation.
           </p>

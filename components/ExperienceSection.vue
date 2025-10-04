@@ -416,7 +416,7 @@ onBeforeUnmount(() => {
           </div>
           <div class="flex flex-col items-start gap-1 text-left sm:items-end sm:text-right">
             <p
-              class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-500/90 transition-colors duration-500"
+              class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-600 transition-colors duration-500"
               :class="isEntryVisible(entry.slug) ? 'text-sage-600' : ''"
             >
               {{ entry.period }}
@@ -524,7 +524,7 @@ onBeforeUnmount(() => {
           >
             <div class="space-y-3 text-[0.95rem] leading-[1.65] text-sage-700">
               <div v-for="facet in projectFacetOrder" :key="facet" class="space-y-1.5">
-                <p class="text-[0.62rem] font-semibold uppercase tracking-[0.32em] text-sage-500/75">
+                <p class="text-[0.62rem] font-semibold uppercase tracking-[0.32em] text-sage-600">
                   {{ projectFacetLabels[facet] }}
                 </p>
                 <p>

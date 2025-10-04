@@ -12,7 +12,7 @@ metrics:
     value: "150+"
 primaryCta:
   label: Download Résumé
-  href: /resume.pdf
+  href: /download/resume
 secondaryCta:
   label: Email Anthony
   href: mailto:tonypro999@gmail.com

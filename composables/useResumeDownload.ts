@@ -279,3 +279,9 @@ export const useResumeDownload = () => {
     cancel
   }
 }
+
+export const __resumeDownloadInternals = {
+  parseFilenameFromHeader,
+  resolveFilename,
+  toAbsoluteUrl
+}

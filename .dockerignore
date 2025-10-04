@@ -1,0 +1,13 @@
+.git
+node_modules
+.tmp
+.output
+.nuxt
+.nitro
+.cache
+dist
+reports
+test-results
+.DS_Store
+infra/terraform/cloudflare/terraform.tfstate
+infra/terraform/cloudflare/terraform.tfstate.*

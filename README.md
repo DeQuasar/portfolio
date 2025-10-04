@@ -1,125 +1,115 @@
-# Nuxt Minimal Starter
+# Portfolio (Nuxt 3)
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Anthony Protano’s portfolio runs on Nuxt 3 with a Cloudflare Pages streaming résumé endpoint, comprehensive Playwright coverage, and Lighthouse performance gates wired into CI.
 
 ## Setup
 
-Make sure to install dependencies:
+### Native environment
 
 ```bash
-# npm
-npm install
-
-# pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
+> The repo pins `pnpm@10.17.1` via the `packageManager` field. Run `corepack enable` if pnpm is not already available in your shell.
 
-Start the development server on `http://localhost:3000`:
+### Docker workflow
+
+The root `Dockerfile` matches the GitHub Actions environment (Playwright browsers, axe, Lighthouse, pnpm). Install dependencies into the shared container volume once and reuse them everywhere:
 
 ```bash
-# npm
-npm run dev
+docker compose run --rm app pnpm install
+```
 
-# pnpm
+All services mount the project directory, a persistent `node_modules` volume, the pnpm store, and the Playwright browser cache so incremental runs stay fast.
+
+## Development server
+
+Start the dev server on `http://localhost:3000`.
+
+```bash
+# Native
 pnpm dev
 
-# yarn
-yarn dev
-
-# bun
-bun run dev
+# Docker
+docker compose up app
 ```
+
+Stop the containerized server with `Ctrl+C` (or `docker compose down`).
 
 ## Production
 
-Build the application for production:
+Generate the static bundle and preview it locally.
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
+pnpm generate
 pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+Container equivalents:
+
+```bash
+docker compose run --rm app pnpm generate
+docker compose run --rm app pnpm preview -- --host 0.0.0.0 --port 4173
+```
+
+## Tests & quality gates
+
+Native commands:
+
+- `pnpm test:coverage` – Vitest with V8 coverage. Browser-backed specs auto-skip unless you export `ENABLE_BROWSER_TESTS=true`.
+- `pnpm test:e2e` – Playwright desktop & mobile coverage (generates `.output/public` unless `SKIP_GENERATE=1`).
+- `pnpm test:performance` – Lighthouse CI assertions using the desktop preset. On bare metal you’ll need Chrome shared libraries (e.g. `libnspr4`, `libnss3`, `libasound2`); otherwise prefer the Docker variant.
+
+Container equivalents (mirroring CI):
+
+```bash
+# Unit tests + coverage (browser specs skipped)
+docker compose run --rm coverage
+
+# Full Playwright E2E suite
+docker compose run --rm e2e
+
+# Lighthouse performance checks
+LOCAL_UID=$(id -u) LOCAL_GID=$(id -g) docker compose run --rm performance
+```
+
+Artifacts land in `reports/` and `test-results/` (ignored by git).
+
+If you prune those directories, recreate them before rerunning the containers so Lighthouse can persist its reports:
+
+```bash
+mkdir -p reports/lighthouse test-results
+```
 
 ## Cloudflare Pages deployment
 
-- The site is generated statically with `pnpm generate` and deployed to Cloudflare Pages alongside the `/functions/download/resume.ts` handler, which streams `public/resume.pdf` back to the browser without leaving the portfolio.
-- GitHub Actions deploy only when a semver tag is pushed (for example `v1.2.3`) so we avoid burning through Cloudflare's free build quota. The workflow uses the `cloudflare/pages-action` to upload `.output/public` plus the `functions/` directory in one release.
-- Make sure the following repository secrets exist before tagging a release: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (scoped to Pages > Edit), and `CLOUDFLARE_PROJECT_NAME` if the action references it.
+- Tags drive deploys. Push `vX.Y.Z` to ship production; push `vX.Y.Z-preview` to refresh the preview branch (`preview.anthonyprotano.com`) without generating a GitHub Release.
+- The workflow in `.github/workflows/deploy-cloudflare.yml` runs `pnpm test:coverage`, Playwright, Lighthouse, and finally deploys `.output/public` plus `functions/` via `cloudflare/pages-action@v1`.
+- Required repository secrets: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (Pages > Edit scope), and `CLOUDFLARE_PROJECT_NAME`.
 - Typical release flow:
-  1. `pnpm test:ci`
-  2. (Optional) `pnpm generate` + `wrangler pages dev .output/public --compatibility-date=$(date +%Y-%m-%d)` to smoke-test `/download/resume` locally.
-  3. Update `CHANGELOG.md` (if needed) and commit.
-  4. `git tag vX.Y.Z`
-  5. `git push origin vX.Y.Z`
-  The tag push runs the pipeline, which deploys to Cloudflare Pages and publishes a GitHub Release with auto-generated notes.
+  1. Run the quality gates locally (`pnpm test:coverage`, `pnpm test:e2e`, `pnpm test:performance`).
+  2. `git tag vX.Y.Z`
+  3. `git push origin vX.Y.Z`
 
 ### Preview deployments on a subdomain
 
-- Tags that end with `-preview` (for example `v1.3.0-preview`) trigger the same pipeline but deploy to the Cloudflare Pages branch named `preview`. Point any preview-only custom domain (for example `preview.anthonyprotano.com`) at that environment in the Pages dashboard once and each subsequent preview tag will refresh it.
-- Preview tags skip the GitHub Release step so that only production releases appear on the Releases page.
+- Tags ending in `-preview` deploy the same artifact to the Pages branch named `preview` and skip the Release step.
+- Point `preview.anthonyprotano.com` (or your chosen preview domain) at that environment once in the Pages UI; subsequent preview tags reuse it.
 
 ### Managing preview access with Terraform
 
-- Terraform configuration under `infra/terraform/cloudflare` manages the Cloudflare Access application and allow/deny policies that guard the preview domain. Import the existing resources (see that folder's README) before running `terraform apply` so Terraform takes ownership.
-- Adjust `preview_allowed_emails` via `tfvars` to extend or shrink the preview allow list; Terraform updates the Access policies while leaving the fallback deny rule intact.
+- `infra/terraform/cloudflare` owns the Cloudflare Access application and policies that protect the preview domain.
+- Adjust the allow list through `preview_allowed_emails` and re-run `terraform apply`. The Terraform state is local (`terraform.tfstate`) by design; keep it outside version control.
 
 ### Local function testing
-
-Cloudflare's `wrangler pages dev` command can run the static bundle and functions locally:
 
 ```bash
 pnpm generate
 wrangler pages dev .output/public --compatibility-date=$(date +%Y-%m-%d)
 ```
 
-Hit `http://127.0.0.1:8787/download/resume` to verify the streaming response before tagging a release.
+Then visit `http://127.0.0.1:8787/download/resume` to validate the streaming response.
 
 ## UI regression tests
 
-Run the Vitest-powered suite (including the Playwright UI spec) within a preconfigured container so no local browser tooling is required:
-
-```bash
-npm run test:ui:container
-```
-
-The command spins up the official Playwright image, installs project dependencies inside an isolated volume, and executes `npm test -- --run`. When you pass custom Vitest flags, include `--run` yourself, for example to execute a single spec:
-
-```bash
-npm run test:ui:container -- --run tests/hero-email-tooltip.ui.spec.ts
-```
-
-By default the container executes Chromium, Firefox, and WebKit runs so Chrome, Firefox, and Safari engines stay covered. Override with `PLAYWRIGHT_BROWSERS` if you need a narrower slice (for example, `PLAYWRIGHT_BROWSERS=chromium`).
+`docker compose run --rm e2e` drives the Playwright suite (desktop + mobile) with axe audits and Lighthouse pre-flight baked in. The legacy helper `pnpm test:ui:container` still maps to `docker-compose.playwright.yml` if you need the standalone Playwright image for Vitest-specific runs.

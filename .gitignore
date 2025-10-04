@@ -15,6 +15,9 @@ package-lock.json
 .serena
 .vitest-artifacts
 .wrangler
+reports/
+test-results/
+.lighthouseci/
 
 # Logs
 logs

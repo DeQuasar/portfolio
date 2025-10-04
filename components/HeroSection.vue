@@ -359,7 +359,7 @@ if (process.client) {
           <div class="flex flex-1 items-center gap-4">
             <div class="flex flex-col text-left leading-tight">
               <span class="font-display text-sm font-semibold text-sage-700 sm:text-base">{{ props.hero.name }}</span>
-              <span class="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-sage-500/90 sm:text-[0.68rem]">{{ props.hero.role }}</span>
+              <span class="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-sage-600 sm:text-[0.68rem]">{{ props.hero.role }}</span>
             </div>
           </div>
           <div class="flex items-center gap-2 sm:gap-2.5">
@@ -654,7 +654,7 @@ if (process.client) {
         <h1 class="font-display text-[clamp(2.2rem,4.3vw,3.3rem)] font-semibold leading-[1.08] text-sage-900">
           {{ props.hero.name }}
         </h1>
-        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sage-500/90">
+        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sage-600">
           {{ props.hero.role }}
         </p>
         <p v-if="description" class="max-w-2xl text-base leading-relaxed text-sage-600 sm:text-[1.05rem]">

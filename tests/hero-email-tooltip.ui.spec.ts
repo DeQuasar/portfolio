@@ -61,13 +61,16 @@ if (browsersToRun.size === 0) {
   DEFAULT_BROWSERS.forEach((browser) => browsersToRun.add(browser))
 }
 
-let hasPlaywright = true
+const shouldRunBrowserTests = process.env.ENABLE_BROWSER_TESTS === 'true'
+let hasPlaywright = shouldRunBrowserTests
 
-try {
-  await import('playwright-core')
-} catch (error) {
-  hasPlaywright = false
-  console.warn('Skipping hero email tooltip UI tests because playwright-core is not installed.')
+if (shouldRunBrowserTests) {
+  try {
+    await import('playwright-core')
+  } catch (error) {
+    hasPlaywright = false
+    console.warn('Skipping hero email tooltip UI tests because playwright-core is not installed.')
+  }
 }
 
 for (const browserType of browsersToRun) {

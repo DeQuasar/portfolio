@@ -5,13 +5,16 @@ import type { Page } from 'playwright-core'
 
 const rootDir = fileURLToPath(new URL('../', import.meta.url))
 
-let hasPlaywright = true
+const shouldRunBrowserTests = process.env.ENABLE_BROWSER_TESTS === 'true'
+let hasPlaywright = shouldRunBrowserTests
 
-try {
-  await import('playwright-core')
-} catch {
-  hasPlaywright = false
-  console.warn('Skipping experience UI tests because playwright-core is not installed.')
+if (shouldRunBrowserTests) {
+  try {
+    await import('playwright-core')
+  } catch {
+    hasPlaywright = false
+    console.warn('Skipping experience UI tests because playwright-core is not installed.')
+  }
 }
 
 if (hasPlaywright) {

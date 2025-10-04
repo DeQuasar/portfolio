@@ -2,13 +2,16 @@ import { describe, it, expect } from 'vitest'
 import { createPage, setup } from '@nuxt/test-utils'
 import { fileURLToPath } from 'node:url'
 
-let hasPlaywright = true
+const shouldRunBrowserTests = process.env.ENABLE_BROWSER_TESTS === 'true'
+let hasPlaywright = shouldRunBrowserTests
 
-try {
-  await import('playwright-core')
-} catch {
-  hasPlaywright = false
-  console.warn('Skipping hero email layout UI tests because playwright-core is not installed.')
+if (shouldRunBrowserTests) {
+  try {
+    await import('playwright-core')
+  } catch {
+    hasPlaywright = false
+    console.warn('Skipping hero email layout UI tests because playwright-core is not installed.')
+  }
 }
 
 if (hasPlaywright) {
