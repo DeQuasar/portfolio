@@ -206,7 +206,9 @@ const activeTooltipPreset = computed(() => (tooltipVariant.value === 'error' ? t
 
 const showNavEmailPanel = computed(() => activePanelSource.value === 'nav')
 const navSafeAreaStyle = computed(() => ({
-  paddingTop: 'calc(env(safe-area-inset-top, 0px) + var(--nav-padding, 0.75rem))'
+  paddingTop: 'calc(env(safe-area-inset-top, 0px) + var(--nav-padding, 0.75rem))',
+  paddingLeft: 'calc(env(safe-area-inset-left, 0px) + var(--nav-horizontal, 1rem))',
+  paddingRight: 'calc(env(safe-area-inset-right, 0px) + var(--nav-horizontal, 1rem))'
 }))
 const showHeroEmailPanel = computed(() => activePanelSource.value === 'hero')
 const showEmailPanel = computed(() => activePanelSource.value !== null)
@@ -354,24 +356,24 @@ if (process.client) {
       <nav
         v-if="showStickyNav"
         :style="navSafeAreaStyle"
-        class="fixed inset-x-0 top-0 z-[95] flex justify-center px-4 pb-3 sm:px-6 sm:pb-4 [--nav-padding:0.75rem] sm:[--nav-padding:1rem]"
+        class="fixed inset-x-0 top-0 z-[95] flex justify-center pb-3 sm:pb-4 [--nav-padding:0.75rem] sm:[--nav-padding:1rem] [--nav-horizontal:1rem] sm:[--nav-horizontal:1.5rem]"
         aria-label="Primary navigation"
       >
         <div
-          class="flex w-full max-w-5xl items-center justify-between gap-3.5 rounded-[1.75rem] border border-sage-200/80 bg-white/98 px-5 py-2.5 shadow-[0_20px_46px_-28px_rgba(31,52,36,0.5)] backdrop-blur"
+          class="flex w-full max-w-5xl flex-col gap-3 rounded-[1.75rem] border border-sage-200/80 bg-white/98 px-4 py-2.5 shadow-[0_20px_46px_-28px_rgba(31,52,36,0.5)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-3.5 sm:px-5"
         >
-          <div class="flex flex-1 items-center gap-4">
-            <div class="flex flex-col text-left leading-tight">
+          <div class="flex flex-1 items-center justify-center gap-4 sm:justify-start">
+            <div class="flex flex-col items-center text-center leading-tight sm:items-start sm:text-left">
               <span class="font-display text-sm font-semibold text-sage-700 sm:text-base">{{ props.hero.name }}</span>
               <span class="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-sage-600 sm:text-[0.68rem]">{{ props.hero.role }}</span>
             </div>
           </div>
-          <div class="flex items-center gap-2 sm:gap-2.5">
+          <div class="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end sm:gap-2.5">
             <AppLink
               :href="props.hero.primaryCta.href"
               variant="cta"
               :class="[
-                'group relative overflow-hidden px-4 py-1.5 text-[0.65rem] uppercase tracking-[0.18em]',
+                'group relative w-full justify-center overflow-hidden px-4 py-1.5 text-[0.65rem] uppercase tracking-[0.18em] sm:w-auto',
                 resumeIsDownloading && 'pointer-events-none opacity-75'
               ]"
               :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
