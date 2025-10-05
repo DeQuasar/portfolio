@@ -1,0 +1,312 @@
+import { computed, nextTick, onMounted, ref, type ComputedRef, watch } from 'vue'
+import { useEventListener, onClickOutside } from '@vueuse/core'
+import { useFloating, offset, flip, shift, arrow } from '@floating-ui/vue'
+import { autoUpdate } from '@floating-ui/dom'
+import AppButton from '~/components/ui/AppButton.vue'
+import { useClipboard } from '~/composables/useClipboard'
+import { useResumeDownload, RESUME_DEFAULT_FILENAME } from '~/composables/useResumeDownload'
+import type { HeroContent } from '~/types/content'
+
+type PanelSource = 'hero' | 'nav'
+
+type TooltipPreset = {
+  background: string
+  borderColor: string
+  bubbleShadow: string
+  iconBackground: string
+  iconShadow: string
+  textColor: string
+  arrowShadow: string
+}
+
+type Options = {
+  hero: ComputedRef<HeroContent>
+  tooltipProgressDuration: number
+  tooltipRestDelay: number
+  enableTrace: boolean
+}
+
+export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipRestDelay, enableTrace }: Options) {
+  const CLIPBOARD_RESET_DELAY = tooltipProgressDuration + tooltipRestDelay
+
+  const { state: copyState, copy: copyToClipboard, reset: resetCopyState } = useClipboard(CLIPBOARD_RESET_DELAY)
+  const {
+    download: downloadResume,
+    isDownloading: resumeIsDownloading,
+    announcement: resumeAnnouncementText,
+    progressPercent: resumeDownloadProgressDisplay
+  } = useResumeDownload()
+
+  const recordHeroTooltipTrace = (event: string, payload: Record<string, unknown> = {}) => {
+    if (!process.client || !enableTrace) {
+      return
+    }
+    const now = typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now()
+    const entry = {
+      event,
+      at: now,
+      iso: new Date().toISOString(),
+      payload
+    }
+    const target = globalThis as typeof globalThis & { __heroTooltipTrace__?: typeof entry[] }
+    const trace = target.__heroTooltipTrace__ ||= []
+    trace.push(entry)
+    if (trace.length > 120) {
+      trace.splice(0, trace.length - 120)
+    }
+    console.info('[hero tooltip trace]', { event, payload })
+  }
+
+  const startResumeDownload = async (event?: MouseEvent | KeyboardEvent) => {
+    event?.preventDefault()
+    event?.stopPropagation()
+
+    const href = hero.value.primaryCta?.href
+    if (!href) {
+      return
+    }
+
+    try {
+      await downloadResume({ href, suggestedFilename: RESUME_DEFAULT_FILENAME })
+    } catch (error) {
+      console.error('Failed to download résumé', error)
+    }
+  }
+
+  const activeEmailHref = ref<string | null>(null)
+  const activePanelSource = ref<PanelSource | null>(null)
+
+  const emailTriggerEl = ref<InstanceType<typeof AppButton> | null>(null)
+  const navEmailTriggerEl = ref<InstanceType<typeof AppButton> | null>(null)
+  const emailPanelEl = ref<HTMLElement | null>(null)
+  const emailCopyButtonEl = ref<InstanceType<typeof AppButton> | null>(null)
+  const tooltipBubbleEl = ref<HTMLElement | null>(null)
+  const tooltipArrowEl = ref<HTMLElement | null>(null)
+
+  const tooltipPresets: Record<'success' | 'error', TooltipPreset> = {
+    success: {
+      background: 'linear-gradient(140deg, #5f8f69, #2f5236)',
+      borderColor: '#4c6b50',
+      bubbleShadow: '0 18px 28px -18px #1d291f',
+      iconBackground: '#6aa772',
+      iconShadow: '0 14px 32px -22px #1d2f21',
+      textColor: '#f8faf7',
+      arrowShadow: '0 10px 20px -16px #1d291f'
+    },
+    error: {
+      background: 'linear-gradient(140deg, #e05d7b, #91283f)',
+      borderColor: '#78294d',
+      bubbleShadow: '0 18px 28px -18px #36101b',
+      iconBackground: '#e36a86',
+      iconShadow: '0 14px 32px -22px #3d1019',
+      textColor: '#fef2f5',
+      arrowShadow: '0 10px 20px -16px #36101b'
+    }
+  }
+
+  const showNavEmailPanel = computed(() => activePanelSource.value === 'nav')
+  const showHeroEmailPanel = computed(() => activePanelSource.value === 'hero')
+  const showEmailPanel = computed(() => activePanelSource.value !== null)
+
+  const referenceEl = computed(() => emailTriggerEl.value?.el ?? null)
+
+  const { floatingStyles, middlewareData, placement, update: updateFloating } = useFloating(referenceEl, tooltipBubbleEl, {
+    placement: 'top',
+    middleware: [offset(12), shift({ padding: 12 }), flip({ fallbackPlacements: ['top', 'bottom'] }), arrow({ element: tooltipArrowEl })],
+    whileElementsMounted: autoUpdate
+  })
+
+  const tooltipArrowStyle = computed(() => {
+    const arrowData = middlewareData.value.arrow
+    const coords: Record<string, string> = { left: '', top: '' }
+    if (arrowData?.x != null) {
+      coords.left = `${arrowData.x}px`
+    }
+    if (arrowData?.y != null) {
+      coords.top = `${arrowData.y}px`
+    }
+    const staticSideMap = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' } as const
+    const basePlacement = placement.value.split('-')[0] as keyof typeof staticSideMap
+    const staticSide = staticSideMap[basePlacement] ?? 'bottom'
+    coords[staticSide] = '-0.45rem'
+    return coords
+  })
+
+  const tooltipVariant = computed<'idle' | 'success' | 'error'>(() => (copyState.value === 'error' ? 'error' : copyState.value === 'copied' ? 'success' : 'idle'))
+  const tooltipHeading = computed(() => {
+    if (copyState.value === 'error') {
+      return 'Copy failed — please grab it manually.'
+    }
+    if (copyState.value === 'copied') {
+      return 'Email ready — expect a reply in 48 hours.'
+    }
+    return 'Copy email address'
+  })
+
+  const activeTooltipPreset = computed(() => (tooltipVariant.value === 'error' ? tooltipPresets.error : tooltipPresets.success))
+
+  const copyEmail = async (href: string | null) => {
+    if (!href) {
+      return
+    }
+
+    const email = href.startsWith('mailto:') ? href.replace('mailto:', '') : href
+    if (!email) {
+      return
+    }
+
+    recordHeroTooltipTrace('copy-email:begin', { href, email })
+    const didCopy = await copyToClipboard(email)
+    recordHeroTooltipTrace('copy-email:end', { href, email, didCopy })
+    closeEmailPanel({ preserveCopyState: true })
+  }
+
+  const openEmailPanel = async (href: string, source: PanelSource) => {
+    recordHeroTooltipTrace('email-panel:open', { href, source })
+    resetCopyState()
+    activeEmailHref.value = href
+    activePanelSource.value = source
+    await nextTick()
+    if (source === 'hero') {
+      emailCopyButtonEl.value?.focus()
+    }
+  }
+
+  const closeEmailPanel = (options?: { preserveCopyState?: boolean, returnFocus?: boolean }) => {
+    if (!showEmailPanel.value) {
+      return
+    }
+    const previousSource = activePanelSource.value
+    recordHeroTooltipTrace('email-panel:close', {
+      previousSource,
+      preserveCopyState: Boolean(options?.preserveCopyState),
+      returnFocus: options?.returnFocus ?? true
+    })
+    activeEmailHref.value = null
+    activePanelSource.value = null
+    if (!options?.preserveCopyState) {
+      resetCopyState()
+    }
+    const shouldReturnFocus = options?.returnFocus ?? true
+    const restoreScroll = process.client && shouldReturnFocus
+      ? (() => {
+          const { scrollX, scrollY } = window
+          return () => {
+            window.scrollTo({ left: scrollX, top: scrollY })
+          }
+        })()
+      : null
+
+    nextTick(() => {
+      if (!shouldReturnFocus) {
+        return
+      }
+      if (previousSource === 'hero') {
+        emailTriggerEl.value?.focus({ preventScroll: true })
+      } else if (previousSource === 'nav') {
+        navEmailTriggerEl.value?.focus({ preventScroll: true })
+      }
+      restoreScroll?.()
+    })
+  }
+
+  const toggleHeroEmailPanel = async (href: string) => {
+    if (showHeroEmailPanel.value) {
+      closeEmailPanel()
+    } else {
+      await openEmailPanel(href, 'hero')
+    }
+  }
+
+  const toggleNavEmailPanel = async (href: string) => {
+    if (showNavEmailPanel.value) {
+      closeEmailPanel()
+    } else {
+      await openEmailPanel(href, 'nav')
+    }
+  }
+
+  const handleMailtoLink = () => {
+    closeEmailPanel({ preserveCopyState: true })
+  }
+
+  watch(copyState, (state) => {
+    recordHeroTooltipTrace('copy-state', { state })
+    ;(globalThis as typeof globalThis & { __heroTooltipState__?: typeof state }).__heroTooltipState__ = state
+  }, { immediate: true })
+
+  watch(tooltipVariant, async () => {
+    await nextTick()
+    updateFloating()
+  })
+
+  onClickOutside(emailPanelEl, () => {
+    if (showEmailPanel.value) {
+      closeEmailPanel()
+    }
+  })
+
+  useEventListener(document, 'keydown', (event) => {
+    if (!showEmailPanel.value) {
+      return
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      closeEmailPanel()
+    }
+  })
+
+  const lastNavScrollY = ref(0)
+
+  if (process.client) {
+    lastNavScrollY.value = window.scrollY
+    useEventListener(window, 'scroll', () => {
+      if (!showNavEmailPanel.value) {
+        lastNavScrollY.value = window.scrollY
+        return
+      }
+
+      const current = window.scrollY
+      if (Math.abs(current - lastNavScrollY.value) > 20) {
+        closeEmailPanel()
+      }
+      lastNavScrollY.value = current
+    }, { passive: true })
+  }
+
+  onMounted(() => {
+    if (process.client) {
+      lastNavScrollY.value = window.scrollY
+    }
+  })
+
+  return {
+    copyState,
+    startResumeDownload,
+    resumeIsDownloading,
+    resumeAnnouncementText,
+    resumeDownloadProgressDisplay,
+    tooltipVariant,
+    tooltipHeading,
+    activeTooltipPreset,
+    tooltipArrowStyle,
+    floatingStyles,
+    emailTriggerEl,
+    navEmailTriggerEl,
+    emailPanelEl,
+    emailCopyButtonEl,
+    tooltipBubbleEl,
+    tooltipArrowEl,
+    showNavEmailPanel,
+    showHeroEmailPanel,
+    showEmailPanel,
+    activeEmailHref,
+    toggleHeroEmailPanel,
+    toggleNavEmailPanel,
+    copyEmail,
+    handleMailtoLink,
+    closeEmailPanel,
+    recordHeroTooltipTrace
+  }
+}

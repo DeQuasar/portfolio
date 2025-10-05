@@ -27,12 +27,17 @@ All services mount the project directory, a persistent `node_modules` volume, th
 Start the dev server on `http://localhost:3000`.
 
 ```bash
-# Native
+# Native (SPA mode for fast iteration)
 pnpm dev
 
-# Docker
+# Full SSR when you need parity with production
+pnpm dev:ssr
+
+# Docker (mirrors the SSR flow)
 docker compose up app
 ```
+
+`pnpm dev` now runs Nuxt with `NUXT_SSR=false`, which skips the Nitro server bundle and boots in roughly 1–2 s. Switch to `pnpm dev:ssr` (or `NUXT_SSR=true pnpm dev`) whenever you need to test the full SSR pipeline. Both scripts prune Lighthouse/Playwright artifacts beforehand to keep the file watcher lean. Re-enable Nuxt DevTools ad hoc with `NUXT_DEVTOOLS=1 pnpm dev:ssr` if you need the panel.
 
 Stop the containerized server with `Ctrl+C` (or `docker compose down`).
 
@@ -73,13 +78,7 @@ docker compose run --rm e2e
 LOCAL_UID=$(id -u) LOCAL_GID=$(id -g) docker compose run --rm performance
 ```
 
-Artifacts land in `reports/` and `test-results/` (ignored by git).
-
-If you prune those directories, recreate them before rerunning the containers so Lighthouse can persist its reports:
-
-```bash
-mkdir -p reports/lighthouse test-results
-```
+Artifacts land in `reports/` and `test-results/` (ignored by git). The `pnpm prune:artifacts` helper clears those directories and recreates the expected subfolders; it now runs automatically before dev/test commands that generate heavy output, but you can call it manually if you want a clean slate between runs.
 
 ## Cloudflare Pages deployment
 

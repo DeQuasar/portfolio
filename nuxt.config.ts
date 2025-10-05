@@ -1,12 +1,25 @@
 import tailwindcss from '@tailwindcss/vite'
 
+const enableDevtools = process.env.NUXT_DEVTOOLS === '1'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  devtools: { enabled: enableDevtools },
   css: ['~/assets/css/tailwind.css'],
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    server: {
+      watch: {
+        ignored: [
+          '**/reports/**',
+          '**/.lighthouseci/**',
+          '**/test-results/**',
+          '**/coverage/**',
+          '**/dist/**'
+        ]
+      }
+    }
   },
   runtimeConfig: {
     public: {

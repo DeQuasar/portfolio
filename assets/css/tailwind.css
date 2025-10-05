@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--sticky-nav-height, 0px) + env(safe-area-inset-top, 0px) + 24px);
+  }
+
   :root {
     color-scheme: light;
   }
@@ -100,4 +105,3 @@
     transition: none;
   }
 }
-

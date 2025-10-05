@@ -45,9 +45,9 @@ const startResumeDownload = async (event?: MouseEvent | KeyboardEvent) => {
 </script>
 
 <template>
-  <footer class="mt-24 flex justify-center px-4 sm:px-6">
+  <footer class="mt-20 flex justify-center px-4 sm:mt-24 sm:px-6">
     <div
-      class="grid w-full max-w-3xl gap-6 rounded-[2rem] bg-[linear-gradient(140deg,#4A6C4D,#6E8B6D)] px-8 py-12 text-center text-white shadow-[0_32px_60px_-32px_rgba(31,45,33,0.65)] sm:px-12 sm:py-14"
+      class="grid w-full max-w-3xl gap-5 rounded-[2rem] bg-[linear-gradient(140deg,#4A6C4D,#6E8B6D)] px-6 py-10 text-center text-white shadow-[0_32px_60px_-32px_rgba(31,45,33,0.65)] sm:gap-6 sm:px-12 sm:py-14"
     >
       <SectionHeader title="Let’s work together" align="center" class="text-white">
         <template #title>
@@ -66,7 +66,7 @@ const startResumeDownload = async (event?: MouseEvent | KeyboardEvent) => {
           :href="props.contact.resumeUrl"
           variant="cta"
           :class="[
-            'group relative overflow-hidden text-white shadow-[0_26px_52px_-26px_rgba(14,27,18,0.7)]',
+            'group relative min-h-[48px] overflow-hidden text-white shadow-[0_26px_52px_-26px_rgba(14,27,18,0.7)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70',
             resumeIsDownloading && 'pointer-events-none opacity-90'
           ]"
           :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
@@ -106,7 +106,7 @@ const startResumeDownload = async (event?: MouseEvent | KeyboardEvent) => {
                 <path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" />
               </svg>
             </span>
-            <span class="flex items-center gap-1 text-sm font-semibold uppercase tracking-[0.14em]">
+            <span class="flex items-center gap-1 text-[0.78rem] font-semibold uppercase tracking-[0.16em]">
               <span>Download Résumé</span>
               <span v-if="resumeDownloadProgressDisplay !== null" class="text-xs tracking-normal">
                 {{ resumeDownloadProgressDisplay }}%
@@ -122,13 +122,13 @@ const startResumeDownload = async (event?: MouseEvent | KeyboardEvent) => {
             :href="emailHref"
             variant="minimal"
             aria-label="Open email client to contact Anthony"
-            class="text-base font-semibold text-white underline decoration-white/50 underline-offset-4 transition hover:decoration-white"
+            class="text-base font-semibold text-white underline decoration-white/50 underline-offset-4 transition hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
           >
             Email Anthony
           </AppLink>
           <AppButton
             variant="ghost"
-            class="min-w-[7.5rem] justify-center border border-white/45 bg-white/15 text-white transition duration-200 hover:-translate-y-0.5 hover:border-white/75 hover:bg-white/25"
+            class="min-h-[44px] min-w-[7.5rem] justify-center border border-white/45 bg-white/15 text-white transition duration-200 hover:-translate-y-0.5 hover:border-white/75 hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
             :class="[
               emailCopyState === 'copied' && 'border-white/80 bg-white/25 text-white shadow-[0_18px_30px_-18px_rgba(18,28,21,0.65)]',
               emailCopyState === 'error' && 'border-rose-200 bg-rose-500 text-white shadow-none'
@@ -148,21 +148,21 @@ const startResumeDownload = async (event?: MouseEvent | KeyboardEvent) => {
           </AppButton>
         </div>
       </div>
-      <p class="mt-3 text-xs font-semibold uppercase tracking-[0.24em] text-white/80">Replies within 48 hours</p>
-      <ul class="mt-6 grid gap-3 text-sm">
+      <p class="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">Replies within 48 hours</p>
+      <ul class="mt-4 grid gap-2.5 text-sm sm:mt-6">
         <li class="flex flex-wrap items-center justify-center gap-2">
           <span class="font-semibold text-white/85">Email</span>
           <div class="inline-flex items-center gap-2.5">
             <AppLink
               :href="emailHref"
               variant="minimal"
-              class="font-semibold text-white underline decoration-white/50 underline-offset-4 transition hover:decoration-white"
+              class="font-semibold text-white underline decoration-white/50 underline-offset-4 transition hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
             >
               {{ props.contact.email }}
             </AppLink>
             <AppButton
               variant="icon"
-              class="h-10 w-10 border border-white/45 bg-white/15 text-white transition duration-200 hover:-translate-y-0.5 hover:border-white/75 hover:bg-white/25"
+              class="h-11 w-11 border border-white/45 bg-white/15 text-white transition duration-200 hover:-translate-y-0.5 hover:border-white/75 hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
               :class="[
                 emailCopyState === 'copied' && 'border-white/80 bg-white/25 text-white shadow-[0_18px_30px_-18px_rgba(18,28,21,0.65)]',
                 emailCopyState === 'error' && 'border-rose-200 bg-rose-500 text-white shadow-none'

@@ -5,7 +5,9 @@
   "packageManager": "pnpm@10.17.1",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "cross-env NUXT_SSR=false nuxt dev",
+    "predev:ssr": "pnpm run prune:artifacts",
+    "dev:ssr": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "prepare": "husky",
@@ -24,7 +26,12 @@
     "pretest:performance": "if [ \"$SKIP_GENERATE\" != \"1\" ]; then pnpm generate; fi",
     "test:performance": "node ./scripts/run-lhci.mjs autorun",
     "prebuild": "nuxt prepare",
-    "predev": "nuxt prepare"
+    "prune:artifacts": "node ./scripts/prune-artifacts.mjs",
+    "predev": "pnpm run prune:artifacts",
+    "posttest:e2e": "pnpm run prune:artifacts",
+    "posttest:e2e:ci": "pnpm run prune:artifacts",
+    "posttest:performance": "pnpm run prune:artifacts",
+    "posttest:coverage": "pnpm run prune:artifacts"
   },
   "dependencies": {
     "@floating-ui/vue": "^1.1.9",
@@ -45,6 +52,7 @@
     "@tailwindcss/vite": "^4.1.13",
     "@vitest/coverage-v8": "^3.2.4",
     "axe-core": "^4.10.3",
+    "cross-env": "^10.1.0",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
