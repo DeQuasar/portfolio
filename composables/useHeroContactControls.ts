@@ -129,10 +129,12 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     whileElementsMounted: autoUpdate
   })
 
+  const isNavReference = computed(() => tooltipReferenceSource.value === 'nav')
+
   const tooltipArrowStyle = computed(() => {
     const arrowData = middlewareData.value.arrow
     const coords: Record<string, string> = { left: '', top: '' }
-    if (arrowData?.x != null) {
+    if (!isNavReference.value && arrowData?.x != null) {
       coords.left = `${arrowData.x}px`
     }
     if (arrowData?.y != null) {
@@ -141,7 +143,10 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     const staticSideMap = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' } as const
     const basePlacement = placement.value.split('-')[0] as keyof typeof staticSideMap
     const staticSide = staticSideMap[basePlacement] ?? 'bottom'
-    coords[staticSide] = '-0.45rem'
+    coords[staticSide] = isNavReference.value ? '-0.35rem' : '-0.45rem'
+    if (isNavReference.value && (staticSide === 'bottom' || staticSide === 'top')) {
+      coords.left = 'calc(100% - 1.6rem)'
+    }
     return coords
   })
 
@@ -322,14 +327,15 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
   if (process.client) {
     lastNavScrollY.value = window.scrollY
     useEventListener(window, 'scroll', () => {
-      if (!showNavEmailPanel.value) {
-        lastNavScrollY.value = window.scrollY
-        return
-      }
-
       const current = window.scrollY
-      if (Math.abs(current - lastNavScrollY.value) > 20) {
-        closeEmailPanel()
+      const delta = Math.abs(current - lastNavScrollY.value)
+      if (delta > 20) {
+        if (showNavEmailPanel.value) {
+          closeEmailPanel()
+        } else if (tooltipReferenceSource.value === 'nav' && tooltipVariant.value !== 'idle') {
+          tooltipReady.value = false
+          resetCopyState()
+        }
       }
       lastNavScrollY.value = current
     }, { passive: true })
