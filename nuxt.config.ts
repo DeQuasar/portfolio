@@ -14,7 +14,7 @@ export default defineNuxtConfig({
       port: Number(process.env.PORT ?? 3000),
       strictPort: true,
       allowedHosts: process.env.VITE_ALLOWED_HOSTS ? process.env.VITE_ALLOWED_HOSTS.split(',') : 'all',
-      hmr: {
+      hmr: process.env.VITE_DISABLE_HMR === '1' ? false : {
         protocol: process.env.VITE_HMR_PROTOCOL ?? 'ws',
         host: process.env.VITE_HMR_HOST ?? 'localhost',
         port: Number(process.env.VITE_HMR_PORT ?? process.env.PORT ?? 3000),

@@ -218,7 +218,6 @@ onBeforeUnmount(() => {
                     v-if="showNavEmailPanel && activeEmailHref"
                     ref="emailPanelLocal"
                     class="absolute right-0 top-[calc(100%+0.75rem)] z-[110] flex w-60 flex-col gap-2 rounded-2xl border border-sage-200/80 bg-white/96 p-3 shadow-xl backdrop-blur"
-                    :style="{ visibility: emailPanelReady ? 'visible' : 'hidden' }"
                     role="group"
                     aria-label="Email options"
                   >

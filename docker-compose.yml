@@ -22,6 +22,7 @@ services:
       VITE_HMR_PORT: "3000"
       VITE_HMR_CLIENT_PORT: "3000"
       VITE_ALLOWED_HOSTS: "localhost"
+      VITE_DISABLE_HMR: "0"
     ports:
       - "3000:3000"
     tty: true

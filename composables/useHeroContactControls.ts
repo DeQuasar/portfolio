@@ -331,7 +331,7 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
       const delta = Math.abs(current - lastNavScrollY.value)
       if (delta > 20) {
         if (showNavEmailPanel.value) {
-          closeEmailPanel()
+          closeEmailPanel({ returnFocus: false })
         } else if (tooltipReferenceSource.value === 'nav' && tooltipVariant.value !== 'idle') {
           tooltipReady.value = false
           resetCopyState()
