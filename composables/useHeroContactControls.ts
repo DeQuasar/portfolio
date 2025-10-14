@@ -82,6 +82,9 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
   const emailCopyButtonEl = ref<InstanceType<typeof AppButton> | null>(null)
   const tooltipBubbleEl = ref<HTMLElement | null>(null)
   const tooltipArrowEl = ref<HTMLElement | null>(null)
+  const tooltipReferenceSource = ref<PanelSource>('hero')
+  const emailPanelReady = ref(false)
+  const tooltipReady = ref(false)
 
   const tooltipPresets: Record<'success' | 'error', TooltipPreset> = {
     success: {
@@ -108,10 +111,20 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
   const showHeroEmailPanel = computed(() => activePanelSource.value === 'hero')
   const showEmailPanel = computed(() => activePanelSource.value !== null)
 
-  const referenceEl = computed(() => emailTriggerEl.value?.el ?? null)
+  const resolveTriggerElement = (source: PanelSource) => {
+    if (source === 'nav') {
+      return navEmailTriggerEl.value?.el ?? null
+    }
+    return emailTriggerEl.value?.el ?? null
+  }
+
+  const referenceEl = computed(() => {
+    return resolveTriggerElement(tooltipReferenceSource.value) ?? emailTriggerEl.value?.el ?? navEmailTriggerEl.value?.el ?? null
+  })
 
   const { floatingStyles, middlewareData, placement, update: updateFloating } = useFloating(referenceEl, tooltipBubbleEl, {
-    placement: 'top',
+    placement: 'bottom',
+    strategy: 'fixed',
     middleware: [offset(12), shift({ padding: 12 }), flip({ fallbackPlacements: ['top', 'bottom'] }), arrow({ element: tooltipArrowEl })],
     whileElementsMounted: autoUpdate
   })
@@ -138,7 +151,7 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
       return 'Copy failed — please grab it manually.'
     }
     if (copyState.value === 'copied') {
-      return 'Email ready — expect a reply in 48 hours.'
+      return 'Email address copied to clipboard!'
     }
     return 'Copy email address'
   })
@@ -164,12 +177,27 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
   const openEmailPanel = async (href: string, source: PanelSource) => {
     recordHeroTooltipTrace('email-panel:open', { href, source })
     resetCopyState()
+    emailPanelReady.value = false
     activeEmailHref.value = href
     activePanelSource.value = source
+    tooltipReferenceSource.value = source
     await nextTick()
     if (source === 'hero') {
       emailCopyButtonEl.value?.focus()
     }
+    if (!process.client) {
+      emailPanelReady.value = true
+      return
+    }
+    await updateFloating()
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          emailPanelReady.value = true
+          resolve()
+        })
+      })
+    })
   }
 
   const closeEmailPanel = (options?: { preserveCopyState?: boolean, returnFocus?: boolean }) => {
@@ -182,6 +210,7 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
       preserveCopyState: Boolean(options?.preserveCopyState),
       returnFocus: options?.returnFocus ?? true
     })
+    emailPanelReady.value = false
     activeEmailHref.value = null
     activePanelSource.value = null
     if (!options?.preserveCopyState) {
@@ -235,9 +264,40 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     ;(globalThis as typeof globalThis & { __heroTooltipState__?: typeof state }).__heroTooltipState__ = state
   }, { immediate: true })
 
-  watch(tooltipVariant, async () => {
+  watch(tooltipVariant, async (variant) => {
+    if (variant === 'idle') {
+      tooltipReady.value = false
+      return
+    }
+    tooltipReady.value = false
     await nextTick()
-    updateFloating()
+    await updateFloating()
+    if (!process.client) {
+      tooltipReady.value = true
+      return
+    }
+    requestAnimationFrame(() => {
+      tooltipReady.value = true
+    })
+  })
+
+  watch(tooltipReferenceSource, async () => {
+    tooltipReady.value = false
+    await nextTick()
+    await updateFloating()
+    if (!process.client) {
+      tooltipReady.value = true
+      return
+    }
+    requestAnimationFrame(() => {
+      tooltipReady.value = true
+    })
+  })
+
+  watch(showEmailPanel, (isOpen) => {
+    if (!isOpen) {
+      emailPanelReady.value = false
+    }
   })
 
   onClickOutside(emailPanelEl, () => {
@@ -298,6 +358,8 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     emailCopyButtonEl,
     tooltipBubbleEl,
     tooltipArrowEl,
+    tooltipReady,
+    emailPanelReady,
     showNavEmailPanel,
     showHeroEmailPanel,
     showEmailPanel,

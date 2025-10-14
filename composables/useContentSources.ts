@@ -11,7 +11,7 @@ import type {
 } from '~/types/content'
 
 interface RawContentRow<T> {
-  meta?: string
+  meta?: string | T
   body?: unknown
   [key: string]: unknown
 }

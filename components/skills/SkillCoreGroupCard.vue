@@ -3,7 +3,7 @@ import CardSurface from '~/components/ui/CardSurface.vue'
 import Pill from '~/components/ui/Pill.vue'
 import type { SkillCoreGroupDisplay } from '~/composables/useSkillStack'
 
-const props = defineProps<{ group: SkillCoreGroupDisplay }>()
+defineProps<{ group: SkillCoreGroupDisplay }>()
 </script>
 
 <template>

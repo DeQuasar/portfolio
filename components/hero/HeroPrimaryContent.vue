@@ -46,11 +46,13 @@ const props = defineProps<{
   activeTooltipPreset: TooltipPreset
   tooltipArrowStyle: Record<string, string>
   floatingStyles: Record<string, string | number>
-  emailTriggerRef: { value: ButtonInstance | null }
-  emailPanelRef: { value: HTMLElement | null }
-  emailCopyButtonRef: { value: ButtonInstance | null }
-  tooltipBubbleRef: { value: HTMLElement | null }
-  tooltipArrowRef: { value: HTMLElement | null }
+  tooltipReady: boolean
+  emailTriggerRef: { value: ButtonInstance | null } | ((value: ButtonInstance | null) => void)
+  emailPanelRef: { value: HTMLElement | null } | ((value: HTMLElement | null) => void)
+  emailCopyButtonRef: { value: ButtonInstance | null } | ((value: ButtonInstance | null) => void)
+  tooltipBubbleRef: { value: HTMLElement | null } | ((value: HTMLElement | null) => void)
+  tooltipArrowRef: { value: HTMLElement | null } | ((value: HTMLElement | null) => void)
+  emailPanelReady: boolean
 }>()
 
 const emit = defineEmits<Emit>()
@@ -61,8 +63,12 @@ const heroEmailCopyButtonLocal = ref<ButtonInstance | null>(null)
 const tooltipBubbleLocal = ref<HTMLElement | null>(null)
 const tooltipArrowLocal = ref<HTMLElement | null>(null)
 
-const assignExternalRef = <T>(target: { value: T } | null | undefined, value: T) => {
+const assignExternalRef = <T>(target: { value: T } | ((value: T) => void) | null | undefined, value: T) => {
   if (!target) {
+    return
+  }
+  if (typeof target === 'function') {
+    target(value)
     return
   }
   target.value = value
@@ -184,13 +190,18 @@ onBeforeUnmount(() => {
           </span>
         </AppLink>
 
-        <div class="relative flex flex-wrap items-center justify-center gap-3">
+        <div
+          class="relative flex flex-wrap items-center justify-center gap-3"
+          data-testid="hero-socials-root"
+        >
           <AppButton
             v-if="emailLink"
             ref="heroEmailTriggerLocal"
             variant="secondary"
             class="flex min-h-[48px] items-center gap-2 rounded-full border-sage-200/80 bg-white/90 !px-5 !py-0 text-sm font-semibold text-sage-600 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:text-sage-700 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
-            :aria-pressed="showHeroEmailPanel"
+            :aria-expanded="showHeroEmailPanel"
+            aria-haspopup="menu"
+            aria-label="View email options"
             @click="emit('toggle-hero-email', emailLink.href)"
           >
             <span class="grid h-9 w-9 place-items-center rounded-full border border-sage-100 bg-sage-50 text-sage-600 shadow-inner">
@@ -213,8 +224,22 @@ onBeforeUnmount(() => {
               <span class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-sage-500">
                 {{ emailLink.label || 'Email' }}
               </span>
-              <span class="text-[0.82rem] font-semibold tracking-[0.02em] text-sage-700">
-                Compose message
+              <span class="flex items-center gap-1 text-[0.82rem] font-semibold tracking-[0.02em] text-sage-700">
+                <span>Compose message</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="h-[0.8rem] w-[0.8rem] transition-transform duration-200"
+                  :class="showHeroEmailPanel ? 'rotate-180' : ''"
+                  aria-hidden="true"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </span>
             </span>
           </AppButton>
@@ -283,24 +308,49 @@ onBeforeUnmount(() => {
             </AppLink>
           </div>
 
-          <Transition name="fade">
-            <div
-              v-if="showHeroEmailPanel && activeEmailHref"
-              key="email-inline"
-              class="pointer-events-auto absolute inset-0 flex min-h-[4.5rem] w-full items-center justify-center"
-              aria-labelledby="hero-socials-label"
-              role="group"
-            >
+          <Transition name="dropdown-fade">
+          <div
+            v-if="showHeroEmailPanel && activeEmailHref"
+            key="email-inline"
+            class="absolute left-1/2 top-[calc(100%+0.85rem)] z-[120] w-[min(20rem,calc(100vw-3rem))] -translate-x-1/2"
+            :style="{ visibility: emailPanelReady ? 'visible' : 'hidden' }"
+            role="group"
+            aria-label="Email options"
+          >
               <div
                 ref="heroEmailPanelLocal"
-                role="group"
-                aria-label="Email options"
-                class="flex flex-wrap items-center justify-center gap-3"
+                class="flex flex-col gap-3 rounded-2xl border border-sage-200/80 bg-white/98 p-4 text-left shadow-xl backdrop-blur"
               >
+                <div class="flex items-center justify-between">
+                  <p class="text-xs font-semibold uppercase tracking-[0.2em] text-sage-500">
+                    Email options
+                  </p>
+                  <AppButton
+                    variant="icon"
+                    class="!h-10 !w-10 border-sage-200/60 bg-white/80 text-sage-600 transition hover:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
+                    aria-label="Close email options"
+                    @click="emit('toggle-hero-email', emailLink.href)"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </AppButton>
+                </div>
                 <AppButton
                   ref="heroEmailCopyButtonLocal"
                   variant="primary"
-                  class="flex h-12 items-center gap-2 rounded-full !px-6 !py-0 text-sm shadow-md transition hover:shadow-lg"
+                  class="flex items-center justify-between gap-2 rounded-xl !px-4 !py-2.5 text-sm shadow-md transition hover:shadow-lg"
                   :class="[
                     copyState === 'copied' && 'ring-2 ring-sage-200/80 shadow-[0_0_0_4px_rgba(74,108,77,0.12)]',
                     copyState === 'error' && 'ring-2 ring-rose-200/80 shadow-[0_0_0_4px_rgba(251,113,133,0.12)]'
@@ -360,7 +410,7 @@ onBeforeUnmount(() => {
                   v-if="emailLink"
                   :href="emailLink.href"
                   variant="secondary"
-                  class="flex min-h-[48px] items-center gap-2 rounded-full border-sage-200/70 bg-white/90 !px-6 !py-0 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
+                  class="flex min-h-[44px] items-center justify-between gap-2 rounded-xl border-sage-200/70 bg-white/92 px-4 py-2 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
                   @click="emit('mailto')"
                 >
                   <svg
@@ -379,28 +429,6 @@ onBeforeUnmount(() => {
                   </svg>
                   <span>Open in mail app</span>
                 </AppLink>
-
-                <AppButton
-                  variant="icon"
-                  class="!h-12 !w-12 min-h-[48px] min-w-[48px] border-sage-200/60 bg-white/80 text-sage-600 transition hover:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
-                  @click="emit('toggle-hero-email', activeEmailHref || '')"
-                  aria-label="Close email options"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.6"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="h-5 w-5"
-                    aria-hidden="true"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </AppButton>
               </div>
             </div>
           </Transition>
@@ -422,7 +450,9 @@ onBeforeUnmount(() => {
               background: activeTooltipPreset.background,
               borderColor: activeTooltipPreset.borderColor,
               boxShadow: activeTooltipPreset.bubbleShadow,
-              color: activeTooltipPreset.textColor
+              color: activeTooltipPreset.textColor,
+              opacity: tooltipReady ? 1 : 0,
+              pointerEvents: tooltipReady ? 'auto' : 'none'
             }
           ]"
           data-testid="email-tooltip"

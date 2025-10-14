@@ -33,9 +33,10 @@ const props = defineProps<{
   showNavEmailPanel: boolean
   activeEmailHref: string | null
   copyState: ClipboardState
-  navEmailTriggerRef: { value: ButtonInstance | null }
-  emailPanelRef: { value: HTMLElement | null }
-  emailCopyButtonRef: { value: ButtonInstance | null }
+  emailPanelReady: boolean
+  navEmailTriggerRef: { value: ButtonInstance | null } | ((value: ButtonInstance | null) => void)
+  emailPanelRef: { value: HTMLElement | null } | ((value: HTMLElement | null) => void)
+  emailCopyButtonRef: { value: ButtonInstance | null } | ((value: ButtonInstance | null) => void)
 }>()
 
 const emit = defineEmits<Emit>()
@@ -45,8 +46,12 @@ const navEmailTriggerLocal = ref<ButtonInstance | null>(null)
 const emailPanelLocal = ref<HTMLElement | null>(null)
 const emailCopyButtonLocal = ref<ButtonInstance | null>(null)
 
-const assignExternalRef = <T>(target: { value: T } | null | undefined, value: T) => {
+const assignExternalRef = <T>(target: { value: T } | ((value: T) => void) | null | undefined, value: T) => {
   if (!target) {
+    return
+  }
+  if (typeof target === 'function') {
+    target(value)
     return
   }
   target.value = value
@@ -91,9 +96,7 @@ const reportHeightAfterTick = () => {
 watch(() => props.visible, (isVisible) => {
   if (!isVisible) {
     syncHeight(0)
-    if (props.emailPanelRef) {
-      props.emailPanelRef.value = null
-    }
+    assignExternalRef(props.emailPanelRef, null)
     return
   }
   reportHeightAfterTick()
@@ -210,11 +213,12 @@ onBeforeUnmount(() => {
                   </svg>
                 </AppButton>
 
-                <Transition name="fade">
+                <Transition name="dropdown-fade">
                   <div
                     v-if="showNavEmailPanel && activeEmailHref"
                     ref="emailPanelLocal"
                     class="absolute right-0 top-[calc(100%+0.75rem)] z-[110] flex w-60 flex-col gap-2 rounded-2xl border border-sage-200/80 bg-white/96 p-3 shadow-xl backdrop-blur"
+                    :style="{ visibility: emailPanelReady ? 'visible' : 'hidden' }"
                     role="group"
                     aria-label="Email options"
                   >

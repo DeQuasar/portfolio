@@ -2,12 +2,6 @@ x-common-environment: &common-env
   NUXT_TELEMETRY_DISABLED: "1"
   ENABLE_BROWSER_TESTS: "false"
 
-x-common-volumes: &common-volumes
-  - .:/app
-  - node_modules:/app/node_modules
-  - pnpm-store:/root/.local/share/pnpm
-  - playwright-cache:/ms-playwright
-
 services:
   app:
     build:
@@ -15,10 +9,19 @@ services:
     image: portfolio-dev:latest
     entrypoint: ["app-entrypoint.sh"]
     command: ["pnpm", "dev", "--host", "0.0.0.0", "--port", "3000"]
-    volumes: *common-volumes
+    volumes:
+      - .:/app
+      - app_node_modules:/app/node_modules
+      - pnpm-store:/root/.local/share/pnpm
+      - playwright-cache:/ms-playwright
     environment:
       <<: *common-env
       VITE_LOG_LEVEL: info
+      PORT: "3000"
+      VITE_HMR_HOST: "localhost"
+      VITE_HMR_PORT: "3000"
+      VITE_HMR_CLIENT_PORT: "3000"
+      VITE_ALLOWED_HOSTS: "localhost"
     ports:
       - "3000:3000"
     tty: true
@@ -32,7 +35,12 @@ services:
     environment:
       <<: *common-env
       CI: "1"
-    volumes: *common-volumes
+      SKIP_BOOTSTRAP: "1"
+    volumes:
+      - .:/app
+      - test_node_modules:/app/node_modules
+      - pnpm-store:/root/.local/share/pnpm
+      - playwright-cache:/ms-playwright
     profiles: ["tests"]
 
   coverage:
@@ -44,9 +52,10 @@ services:
     environment:
       <<: *common-env
       CI: "1"
+      SKIP_BOOTSTRAP: "1"
     volumes:
       - .:/app
-      - node_modules:/app/node_modules
+      - coverage_node_modules:/app/node_modules
       - pnpm-store:/root/.local/share/pnpm
       - playwright-cache:/ms-playwright
       - ./reports:/app/reports
@@ -61,7 +70,12 @@ services:
     environment:
       <<: *common-env
       CI: "1"
-    volumes: *common-volumes
+      SKIP_BOOTSTRAP: "1"
+    volumes:
+      - .:/app
+      - e2e_node_modules:/app/node_modules
+      - pnpm-store:/root/.local/share/pnpm
+      - playwright-cache:/ms-playwright
     profiles: ["tests"]
 
   performance:
@@ -73,11 +87,12 @@ services:
     environment:
       <<: *common-env
       CI: "1"
+      SKIP_BOOTSTRAP: "1"
       LHCI_RUNNER_UID: "${LOCAL_UID:-1000}"
       LHCI_RUNNER_GID: "${LOCAL_GID:-1000}"
     volumes:
       - .:/app
-      - node_modules:/app/node_modules
+      - performance_node_modules:/app/node_modules
       - pnpm-store:/root/.local/share/pnpm
       - playwright-cache:/ms-playwright
       - ./reports:/app/reports
@@ -90,6 +105,10 @@ services:
     profiles: ["tests"]
 
 volumes:
-  node_modules:
+  app_node_modules:
+  test_node_modules:
+  coverage_node_modules:
+  e2e_node_modules:
+  performance_node_modules:
   pnpm-store:
   playwright-cache:

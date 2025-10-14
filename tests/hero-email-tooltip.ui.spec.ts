@@ -209,8 +209,8 @@ async function installClipboardStub(page: Page) {
         console.warn('Failed to stub navigator.clipboard', assignError)
       }
     }
-
-    ;(window as typeof window & { __clipboardWrites?: string[] }).__clipboardWrites = writes
+    const clipboardState = window as typeof window & { __clipboardWrites?: string[] }
+    clipboardState.__clipboardWrites = writes
   })
 
   await page.reload({ waitUntil: 'networkidle' })

@@ -3,7 +3,7 @@ import CardSurface from '~/components/ui/CardSurface.vue'
 import Pill from '~/components/ui/Pill.vue'
 import type { SkillCategoryDisplay } from '~/composables/useSkillStack'
 
-const props = defineProps<{ category: SkillCategoryDisplay }>()
+defineProps<{ category: SkillCategoryDisplay }>()
 </script>
 
 <template>

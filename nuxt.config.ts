@@ -10,6 +10,16 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
     server: {
+      host: true,
+      port: Number(process.env.PORT ?? 3000),
+      strictPort: true,
+      allowedHosts: process.env.VITE_ALLOWED_HOSTS ? process.env.VITE_ALLOWED_HOSTS.split(',') : 'all',
+      hmr: {
+        protocol: process.env.VITE_HMR_PROTOCOL ?? 'ws',
+        host: process.env.VITE_HMR_HOST ?? 'localhost',
+        port: Number(process.env.VITE_HMR_PORT ?? process.env.PORT ?? 3000),
+        clientPort: Number(process.env.VITE_HMR_CLIENT_PORT ?? process.env.VITE_HMR_PORT ?? process.env.PORT ?? 3000)
+      },
       watch: {
         ignored: [
           '**/reports/**',

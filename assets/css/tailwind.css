@@ -88,15 +88,24 @@
   transform: translateY(6px);
 }
 
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+  transition: opacity 0.18s ease-in-out;
+}
+
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+  opacity: 0;
+}
+
 .tooltip-fade-enter-active,
 .tooltip-fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.2, 0.65, 0.3, 1);
+  transition: opacity 0.16s ease;
 }
 
 .tooltip-fade-enter-from,
 .tooltip-fade-leave-to {
   opacity: 0;
-  transform: translateY(6px);
 }
 
 @media (prefers-reduced-motion: reduce) {

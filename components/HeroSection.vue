@@ -7,6 +7,7 @@ import HeroPrimaryContent from '~/components/hero/HeroPrimaryContent.vue'
 import HeroBackgroundLayers from '~/components/hero/HeroBackgroundLayers.vue'
 import { useHeroContactControls } from '~/composables/useHeroContactControls'
 import { useHeroVisuals } from '~/composables/useHeroVisuals'
+import AppButton from '~/components/ui/AppButton.vue'
 
 const props = defineProps<{ hero: HeroContent }>()
 
@@ -44,9 +45,10 @@ const {
   emailCopyButtonEl,
   tooltipBubbleEl,
   tooltipArrowEl,
+  tooltipReady,
+  emailPanelReady,
   showNavEmailPanel,
   showHeroEmailPanel,
-  showEmailPanel,
   activeEmailHref,
   toggleHeroEmailPanel,
   toggleNavEmailPanel,
@@ -89,6 +91,30 @@ const handleStickyNavHeightChange = (height: number) => {
 }
 
 const { heroBackdropStyle, heroTextureOverlayStyle, heroNoiseOverlayStyle } = useHeroVisuals()
+
+const setHeroEmailTrigger = (instance: InstanceType<typeof AppButton> | null) => {
+  emailTriggerEl.value = instance
+}
+
+const setNavEmailTrigger = (instance: InstanceType<typeof AppButton> | null) => {
+  navEmailTriggerEl.value = instance
+}
+
+const setEmailPanelEl = (element: HTMLElement | null) => {
+  emailPanelEl.value = element
+}
+
+const setEmailCopyButton = (instance: InstanceType<typeof AppButton> | null) => {
+  emailCopyButtonEl.value = instance
+}
+
+const setTooltipBubble = (element: HTMLElement | null) => {
+  tooltipBubbleEl.value = element
+}
+
+const setTooltipArrow = (element: HTMLElement | null) => {
+  tooltipArrowEl.value = element
+}
 
 watch(showStickyNav, (isSticky) => {
   if (isSticky) {
@@ -135,9 +161,10 @@ onBeforeUnmount(() => {
     :show-nav-email-panel="showNavEmailPanel"
     :active-email-href="activeEmailHref"
     :copy-state="copyState"
-    :nav-email-trigger-ref="navEmailTriggerEl"
-    :email-panel-ref="emailPanelEl"
-    :email-copy-button-ref="emailCopyButtonEl"
+    :email-panel-ready="emailPanelReady"
+    :nav-email-trigger-ref="setNavEmailTrigger"
+    :email-panel-ref="setEmailPanelEl"
+    :email-copy-button-ref="setEmailCopyButton"
     @start-resume-download="startResumeDownload"
     @toggle-nav-email="toggleNavEmailPanel"
     @copy-email="copyEmail"
@@ -148,12 +175,17 @@ onBeforeUnmount(() => {
   <section
     ref="heroSectionEl"
     :style="heroBackdropStyle"
-    class="relative isolate flex flex-col items-center overflow-hidden rounded-[2.2rem] px-6 py-14 text-center shadow-card sm:px-10"
+    class="relative isolate flex flex-col items-center rounded-[2.2rem] px-6 py-14 text-center shadow-card sm:px-10"
   >
-    <HeroBackgroundLayers
-      :texture-style="heroTextureOverlayStyle"
-      :noise-style="heroNoiseOverlayStyle"
-    />
+    <div
+      class="pointer-events-none absolute inset-0 overflow-hidden rounded-[2.2rem] -z-10"
+      aria-hidden="true"
+    >
+      <HeroBackgroundLayers
+        :texture-style="heroTextureOverlayStyle"
+        :noise-style="heroNoiseOverlayStyle"
+      />
+    </div>
 
     <HeroPrimaryContent
       :hero="props.hero"
@@ -167,15 +199,17 @@ onBeforeUnmount(() => {
       :active-email-href="activeEmailHref"
       :copy-state="copyState"
       :tooltip-variant="tooltipVariant"
-      :tooltip-heading="tooltipHeading"
-      :active-tooltip-preset="activeTooltipPreset"
-      :tooltip-arrow-style="tooltipArrowStyle"
-      :floating-styles="floatingStyles"
-      :email-trigger-ref="emailTriggerEl"
-      :email-panel-ref="emailPanelEl"
-      :email-copy-button-ref="emailCopyButtonEl"
-      :tooltip-bubble-ref="tooltipBubbleEl"
-      :tooltip-arrow-ref="tooltipArrowEl"
+    :tooltip-heading="tooltipHeading"
+    :active-tooltip-preset="activeTooltipPreset"
+    :tooltip-arrow-style="tooltipArrowStyle"
+    :floating-styles="floatingStyles"
+    :tooltip-ready="tooltipReady"
+    :email-trigger-ref="setHeroEmailTrigger"
+      :email-panel-ref="setEmailPanelEl"
+      :email-copy-button-ref="setEmailCopyButton"
+      :tooltip-bubble-ref="setTooltipBubble"
+      :tooltip-arrow-ref="setTooltipArrow"
+      :email-panel-ready="emailPanelReady"
       @start-resume-download="startResumeDownload"
       @toggle-hero-email="toggleHeroEmailPanel"
       @copy-email="copyEmail"

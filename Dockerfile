@@ -12,7 +12,8 @@ RUN corepack enable && corepack prepare pnpm@10.17.1 --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
 
 RUN --mount=type=cache,target=/root/.cache/pnpm \
-    pnpm install --frozen-lockfile --ignore-scripts
+    pnpm install --frozen-lockfile && \
+    pnpm rebuild better-sqlite3
 
 COPY docker/app/entrypoint.sh /usr/local/bin/app-entrypoint.sh
 RUN chmod +x /usr/local/bin/app-entrypoint.sh
