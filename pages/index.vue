@@ -13,7 +13,6 @@ const { data: experience } = await useExperienceContent()
     </div>
     <div class="relative mx-auto flex w-full max-w-5xl flex-col gap-16 px-4 sm:px-6">
       <HeroSection v-if="hero" :hero="hero" />
-      <SectionQuickNav />
       <ExperienceSection
         v-if="experience"
         id="experience"

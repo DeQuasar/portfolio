@@ -30,9 +30,6 @@ test.describe('homepage (desktop & mobile)', () => {
     const heroSummary = page.getByText(/Senior software developer with 6\+ years of experience/i).first()
     await expect(heroSummary).toBeVisible()
 
-    const quickNav = page.locator('nav[aria-label="Section quick navigation"]')
-    await expect(quickNav).toBeHidden()
-
     await page.getByRole('link', { name: /View profile/i }).click()
     await expect(page.locator('#experience')).toBeVisible()
 
@@ -90,16 +87,6 @@ test.describe('homepage (desktop & mobile)', () => {
 
     const results = await axe.analyze()
     expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
-  })
-
-  test('section quick nav is visible only on mobile', async ({ page }, testInfo) => {
-    test.skip(!testInfo.project.name.includes('mobile'), 'Mobile project only')
-
-    await gotoHome(page)
-
-    const quickNav = page.locator('nav[aria-label="Section quick navigation"]')
-    await expect(quickNav).toBeVisible()
-    await expect(quickNav.getByRole('link', { name: 'Experience' })).toBeVisible()
   })
 })
 
