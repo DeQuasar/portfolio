@@ -46,6 +46,17 @@ const navEmailTriggerLocal = ref<ButtonInstance | null>(null)
 const emailPanelLocal = ref<HTMLElement | null>(null)
 const emailCopyButtonLocal = ref<ButtonInstance | null>(null)
 
+const clampNavWidth = () => {
+  if (!navRootEl.value) {
+    return
+  }
+  navRootEl.value.style.width = '100vw'
+  navRootEl.value.style.maxWidth = '100vw'
+  navRootEl.value.style.left = '0'
+  navRootEl.value.style.right = ''
+  navRootEl.value.style.overflowX = 'hidden'
+}
+
 const assignExternalRef = <T>(target: { value: T } | ((value: T) => void) | null | undefined, value: T) => {
   if (!target) {
     return
@@ -89,6 +100,7 @@ const reportHeightAfterTick = () => {
     return
   }
   nextTick(() => {
+    clampNavWidth()
     syncHeight(navRootEl.value?.offsetHeight ?? 0)
   })
 }
@@ -103,6 +115,7 @@ watch(() => props.visible, (isVisible) => {
 })
 
 onMounted(() => {
+  clampNavWidth()
   reportHeightAfterTick()
 })
 
@@ -117,27 +130,99 @@ onBeforeUnmount(() => {
       <nav
         v-if="visible"
         ref="navRootEl"
-        class="fixed inset-x-0 top-0 z-[95] flex justify-center px-nav-safe pb-3 pt-nav-safe sm:pb-4 [--nav-padding:0.75rem] sm:[--nav-padding:1rem] [--nav-horizontal:1rem] sm:[--nav-horizontal:1.5rem]"
+        class="fixed left-0 top-0 z-[95] flex w-screen justify-center px-4 pb-2 pt-nav-safe sm:pb-3 sm:px-6 [--nav-padding:0.65rem] sm:[--nav-padding:1rem]"
         aria-label="Primary navigation"
       >
         <div
-          class="flex w-full max-w-5xl flex-col gap-2.5 rounded-[1.75rem] border border-sage-200/80 bg-white/98 px-4 py-2.5 shadow-[0_20px_46px_-28px_rgba(31,52,36,0.48)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-3.5 sm:px-5 md:flex-nowrap"
+          class="flex w-full max-w-5xl flex-col gap-2 rounded-[1.4rem] border border-sage-200/70 bg-white/95 px-4 py-2 shadow-[0_20px_46px_-28px_rgba(31,52,36,0.48)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-3.5 sm:rounded-[1.75rem] sm:px-5 sm:py-2.5"
         >
-          <div class="flex flex-1 items-center justify-center gap-3 sm:justify-start md:gap-4">
+          <div class="flex w-full items-center justify-between sm:hidden">
+            <div class="flex flex-col text-left leading-tight">
+              <span class="font-display text-base font-semibold text-sage-700">{{ hero.name }}</span>
+              <span class="text-xs font-semibold uppercase tracking-[0.16em] text-sage-600">
+                {{ hero.role }}
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <AppLink
+                :href="hero.primaryCta.href"
+                variant="icon"
+                class="!h-11 !w-11 border-sage-300 bg-sage-600 !text-white shadow-md transition hover:bg-sage-600/90 hover:!text-white"
+                :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
+                @click="(event) => emit('start-resume-download', event)"
+              >
+                <svg
+                  v-if="!resumeIsDownloading"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  <path d="M12 4v9" />
+                  <polyline points="8 9 12 13 16 9" />
+                  <path d="M5 19h14" />
+                </svg>
+                <svg
+                  v-else
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  class="h-5 w-5 animate-spin"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7" opacity="0.3" />
+                  <path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-linecap="round" stroke-width="1.7" />
+                </svg>
+              </AppLink>
+
+              <AppButton
+                v-if="emailLink"
+                ref="navEmailTriggerLocal"
+                variant="icon"
+                class="!h-11 !w-11 border-sage-200/70 bg-white text-sage-600 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-400 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
+                :aria-label="'Toggle email options'"
+                @click="emit('toggle-nav-email', emailLink.href)"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
+                </svg>
+              </AppButton>
+            </div>
+          </div>
+
+          <div class="hidden flex-1 items-center justify-center gap-3 sm:flex sm:justify-start md:gap-4">
             <div class="flex flex-col items-center text-center leading-tight sm:items-start sm:text-left">
-              <span class="font-display text-[0.98rem] font-semibold text-sage-700 sm:text-lg">{{ hero.name }}</span>
-              <span class="text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-sage-600 sm:text-[0.78rem] sm:tracking-[0.2em] md:text-sm md:tracking-[0.22em]">
+              <span class="font-display text-base font-semibold text-sage-700 sm:text-lg">{{ hero.name }}</span>
+              <span class="text-sm font-semibold uppercase tracking-[0.16em] text-sage-600 sm:text-sm sm:tracking-[0.18em] md:text-base md:tracking-[0.2em]">
                 {{ hero.role }}
               </span>
             </div>
           </div>
 
-          <div class="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end sm:gap-2.5 md:gap-3">
+          <div class="hidden w-full flex-wrap items-center justify-center gap-2 sm:flex sm:w-auto sm:flex-nowrap sm:justify-end sm:gap-2.5 md:gap-3">
             <AppLink
               :href="hero.primaryCta.href"
               variant="cta"
               :class="[
-                'group relative w-full min-h-[44px] justify-center overflow-hidden rounded-full bg-gradient-to-r from-sage-600 via-sage-600 to-sage-600 px-5 text-[0.78rem] font-semibold uppercase tracking-[0.22em] text-white shadow-[0_18px_34px_-20px_rgba(46,79,51,0.72)] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:w-auto sm:min-w-[12rem] sm:px-6',
+                'group relative w-full min-h-[44px] justify-center overflow-hidden rounded-full bg-gradient-to-r from-sage-600 via-sage-600 to-sage-600 px-5 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[0_18px_34px_-20px_rgba(46,79,51,0.72)] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:w-auto sm:min-w-[12rem] sm:px-6',
                 resumeIsDownloading && 'pointer-events-none opacity-75'
               ]"
               :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
@@ -178,7 +263,7 @@ onBeforeUnmount(() => {
                 </span>
                 <span class="flex items-center gap-1">
                   <span>{{ hero.primaryCta.label }}</span>
-                  <span v-if="resumeDownloadProgressDisplay !== null" class="text-[0.62rem] font-semibold tracking-normal">
+                  <span v-if="resumeDownloadProgressDisplay !== null" class="text-xs font-semibold tracking-normal">
                     {{ resumeDownloadProgressDisplay }}%
                   </span>
                 </span>
@@ -224,7 +309,7 @@ onBeforeUnmount(() => {
                     <AppButton
                       ref="emailCopyButtonLocal"
                       variant="secondary"
-                      class="justify-between rounded-xl border-sage-200 bg-white/92 px-4 py-2.5 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
+                      class="flex min-h-[44px] items-center justify-between rounded-xl border-sage-200 bg-white/92 px-4 py-2.5 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
                       :class="copyState === 'copied' && 'border-sage-400 text-sage-700 shadow-[0_0_24px_-12px_rgba(74,108,77,0.45)]'"
                       @click="emit('copy-email', activeEmailHref)"
                     >
@@ -267,7 +352,7 @@ onBeforeUnmount(() => {
                       v-if="emailLink"
                       :href="emailLink.href"
                       variant="minimal"
-                      class="justify-between rounded-xl px-4 py-2 text-sm font-semibold text-sage-500 hover:text-sage-600"
+                      class="flex min-h-[44px] items-center justify-between rounded-xl px-4 py-2 text-sm font-semibold text-sage-500 hover:text-sage-600"
                       @click="emit('mailto')"
                     >
                       <span>Open in mail app</span>
