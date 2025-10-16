@@ -161,15 +161,15 @@ onBeforeUnmount(() => {
           :href="hero.primaryCta.href"
           variant="cta"
           :class="[
-            'group relative min-h-[48px] overflow-hidden rounded-full border border-sage-500/80 bg-gradient-to-r from-sage-600 via-sage-600 to-sage-500 px-6 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[0_24px_48px_-28px_rgba(46,79,51,0.68)] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-200 sm:px-8',
+            'group relative min-h-[44px] overflow-hidden rounded-full border border-sage-500/70 bg-gradient-to-r from-sage-600 via-sage-600 to-sage-500 px-5 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-white shadow-[0_22px_42px_-26px_rgba(46,79,51,0.68)] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-200 sm:min-h-[46px] sm:px-6',
             resumeIsDownloading && 'pointer-events-none brightness-95'
           ]"
           :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
           @click="(event) => emit('start-resume-download', event)"
         >
           <span class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.4),transparent_62%)] opacity-75 transition-opacity duration-200 group-hover:opacity-95"></span>
-          <span class="relative flex items-center gap-2.5">
-            <span class="grid h-8 w-8 place-items-center rounded-full bg-white/24 text-white shadow-inner transition duration-200 group-hover:bg-white/32">
+          <span class="relative flex items-center gap-2">
+            <span class="grid h-7 w-7 place-items-center rounded-full bg-white/24 text-white shadow-inner transition duration-200 group-hover:bg-white/28">
               <svg
                 v-if="!resumeIsDownloading"
                 xmlns="http://www.w3.org/2000/svg"
@@ -179,7 +179,7 @@ onBeforeUnmount(() => {
                 stroke-width="1.6"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                class="h-[1rem] w-[1rem]"
+                class="h-[0.88rem] w-[0.88rem]"
                 aria-hidden="true"
               >
                 <path d="M12 4v9" />
@@ -194,14 +194,14 @@ onBeforeUnmount(() => {
                 stroke="currentColor"
                 stroke-width="1.6"
                 stroke-linecap="round"
-                class="h-[1rem] w-[1rem] animate-spin"
+                class="h-[0.88rem] w-[0.88rem] animate-spin"
                 aria-hidden="true"
               >
                 <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" opacity="0.28" fill="none" />
                 <path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" />
               </svg>
             </span>
-            <span class="flex items-center gap-1.5 text-sm tracking-[0.18em] uppercase">
+            <span class="flex items-center gap-1 text-[0.76rem] tracking-[0.16em] uppercase">
               <span>{{ hero.primaryCta.label }}</span>
               <span v-if="resumeDownloadProgressDisplay !== null" class="text-xs font-semibold tracking-normal">
                 {{ resumeDownloadProgressDisplay }}%
@@ -216,7 +216,7 @@ onBeforeUnmount(() => {
         <AppLink
           href="#experience"
           variant="secondary"
-          class="w-full min-h-[48px] items-center justify-center gap-2 rounded-full border-sage-200/80 px-6 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-sage-600 shadow-sm transition duration-200 hover:border-sage-400 hover:text-sage-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:w-auto"
+          class="w-full min-h-[44px] items-center justify-center gap-2 rounded-full border-sage-200/70 px-5 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-sage-600 shadow-sm transition duration-200 hover:border-sage-400 hover:text-sage-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:w-auto"
         >
           View profile
         </AppLink>
@@ -229,13 +229,13 @@ onBeforeUnmount(() => {
             v-if="emailLink"
             ref="heroEmailTriggerLocal"
             variant="secondary"
-            class="flex min-h-[48px] items-center gap-2 rounded-full border-sage-200/80 bg-white/90 !px-5 !py-0 text-sm font-semibold text-sage-600 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:text-sage-700 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
+            class="flex min-h-[44px] items-center gap-2 rounded-full border-sage-200/70 bg-white/95 !px-4 !py-0 text-[0.78rem] font-semibold text-sage-600 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:text-sage-700 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
             :aria-expanded="showHeroEmailPanel"
             aria-haspopup="menu"
             aria-label="View email options"
             @click="emit('toggle-hero-email', emailLink.href)"
           >
-            <span class="grid h-9 w-9 place-items-center rounded-full border border-sage-100 bg-sage-50 text-sage-600 shadow-inner">
+            <span class="grid h-8 w-8 place-items-center rounded-full border border-sage-100 bg-sage-50 text-sage-600 shadow-inner">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -244,7 +244,7 @@ onBeforeUnmount(() => {
                 stroke-width="1.8"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                class="h-[1rem] w-[1rem]"
+                class="h-[0.9rem] w-[0.9rem]"
                 aria-hidden="true"
               >
                 <rect x="2" y="5" width="20" height="14" rx="2" />
@@ -252,10 +252,10 @@ onBeforeUnmount(() => {
               </svg>
             </span>
             <span class="flex flex-col text-left leading-tight">
-              <span class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-500">
+              <span class="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-sage-500">
                 {{ emailLink.label || 'Email' }}
               </span>
-              <span class="flex items-center gap-1 text-sm font-semibold tracking-tight text-sage-700">
+              <span class="flex items-center gap-1 text-[0.76rem] font-semibold tracking-tight text-sage-700">
                 <span>Compose message</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -286,7 +286,7 @@ onBeforeUnmount(() => {
               :href="link.href"
               :aria-label="link.label"
               variant="icon"
-              class="!h-11 !w-11 min-h-[44px] min-w-[44px] border-sage-200/70 bg-white text-sage-600 opacity-90 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:opacity-100 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:!h-12 sm:!w-12"
+              class="!h-11 !w-11 min-h-[42px] min-w-[42px] border-sage-200/70 bg-white text-sage-600 opacity-90 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:opacity-100 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:!h-11 sm:!w-11"
             >
               <span class="sr-only">{{ link.label }}</span>
               <svg
@@ -298,7 +298,7 @@ onBeforeUnmount(() => {
                 stroke-width="1.6"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                class="h-5 w-5"
+                class="h-[0.95rem] w-[0.95rem]"
                 aria-hidden="true"
               >
                 <path
@@ -314,7 +314,7 @@ onBeforeUnmount(() => {
                 stroke-width="1.6"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                class="h-5 w-5"
+                class="h-[0.95rem] w-[0.95rem]"
                 aria-hidden="true"
               >
                 <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z" />
@@ -330,7 +330,7 @@ onBeforeUnmount(() => {
                 stroke-width="1.6"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                class="h-5 w-5"
+                class="h-[0.95rem] w-[0.95rem]"
                 aria-hidden="true"
               >
                 <rect x="2" y="5" width="20" height="14" rx="2" />

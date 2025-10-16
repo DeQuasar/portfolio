@@ -134,11 +134,11 @@ onBeforeUnmount(() => {
         aria-label="Primary navigation"
       >
         <div
-          class="flex w-full max-w-5xl flex-col gap-2 rounded-[1.4rem] border border-sage-200/70 bg-white/95 px-4 py-2 shadow-[0_20px_46px_-28px_rgba(31,52,36,0.48)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-3.5 sm:rounded-[1.75rem] sm:px-5 sm:py-2.5"
+          class="flex w-full max-w-5xl flex-col gap-2 rounded-[1.4rem] border border-sage-200/70 bg-white/95 px-4 py-2 shadow-[0_20px_46px_-28px_rgba(31,52,36,0.48)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:rounded-[1.75rem] sm:px-5 sm:py-2.5"
         >
           <div class="flex w-full items-center justify-between sm:hidden">
             <div class="flex flex-col text-left leading-tight">
-              <span class="font-display text-base font-semibold text-sage-700">{{ hero.name }}</span>
+              <span class="font-display text-[0.95rem] font-semibold text-sage-700">{{ hero.name }}</span>
               <span class="text-xs font-semibold uppercase tracking-[0.16em] text-sage-600">
                 {{ hero.role }}
               </span>
@@ -147,7 +147,7 @@ onBeforeUnmount(() => {
               <AppLink
                 :href="hero.primaryCta.href"
                 variant="icon"
-                class="!h-11 !w-11 !border-transparent !bg-sage-600 !text-white shadow-md transition hover:!bg-sage-600/90 hover:!text-white focus-visible:!ring-white/60"
+                class="!h-10 !w-10 !border-transparent !bg-sage-600 !text-white shadow-md transition hover:!bg-sage-600/90 hover:!text-white focus-visible:!ring-white/60"
                 :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
                 @click="(event) => emit('start-resume-download', event)"
               >
@@ -160,7 +160,7 @@ onBeforeUnmount(() => {
                   stroke-width="1.7"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  class="h-5 w-5"
+                  class="h-[0.9rem] w-[0.9rem]"
                   aria-hidden="true"
                 >
                   <path d="M12 4v9" />
@@ -174,7 +174,7 @@ onBeforeUnmount(() => {
                   fill="none"
                   stroke="currentColor"
                   stroke-width="1.7"
-                  class="h-5 w-5 animate-spin"
+                  class="h-[0.9rem] w-[0.9rem] animate-spin"
                   aria-hidden="true"
                 >
                   <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7" opacity="0.3" />
@@ -186,7 +186,7 @@ onBeforeUnmount(() => {
                 v-if="emailLink"
                 ref="navEmailTriggerLocal"
                 variant="icon"
-                class="!h-11 !w-11 border-sage-200/70 bg-white text-sage-600 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-400 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
+                class="!h-10 !w-10 border-sage-200/70 bg-white text-sage-600 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-400 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
                 :aria-label="'Toggle email options'"
                 @click="emit('toggle-nav-email', emailLink.href)"
               >
@@ -198,7 +198,7 @@ onBeforeUnmount(() => {
                   stroke-width="1.8"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  class="h-5 w-5"
+                  class="h-[0.9rem] w-[0.9rem]"
                   aria-hidden="true"
                 >
                   <rect x="2" y="5" width="20" height="14" rx="2" />
@@ -210,7 +210,7 @@ onBeforeUnmount(() => {
 
           <div class="hidden flex-1 items-center justify-center gap-3 sm:flex sm:justify-start md:gap-4">
             <div class="flex flex-col items-center text-center leading-tight sm:items-start sm:text-left">
-              <span class="font-display text-base font-semibold text-sage-700 sm:text-lg">{{ hero.name }}</span>
+              <span class="font-display text-[0.95rem] font-semibold text-sage-700 sm:text-lg">{{ hero.name }}</span>
               <span class="text-sm font-semibold uppercase tracking-[0.16em] text-sage-600 sm:text-sm sm:tracking-[0.18em] md:text-base md:tracking-[0.2em]">
                 {{ hero.role }}
               </span>
@@ -222,7 +222,7 @@ onBeforeUnmount(() => {
               :href="hero.primaryCta.href"
               variant="cta"
               :class="[
-                'group relative w-full min-h-[44px] justify-center overflow-hidden rounded-full bg-gradient-to-r from-sage-600 via-sage-600 to-sage-600 px-5 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[0_18px_34px_-20px_rgba(46,79,51,0.72)] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:w-auto sm:min-w-[12rem] sm:px-6',
+                'group relative w-full min-h-[44px] justify-center overflow-hidden rounded-full bg-gradient-to-r from-sage-600 via-sage-600 to-sage-600 px-5 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-white shadow-[0_18px_34px_-20px_rgba(46,79,51,0.72)] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:w-auto sm:min-w-[11rem] sm:px-6',
                 resumeIsDownloading && 'pointer-events-none opacity-75'
               ]"
               :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
@@ -278,7 +278,7 @@ onBeforeUnmount(() => {
                 <AppButton
                   ref="navEmailTriggerLocal"
                   variant="icon"
-                  class="!h-11 !w-11 min-h-[44px] min-w-[44px] border-sage-200/70 bg-white text-sage-600 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-sage-400 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:!h-12 sm:!w-12"
+                  class="!h-11 !w-11 min-h-[42px] min-w-[42px] border-sage-200/70 bg-white text-sage-600 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-sage-400 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:!h-11 sm:!w-11"
                   :aria-label="'Toggle email options'"
                   @click="emit('toggle-nav-email', emailLink.href)"
                 >
@@ -290,7 +290,7 @@ onBeforeUnmount(() => {
                     stroke-width="1.8"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    class="h-5 w-5"
+                    class="h-[0.95rem] w-[0.95rem]"
                     aria-hidden="true"
                   >
                     <rect x="2" y="5" width="20" height="14" rx="2" />
@@ -381,7 +381,7 @@ onBeforeUnmount(() => {
                 :href="link.href"
                 :aria-label="link.label"
                 variant="icon"
-                class="!h-11 !w-11 min-h-[44px] min-w-[44px] border-sage-200/70 bg-white text-sage-600 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:!h-12 sm:!w-12"
+                class="!h-10 !w-10 min-h-[42px] min-w-[42px] border-sage-200/70 bg-white text-sage-600 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:!h-10 sm:!w-10"
               >
                 <span class="sr-only">{{ link.label }}</span>
                 <svg
@@ -393,7 +393,7 @@ onBeforeUnmount(() => {
                   stroke-width="1.6"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  class="h-5 w-5"
+                  class="h-[0.95rem] w-[0.95rem]"
                   aria-hidden="true"
                 >
                   <path
@@ -409,7 +409,7 @@ onBeforeUnmount(() => {
                   stroke-width="1.6"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  class="h-5 w-5"
+                  class="h-[0.95rem] w-[0.95rem]"
                   aria-hidden="true"
                 >
                   <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z" />
@@ -425,7 +425,7 @@ onBeforeUnmount(() => {
                   stroke-width="1.6"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  class="h-5 w-5"
+                  class="h-[0.95rem] w-[0.95rem]"
                   aria-hidden="true"
                 >
                   <rect x="2" y="5" width="20" height="14" rx="2" />
