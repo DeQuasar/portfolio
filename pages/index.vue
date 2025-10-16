@@ -7,22 +7,24 @@ const { data: experience } = await useExperienceContent()
 </script>
 
 <template>
-  <main class="relative py-16 sm:py-20">
+  <main class="relative pb-16 sm:pb-20">
     <div class="absolute inset-0">
       <div class="h-full w-full bg-sage-50"></div>
     </div>
-    <div class="relative mx-auto flex w-full max-w-5xl flex-col gap-16 px-4 sm:px-6">
+    <div class="relative mx-auto flex w-full max-w-5xl flex-col gap-16 px-0 sm:px-6">
       <HeroSection v-if="hero" :hero="hero" />
       <ExperienceSection
         v-if="experience"
         id="experience"
         :experience="experience"
+        class="px-4 sm:px-0"
       />
       <SkillStack
         v-if="skills"
         id="skills"
         :skills="skills"
         :experience="experience"
+        class="px-4 sm:px-0"
       />
     </div>
   </main>

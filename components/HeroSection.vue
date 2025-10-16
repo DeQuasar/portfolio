@@ -175,10 +175,10 @@ onBeforeUnmount(() => {
   <section
     ref="heroSectionEl"
     :style="heroBackdropStyle"
-    class="relative isolate flex flex-col items-center rounded-[2.2rem] px-6 py-14 text-center shadow-card sm:px-10"
+    class="relative isolate flex min-h-[100svh] flex-col items-center overflow-hidden rounded-none px-6 pb-12 pt-[clamp(3.5rem,10vh,5rem)] text-center shadow-none sm:min-h-0 sm:rounded-[2.2rem] sm:px-10 sm:py-14 sm:shadow-card"
   >
     <div
-      class="pointer-events-none absolute inset-0 overflow-hidden rounded-[2.2rem] -z-10"
+      class="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-none sm:rounded-[2.2rem]"
       aria-hidden="true"
     >
       <HeroBackgroundLayers
@@ -205,7 +205,7 @@ onBeforeUnmount(() => {
       :floating-styles="floatingStyles"
       :tooltip-anchor-source="tooltipAnchorSource"
       :tooltip-ready="tooltipReady"
-    :email-trigger-ref="setHeroEmailTrigger"
+      :email-trigger-ref="setHeroEmailTrigger"
       :email-panel-ref="setEmailPanelEl"
       :email-copy-button-ref="setEmailCopyButton"
       :tooltip-bubble-ref="setTooltipBubble"
