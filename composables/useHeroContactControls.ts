@@ -85,6 +85,7 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
   const tooltipReferenceSource = ref<PanelSource>('hero')
   const emailPanelReady = ref(false)
   const tooltipReady = ref(false)
+  const navPanelRecentlyClosed = ref(false)
 
   const tooltipPresets: Record<'success' | 'error', TooltipPreset> = {
     success: {
@@ -149,6 +150,62 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
       coords.left = 'calc(100% - 1.6rem)'
     }
     return coords
+  })
+
+  const tooltipFloatingStyles = computed(() => {
+    const base = floatingStyles.value ?? {}
+
+    const parsePx = (value: string | number | undefined): number => {
+      if (value === undefined) {
+        return 0
+      }
+      if (typeof value === 'number') {
+        return value
+      }
+      const match = value.match(/-?\d+(\.\d+)?/)
+      return match ? Number(match[0]) : 0
+    }
+
+    const toPx = (value: string | number | undefined): string | undefined => {
+      if (value === undefined) {
+        return undefined
+      }
+      return typeof value === 'number' ? `${value}px` : value
+    }
+
+    const style: Record<string, string | number> = {}
+
+    Object.assign(style, base)
+    style.position = 'fixed'
+
+    let top = parsePx(base.top as string | number | undefined)
+
+    if (tooltipAnchorSource.value === 'nav') {
+      let stickyNavHeight = 0
+      if (typeof window !== 'undefined') {
+        const rootStyle = getComputedStyle(document.documentElement)
+        const varValue = rootStyle.getPropertyValue('--sticky-nav-height')
+        stickyNavHeight = Number.parseFloat(varValue) || 0
+      }
+      const minimumTop = stickyNavHeight + 10
+      top = Math.max(top + 6, minimumTop)
+
+      style.top = `${top}px`
+      style.left = 'clamp(1rem, 4vw, 1.5rem)'
+      style.right = 'clamp(1rem, 4vw, 1.5rem)'
+      style.transform = 'none'
+    } else {
+      style.top = `${top}px`
+      const leftValue = toPx(base.left as string | number | undefined)
+      if (leftValue !== undefined) {
+        style.left = leftValue
+      }
+      if ('right' in style) {
+        delete style.right
+      }
+    }
+
+    return style
   })
 
   const tooltipVariant = computed<'idle' | 'success' | 'error'>(() => (copyState.value === 'error' ? 'error' : copyState.value === 'copied' ? 'success' : 'idle'))
@@ -223,7 +280,19 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
       resetCopyState()
     }
     const shouldReturnFocus = options?.returnFocus ?? true
-    const restoreScroll = process.client && shouldReturnFocus
+    const closedFromNav = previousSource === 'nav'
+
+    if (closedFromNav) {
+      navPanelRecentlyClosed.value = true
+      if (process.client) {
+        requestAnimationFrame(() => {
+          navPanelRecentlyClosed.value = false
+        })
+      }
+    }
+
+    const effectiveReturnFocus = shouldReturnFocus && !closedFromNav
+    const restoreScroll = process.client && effectiveReturnFocus
       ? (() => {
           const { scrollX, scrollY } = window
           return () => {
@@ -233,7 +302,7 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
       : null
 
     nextTick(() => {
-      if (!shouldReturnFocus) {
+      if (!effectiveReturnFocus) {
         return
       }
       if (previousSource === 'hero') {
@@ -255,10 +324,16 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
 
   const toggleNavEmailPanel = async (href: string) => {
     if (showNavEmailPanel.value) {
-      closeEmailPanel()
-    } else {
-      await openEmailPanel(href, 'nav')
+      closeEmailPanel({ returnFocus: false })
+      return
     }
+
+    if (navPanelRecentlyClosed.value) {
+      navPanelRecentlyClosed.value = false
+      return
+    }
+
+    await openEmailPanel(href, 'nav')
   }
 
   const handleMailtoLink = () => {
@@ -358,7 +433,7 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     tooltipHeading,
     activeTooltipPreset,
     tooltipArrowStyle,
-    floatingStyles,
+    floatingStyles: tooltipFloatingStyles,
     emailTriggerEl,
     navEmailTriggerEl,
     emailPanelEl,

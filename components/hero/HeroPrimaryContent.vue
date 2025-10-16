@@ -462,97 +462,90 @@ onBeforeUnmount(() => {
         Links to social profiles
       </p>
 
-      <Transition name="tooltip-fade">
-        <div
-          v-if="tooltipVariant !== 'idle'"
-          ref="tooltipBubbleLocal"
-          :class="[
-            'absolute inline-grid w-52 grid-cols-[auto_1fr] items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-sm font-semibold tracking-[0.01em]',
-            tooltipAnchorSource === 'nav' ? 'z-[120]' : 'z-[80]'
-          ]"
-          :style="[
-            floatingStyles,
-            {
-              background: activeTooltipPreset.background,
-              borderColor: activeTooltipPreset.borderColor,
-              boxShadow: activeTooltipPreset.bubbleShadow,
-              color: activeTooltipPreset.textColor,
-              opacity: tooltipReady ? 1 : 0,
-              pointerEvents: tooltipReady ? 'auto' : 'none'
-            }
-          ]"
-          data-testid="email-tooltip"
-          :data-variant="tooltipVariant === 'error' ? 'error' : 'success'"
-          role="status"
-        >
-          <span
-            class="grid h-8 w-8 place-items-center rounded-full text-current"
-            :style="{
-              background: activeTooltipPreset.iconBackground,
-              boxShadow: activeTooltipPreset.iconShadow,
-              color: activeTooltipPreset.textColor
-            }"
-            aria-hidden="true"
-          >
-            <svg
-              v-if="tooltipVariant === 'success'"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="h-4 w-4"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            <svg
-              v-else-if="tooltipVariant === 'error'"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="h-4 w-4"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-            <svg
-              v-else
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="h-4 w-4"
-            >
-              <rect x="3" y="5" width="18" height="14" rx="2" />
-              <path d="M3 7l8.89 5.56a2 2 0 002.22 0L23 7" />
-            </svg>
-          </span>
-          <span>
-            {{ tooltipHeading }}
-          </span>
-          <span
-            ref="tooltipArrowLocal"
-            class="pointer-events-none absolute h-3 w-3 rotate-45 border"
+      <Teleport to="body">
+        <Transition name="tooltip-fade">
+          <div
+            v-if="tooltipVariant !== 'idle'"
+            ref="tooltipBubbleLocal"
+            :class="[
+              'grid grid-cols-[auto_1fr] items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-sm font-semibold tracking-[0.01em]',
+              tooltipAnchorSource === 'nav'
+                ? 'w-full max-w-[calc(100vw-2.5rem)] z-[320]'
+                : 'w-[min(22rem,90vw)] sm:w-52 z-[220]'
+            ]"
             :style="[
-              tooltipArrowStyle,
+              floatingStyles,
               {
                 background: activeTooltipPreset.background,
                 borderColor: activeTooltipPreset.borderColor,
-                boxShadow: activeTooltipPreset.arrowShadow
+                boxShadow: activeTooltipPreset.bubbleShadow,
+                color: activeTooltipPreset.textColor,
+                opacity: tooltipReady ? 1 : 0,
+                pointerEvents: tooltipReady ? 'auto' : 'none'
               }
             ]"
-          ></span>
-        </div>
-      </Transition>
+            data-testid="email-tooltip"
+            :data-variant="tooltipVariant === 'error' ? 'error' : 'success'"
+            role="status"
+          >
+            <span
+              class="grid h-8 w-8 place-items-center rounded-full text-current"
+              :style="{
+                background: activeTooltipPreset.iconBackground,
+                boxShadow: activeTooltipPreset.iconShadow,
+                color: activeTooltipPreset.textColor
+              }"
+              aria-hidden="true"
+            >
+              <svg
+                v-if="tooltipVariant === 'success'"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <svg
+                v-else-if="tooltipVariant === 'error'"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              <svg
+                v-else
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-4 w-4"
+              >
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="M3 7l8.89 5.56a2 2 0 002.22 0L23 7" />
+              </svg>
+            </span>
+            <span>
+              {{ tooltipHeading }}
+            </span>
+            <span ref="tooltipArrowLocal" class="pointer-events-none" :style="tooltipArrowStyle" aria-hidden="true"></span>
+          </div>
+        </Transition>
+      </Teleport>
     </div>
   </div>
 </template>

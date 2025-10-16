@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useResizeObserver } from '@vueuse/core'
+import { useEventListener, useResizeObserver } from '@vueuse/core'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppLink from '~/components/ui/AppLink.vue'
 import type { ClipboardState } from '~/composables/useClipboard'
@@ -45,6 +45,7 @@ const navRootEl = ref<HTMLElement | null>(null)
 const navEmailTriggerLocal = ref<ButtonInstance | null>(null)
 const emailPanelLocal = ref<HTMLElement | null>(null)
 const emailCopyButtonLocal = ref<ButtonInstance | null>(null)
+const navEmailDropdownStyles = ref<Record<string, string>>({})
 
 const clampNavWidth = () => {
   if (!navRootEl.value) {
@@ -55,6 +56,8 @@ const clampNavWidth = () => {
   navRootEl.value.style.left = '0'
   navRootEl.value.style.right = ''
   navRootEl.value.style.overflowX = 'hidden'
+  navRootEl.value.style.overflowY = 'visible'
+  navRootEl.value.style.overflow = 'visible'
 }
 
 const assignExternalRef = <T>(target: { value: T } | ((value: T) => void) | null | undefined, value: T) => {
@@ -80,6 +83,93 @@ if (import.meta.client) {
   watch(emailCopyButtonLocal, (current) => {
     assignExternalRef(props.emailCopyButtonRef, current)
   }, { immediate: true })
+}
+
+const getNavTriggerElement = () => {
+  const trigger = navEmailTriggerLocal.value?.el ?? null
+  if (!trigger) {
+    return null
+  }
+  if (trigger instanceof HTMLElement) {
+    return trigger
+  }
+  if (typeof trigger === 'object' && 'value' in trigger && trigger.value instanceof HTMLElement) {
+    return trigger.value
+  }
+  return null
+}
+
+const updateNavEmailDropdownPosition = () => {
+  if (!import.meta.client || !props.showNavEmailPanel) {
+    return
+  }
+  const triggerEl = getNavTriggerElement()
+  if (!triggerEl) {
+    return
+  }
+
+  const rect = triggerEl.getBoundingClientRect()
+  const viewportWidth = window.innerWidth || 0
+  const viewportHeight = window.innerHeight || 0
+  const horizontalGutter = 18
+  const verticalOffset = 6
+  const minWidth = 160
+  const maxWidth = 304
+  const availableWidth = Math.max(minWidth, viewportWidth - horizontalGutter * 2)
+  const panelWidth = Math.min(maxWidth, availableWidth)
+
+  let left = rect.right - panelWidth
+  left = Math.min(left, viewportWidth - horizontalGutter - panelWidth)
+  left = Math.max(left, horizontalGutter)
+
+  const navRect = navRootEl.value?.getBoundingClientRect() ?? null
+  const navBottom = navRect ? navRect.bottom : 0
+  const desiredTop = Math.max(rect.bottom + verticalOffset, navBottom + verticalOffset)
+  const top = Math.min(desiredTop, viewportHeight - horizontalGutter)
+
+  navEmailDropdownStyles.value = {
+    left: `${Math.round(left)}px`,
+    top: `${Math.round(top)}px`,
+    width: `${Math.round(panelWidth)}px`,
+    visibility: props.emailPanelReady ? 'visible' : 'hidden'
+  }
+}
+
+watch(() => props.showNavEmailPanel, (isOpen) => {
+  if (isOpen) {
+    nextTick(() => {
+      updateNavEmailDropdownPosition()
+    })
+  } else {
+    navEmailDropdownStyles.value = {}
+  }
+})
+
+watch(() => props.emailPanelReady, (isReady) => {
+  if (isReady && props.showNavEmailPanel) {
+    nextTick(() => {
+      updateNavEmailDropdownPosition()
+    })
+  } else if (!isReady && props.showNavEmailPanel) {
+    navEmailDropdownStyles.value = {
+      ...navEmailDropdownStyles.value,
+      visibility: 'hidden'
+    }
+  }
+})
+
+if (import.meta.client) {
+  useEventListener(window, 'resize', () => {
+    if (props.showNavEmailPanel) {
+      updateNavEmailDropdownPosition()
+    }
+  })
+
+  useEventListener(window, 'scroll', () => {
+    if (props.showNavEmailPanel) {
+      updateNavEmailDropdownPosition()
+    }
+  }, { passive: true })
 }
 
 const syncHeight = (height: number) => {
@@ -182,31 +272,109 @@ onBeforeUnmount(() => {
                 </svg>
               </AppLink>
 
-              <AppButton
-                v-if="emailLink"
-                ref="navEmailTriggerLocal"
-                variant="icon"
-                class="!h-10 !w-10 border-sage-200/70 bg-white text-sage-600 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-400 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
-                :aria-label="'Toggle email options'"
-                @click="emit('toggle-nav-email', emailLink.href)"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="h-[0.9rem] w-[0.9rem]"
-                  aria-hidden="true"
+              <div v-if="emailLink" class="relative inline-flex">
+                <AppButton
+                  ref="navEmailTriggerLocal"
+                  variant="icon"
+                  class="!h-10 !w-10 border-sage-200/70 bg-white text-sage-600 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-400 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
+                  :aria-label="'Toggle email options'"
+                  @click="emit('toggle-nav-email', emailLink.href)"
                 >
-                  <rect x="2" y="5" width="20" height="14" rx="2" />
-                  <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
-                </svg>
-              </AppButton>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-[0.9rem] w-[0.9rem]"
+                    aria-hidden="true"
+                  >
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
+                  </svg>
+                </AppButton>
+              </div>
             </div>
           </div>
+          <Teleport to="body">
+            <Transition name="dropdown-fade">
+              <div
+                v-if="showNavEmailPanel && activeEmailHref"
+                ref="emailPanelLocal"
+                class="fixed z-[140] flex flex-col gap-2 rounded-2xl border border-sage-200/80 bg-white/96 p-3 text-left shadow-xl backdrop-blur sm:hidden"
+                :style="navEmailDropdownStyles"
+                role="group"
+                aria-label="Email options"
+              >
+                <AppButton
+                  ref="emailCopyButtonLocal"
+                  variant="secondary"
+                  class="flex min-h-[44px] items-center justify-between rounded-xl border-sage-200 bg-white/92 px-4 py-2.5 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
+                  :class="copyState === 'copied' && 'border-sage-400 text-sage-700 shadow-[0_0_24px_-12px_rgba(74,108,77,0.45)]'"
+                  @click="emit('copy-email', activeEmailHref)"
+                >
+                  <span>Copy email address</span>
+                  <Transition name="fade" mode="out-in">
+                    <svg
+                      v-if="copyState === 'copied'"
+                      key="mobile-nav-copied"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <svg
+                      v-else
+                      key="mobile-nav-idle"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                    </svg>
+                  </Transition>
+                </AppButton>
+                <AppLink
+                  :href="emailLink?.href"
+                  variant="minimal"
+                  class="flex min-h-[44px] items-center justify-between rounded-xl px-4 py-2 text-sm font-semibold text-sage-500 hover:text-sage-600"
+                  @click="emit('mailto')"
+                >
+                  <span>Open in mail app</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <path d="M7 17L17 7" />
+                    <polyline points="7 7 17 7 17 17" />
+                  </svg>
+                </AppLink>
+              </div>
+            </Transition>
+          </Teleport>
 
           <div class="hidden flex-1 items-center justify-center gap-3 sm:flex sm:justify-start md:gap-4">
             <div class="flex flex-col items-center text-center leading-tight sm:items-start sm:text-left">
