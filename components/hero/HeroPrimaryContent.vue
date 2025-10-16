@@ -126,7 +126,7 @@ onBeforeUnmount(() => {
       aria-hidden="true"
     ></span>
 
-    <div class="relative flex flex-col items-center gap-4 text-center sm:gap-8">
+    <div class="relative flex flex-col items-center gap-5 text-center sm:gap-8">
       <h1 class="font-display text-[clamp(2.2rem,4.3vw,3.3rem)] font-semibold leading-[1.08] text-sage-900">
         {{ hero.name }}
       </h1>
@@ -156,7 +156,7 @@ onBeforeUnmount(() => {
         </AppButton>
       </div>
 
-      <div class="flex flex-col items-center justify-center gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
+      <div class="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
         <AppLink
           :href="hero.primaryCta.href"
           variant="cta"
