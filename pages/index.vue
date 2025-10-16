@@ -11,7 +11,7 @@ const { data: experience } = await useExperienceContent()
     <div class="absolute inset-0">
       <div class="h-full w-full bg-sage-50"></div>
     </div>
-    <div class="relative mx-auto flex w-full max-w-5xl flex-col gap-12 px-0 sm:gap-16 sm:px-6">
+    <div class="relative mx-auto flex w-full max-w-5xl flex-col gap-10 px-0 sm:gap-16 sm:px-6">
       <HeroSection v-if="hero" :hero="hero" />
       <ExperienceSection
         v-if="experience"
