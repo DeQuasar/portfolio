@@ -1,14 +1,6 @@
 import { queryCollection } from '#imports'
 import type { CollectionQueryBuilder } from '@nuxt/content'
-import type {
-  AboutContent,
-  ContactContent,
-  ExperienceContent,
-  HeroContent,
-  HighlightContent,
-  ProjectContent,
-  SkillsContent
-} from '~/types/content'
+import type { ContactContent, ExperienceContent, HeroContent, HighlightContent, ProjectContent, SkillsContent } from '~/types/content'
 
 interface RawContentRow<T> {
   meta?: string | T
@@ -76,12 +68,6 @@ export const useSkillsContent = () =>
   useAsyncData('skills', async () => {
     const doc = await contentEntry<SkillsContent>('/skills').first()
     return parseMeta<SkillsContent>(doc)
-  })
-
-export const useAboutContent = () =>
-  useAsyncData('about', async () => {
-    const doc = await contentEntry<AboutContent>('/about').first()
-    return parseMeta<AboutContent>(doc)
   })
 
 export const useContactContent = () =>
