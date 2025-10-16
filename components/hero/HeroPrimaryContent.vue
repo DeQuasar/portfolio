@@ -59,13 +59,13 @@ const props = defineProps<{
 const emit = defineEmits<Emit>()
 
 const descriptionText = computed(() => props.description?.trim() ?? '')
-const isDescriptionLong = computed(() => descriptionText.value.length > 220)
+const isDescriptionLong = computed(() => descriptionText.value.length > 180)
 const mobileSummaryExpanded = ref(false)
 const mobileSummaryDisplay = computed(() => {
   if (!isDescriptionLong.value || mobileSummaryExpanded.value) {
     return descriptionText.value
   }
-  return `${descriptionText.value.slice(0, 190).trimEnd().replace(/[.,;:]$/, '')}…`
+  return `${descriptionText.value.slice(0, 160).trimEnd().replace(/[.,;:]$/, '')}…`
 })
 const mobileSummaryToggleLabel = computed(() => (mobileSummaryExpanded.value ? 'Show less' : 'Show full summary'))
 
