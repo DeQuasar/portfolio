@@ -175,7 +175,7 @@ onBeforeUnmount(() => {
   <section
     ref="heroSectionEl"
     :style="heroBackdropStyle"
-    class="relative isolate flex min-h-[100svh] flex-col items-center overflow-hidden rounded-none px-6 pb-12 pt-[clamp(3.5rem,10vh,5rem)] text-center shadow-none sm:min-h-0 sm:rounded-[2.2rem] sm:px-10 sm:py-14 sm:shadow-card"
+    class="relative isolate flex min-h-[100svh] flex-col items-center overflow-hidden rounded-none px-6 pb-[calc(env(safe-area-inset-bottom)+3.5rem)] pt-[calc(env(safe-area-inset-top)+3.25rem)] text-center shadow-none sm:min-h-0 sm:rounded-[2.2rem] sm:px-10 sm:py-14 sm:shadow-card"
   >
     <div
       class="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-none sm:rounded-[2.2rem]"

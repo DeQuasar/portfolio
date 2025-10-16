@@ -7,7 +7,7 @@ const { data: experience } = await useExperienceContent()
 </script>
 
 <template>
-  <main class="relative pb-16 sm:pb-20">
+  <main class="relative pb-[calc(env(safe-area-inset-bottom)+3rem)] sm:pb-20">
     <div class="absolute inset-0">
       <div class="h-full w-full bg-sage-50"></div>
     </div>
