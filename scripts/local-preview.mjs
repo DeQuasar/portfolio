@@ -44,7 +44,22 @@ const root = resolve(process.cwd(), args.get('dir') ?? '.output/public')
 const host = args.get('host') ?? process.env.HOST ?? '127.0.0.1'
 const port = Number.parseInt(args.get('port') ?? process.env.PORT ?? '4173', 10)
 const resumeFilename = 'Anthony-Protano-Resume.pdf'
-const resumePath = join(root, 'resume.pdf')
+const resumeCandidates = [
+  resolve('/mnt/c/Users/tonyp/OneDrive/Desktop/Resumes/anthony_protano_resume.pdf'),
+  join(root, 'resume.pdf')
+]
+
+const resolveResumePath = async () => {
+  for (const candidate of resumeCandidates) {
+    try {
+      await access(candidate)
+      return candidate
+    } catch {
+      // continue searching the next candidate
+    }
+  }
+  return null
+}
 
 const log = (...messages) => console.log('[local-preview]', ...messages)
 
@@ -75,10 +90,10 @@ const sendStream = async (request, response, filePath, headers = {}) => {
 }
 
 const serveResume = async (request, response) => {
-  try {
-    await access(resumePath)
-  } catch (error) {
-    log('Résumé asset missing at', resumePath)
+  const resumePath = await resolveResumePath()
+
+  if (!resumePath) {
+    log('Résumé asset missing in candidates', resumeCandidates)
     response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
     response.end('Résumé not found')
     return
@@ -87,7 +102,7 @@ const serveResume = async (request, response) => {
   try {
     await sendStream(request, response, resumePath, {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="${resumeFilename}"`,
+      'Content-Disposition': `inline; filename="${resumeFilename}"`,
       'Cache-Control': 'public, max-age=3600, s-maxage=3600'
     })
   } catch (error) {

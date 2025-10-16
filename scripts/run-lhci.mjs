@@ -24,6 +24,7 @@ const defaultChromeFlags = [
   '--no-crashpad',
   '--disable-features=Crashpad',
   '--disable-features=BackForwardCache',
+  '--no-sandbox',
   '--disable-setuid-sandbox',
   '--single-process',
   '--disable-gpu',

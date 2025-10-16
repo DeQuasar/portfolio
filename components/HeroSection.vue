@@ -39,6 +39,7 @@ const {
   activeTooltipPreset,
   tooltipArrowStyle,
   floatingStyles,
+  tooltipAnchorSource,
   emailTriggerEl,
   navEmailTriggerEl,
   emailPanelEl,

@@ -38,7 +38,7 @@ const props = defineProps<{
     aria-hidden="true"
   ></span>
   <span
-    class="pointer-events-none absolute bottom-[-160px] right-[-80px] h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(63,91,67,0.5)_0%,rgba(63,91,67,0)_74%)] opacity-80 blur-[48px] sm:hidden"
+    class="pointer-events-none absolute bottom-[-120px] right-[-36px] h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(63,91,67,0.48)_0%,rgba(63,91,67,0)_72%)] opacity-75 blur-[42px] sm:hidden"
     aria-hidden="true"
   ></span>
   <span

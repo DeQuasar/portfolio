@@ -23,6 +23,7 @@ describe('Cloudflare Pages resume download function', () => {
     expect(env.ASSETS.fetch).toHaveBeenCalledWith(new URL('/resume.pdf', request.url))
     expect(result.status).toBe(200)
     expect(result.headers.get('content-type')).toBe('application/pdf')
+    expect(result.headers.get('content-disposition')).toContain('inline')
     expect(result.headers.get('content-disposition')).toContain('Anthony-Protano-Resume.pdf')
     expect(result.headers.get('cache-control')).toBe('public, max-age=3600, s-maxage=3600')
   })

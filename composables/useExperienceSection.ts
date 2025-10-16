@@ -170,8 +170,30 @@ export const useExperienceSection = (entries: ComputedRef<ExperienceEntry[]>) =>
   const expandedToolkits = ref<Record<string, boolean>>({})
   const isHydrated = ref(false)
   const cardElements = new Map<string, HTMLElement>()
+  const enableScrollTracking = ref(false)
 
   let rafId: number | null = null
+
+  const setDefaultActiveSlug = () => {
+    activeSlug.value = entries.value[0]?.slug ?? null
+  }
+
+  const applyScrollTracking = (shouldEnable: boolean) => {
+    if (enableScrollTracking.value === shouldEnable) {
+      return
+    }
+
+    enableScrollTracking.value = shouldEnable
+    if (shouldEnable) {
+      scheduleCompute()
+    } else {
+      setDefaultActiveSlug()
+      if (rafId !== null && typeof window !== 'undefined') {
+        window.cancelAnimationFrame(rafId)
+        rafId = null
+      }
+    }
+  }
 
   const entryDurations = computed<Record<string, string | null>>(() => {
     return entries.value.reduce<Record<string, string | null>>((acc, entry) => {
@@ -214,8 +236,8 @@ export const useExperienceSection = (entries: ComputedRef<ExperienceEntry[]>) =>
 
   const computeActiveSlug = () => {
     rafId = null
-    if (typeof window === 'undefined' || cardElements.size === 0) {
-      activeSlug.value = entries.value[0]?.slug ?? null
+    if (!enableScrollTracking.value || typeof window === 'undefined' || cardElements.size === 0) {
+      setDefaultActiveSlug()
       return
     }
 
@@ -244,7 +266,7 @@ export const useExperienceSection = (entries: ComputedRef<ExperienceEntry[]>) =>
   }
 
   const scheduleCompute = () => {
-    if (typeof window === 'undefined' || rafId !== null) {
+    if (typeof window === 'undefined' || rafId !== null || !enableScrollTracking.value) {
       return
     }
     rafId = window.requestAnimationFrame(computeActiveSlug)
@@ -282,7 +304,18 @@ export const useExperienceSection = (entries: ComputedRef<ExperienceEntry[]>) =>
   }
 
   const handleViewportChange = () => {
+    if (!enableScrollTracking.value) {
+      return
+    }
     scheduleCompute()
+  }
+
+  const handleResize = () => {
+    if (typeof window === 'undefined') {
+      return
+    }
+    const shouldEnable = window.matchMedia('(min-width: 768px)').matches
+    applyScrollTracking(shouldEnable)
   }
 
   const getEntryDuration = (slug: string): string | null => {
@@ -332,9 +365,13 @@ export const useExperienceSection = (entries: ComputedRef<ExperienceEntry[]>) =>
       return
     }
 
+    handleResize()
     window.addEventListener('scroll', handleViewportChange, { passive: true })
-    window.addEventListener('resize', handleViewportChange)
-    scheduleCompute()
+    window.addEventListener('resize', handleResize)
+
+    if (enableScrollTracking.value) {
+      scheduleCompute()
+    }
 
     isHydrated.value = true
   })
@@ -342,7 +379,7 @@ export const useExperienceSection = (entries: ComputedRef<ExperienceEntry[]>) =>
   onBeforeUnmount(() => {
     if (typeof window !== 'undefined') {
       window.removeEventListener('scroll', handleViewportChange)
-      window.removeEventListener('resize', handleViewportChange)
+      window.removeEventListener('resize', handleResize)
       if (rafId !== null) {
         window.cancelAnimationFrame(rafId)
       }

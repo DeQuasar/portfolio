@@ -41,7 +41,7 @@ const toggleAdditional = () => {
     <div class="flex flex-col gap-16">
       <div v-if="coreGroups.length" class="flex flex-col gap-5">
         <header class="flex flex-col gap-2">
-          <span class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-600">Core Stack</span>
+          <span class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-600">Core Stack</span>
           <p class="text-sm leading-relaxed text-sage-600">{{ coreDescription }}</p>
         </header>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -51,7 +51,7 @@ const toggleAdditional = () => {
 
       <div v-if="supportingCategories.length" class="flex flex-col gap-6">
         <header class="flex flex-col gap-2">
-          <span class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-600">Supporting Toolkit</span>
+          <span class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-600">Supporting Toolkit</span>
           <p class="text-sm leading-relaxed text-sage-600">
             Everything that rounds out delivery around the core stack.
           </p>
@@ -67,7 +67,7 @@ const toggleAdditional = () => {
 
       <div v-if="additionalSkills.length" class="flex flex-col gap-3">
         <header class="flex flex-col gap-2">
-          <span class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-600">Additional Tools</span>
+          <span class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-600">Additional Tools</span>
           <p class="text-sm leading-relaxed text-sage-600">
             Extras that surface less often but stay in rotation.
           </p>
@@ -86,7 +86,7 @@ const toggleAdditional = () => {
         <button
           v-if="hasAdditionalOverflow"
           type="button"
-          class="self-start text-xs font-semibold uppercase tracking-[0.18em] text-sage-500 transition-colors hover:text-sage-600"
+          class="self-start inline-flex min-h-[44px] items-center rounded-full border border-sage-200/70 px-4 py-2 text-sm font-semibold uppercase tracking-[0.16em] text-sage-500 transition-colors hover:border-sage-400 hover:text-sage-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
           :aria-expanded="additionalExpanded"
           @click="toggleAdditional"
         >

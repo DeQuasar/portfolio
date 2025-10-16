@@ -14,7 +14,7 @@ export const onRequest: PagesFunction = async ({ request, env }) => {
 
   const headers = new Headers(assetResponse.headers)
   headers.set('Content-Type', 'application/pdf')
-  headers.set('Content-Disposition', `attachment; filename="${DEFAULT_FILENAME}"`)
+  headers.set('Content-Disposition', `inline; filename="${DEFAULT_FILENAME}"`)
   headers.set('Cache-Control', CACHE_CONTROL)
 
   return new Response(assetResponse.body, {

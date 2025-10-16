@@ -11,8 +11,9 @@
       "settings": {
         "preset": "desktop",
         "chromeFlags": [
-          "--headless=chrome",
+          "--headless=new",
           "--no-sandbox",
+          "--disable-dev-shm-usage",
           "--disable-features=BackForwardCache",
           "--disable-setuid-sandbox",
           "--single-process",

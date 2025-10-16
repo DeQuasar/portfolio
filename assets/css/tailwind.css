@@ -12,6 +12,7 @@
 
   body {
     @apply bg-sage-50 text-sage-700 font-body antialiased;
+    overflow-x: hidden;
   }
 }
 
@@ -55,8 +56,8 @@
   }
 
   .px-nav-safe {
-    padding-left: calc(var(--nav-horizontal, 1rem) + env(safe-area-inset-left, 0px));
-    padding-right: calc(var(--nav-horizontal, 1rem) + env(safe-area-inset-right, 0px));
+    padding-left: clamp(0px, calc(var(--nav-horizontal, 1rem) + env(safe-area-inset-left, 0px)), 1.5rem);
+    padding-right: clamp(0px, calc(var(--nav-horizontal, 1rem) + env(safe-area-inset-right, 0px)), 1.5rem);
   }
 
   @media (prefers-reduced-motion: reduce) {
