@@ -147,7 +147,7 @@ onBeforeUnmount(() => {
               <AppLink
                 :href="hero.primaryCta.href"
                 variant="icon"
-                class="!h-11 !w-11 border-sage-300 !bg-sage-600 !text-white shadow-md transition hover:!bg-sage-600/90 hover:!text-white"
+                class="!h-11 !w-11 !border-transparent !bg-sage-600 !text-white shadow-md transition hover:!bg-sage-600/90 hover:!text-white focus-visible:!ring-white/60"
                 :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
                 @click="(event) => emit('start-resume-download', event)"
               >
