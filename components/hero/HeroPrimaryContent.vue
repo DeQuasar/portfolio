@@ -115,7 +115,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="relative z-10 w-full max-w-4xl overflow-hidden rounded-[1.9rem] border border-white/75 bg-white/98 px-5 py-8 shadow-[0_48px_120px_-62px_rgba(17,31,22,0.72)] backdrop-blur-lg sm:px-10 sm:py-10"
+    class="relative z-10 w-full max-w-4xl overflow-visible rounded-[1.9rem] border border-white/75 bg-white/98 px-5 py-8 shadow-[0_48px_120px_-62px_rgba(17,31,22,0.72)] backdrop-blur-lg sm:px-10 sm:py-10"
   >
     <span
       class="pointer-events-none absolute inset-x-10 bottom-[22px] -z-10 hidden h-[140px] rounded-[1.6rem] border border-white/24 opacity-55 sm:block"
@@ -139,7 +139,7 @@ onBeforeUnmount(() => {
 
       <div
         v-if="descriptionText"
-        class="flex w-full flex-col items-stretch gap-2 text-left sm:hidden"
+        class="flex w-full flex-col items-center gap-2 text-center sm:hidden"
         data-testid="hero-mobile-summary"
       >
         <p class="text-sm leading-relaxed text-sage-600" data-testid="hero-mobile-summary-text">
@@ -148,7 +148,7 @@ onBeforeUnmount(() => {
         <AppButton
           v-if="isDescriptionLong"
           variant="minimal"
-          class="self-start px-0 text-xs font-semibold uppercase tracking-[0.18em] text-sage-500 hover:text-sage-700"
+          class="self-center px-0 text-xs font-semibold uppercase tracking-[0.18em] text-sage-500 hover:text-sage-700"
           :aria-expanded="mobileSummaryExpanded"
           @click="mobileSummaryExpanded = !mobileSummaryExpanded"
         >
@@ -161,7 +161,7 @@ onBeforeUnmount(() => {
           :href="hero.primaryCta.href"
           variant="cta"
           :class="[
-            'group relative min-h-[44px] overflow-hidden rounded-full border border-sage-500/70 bg-gradient-to-r from-sage-600 via-sage-600 to-sage-500 px-5 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-white shadow-[0_22px_42px_-26px_rgba(46,79,51,0.68)] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-200 sm:min-h-[46px] sm:px-6',
+            'group relative w-full min-h-[44px] overflow-hidden rounded-full border border-sage-500/70 bg-gradient-to-r from-sage-600 via-sage-600 to-sage-500 px-5 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-white shadow-[0_22px_42px_-26px_rgba(46,79,51,0.68)] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-200 sm:w-auto sm:min-h-[46px] sm:px-6',
             resumeIsDownloading && 'pointer-events-none brightness-95'
           ]"
           :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
@@ -214,14 +214,14 @@ onBeforeUnmount(() => {
         </AppLink>
 
         <div
-          class="relative flex flex-wrap items-center justify-center gap-3"
+          class="relative flex w-full flex-wrap items-center justify-center gap-3"
           data-testid="hero-socials-root"
         >
           <AppButton
             v-if="emailLink"
             ref="heroEmailTriggerLocal"
             variant="secondary"
-            class="flex min-h-[44px] items-center gap-2 rounded-full border-sage-200/70 bg-white/95 !px-4 !py-0 text-[0.78rem] font-semibold text-sage-600 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:text-sage-700 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
+            class="flex w-full min-h-[44px] items-center gap-2 rounded-full border-sage-200/70 bg-white/95 !px-4 !py-0 text-[0.78rem] font-semibold text-sage-600 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:text-sage-700 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:w-auto"
             :aria-expanded="showHeroEmailPanel"
             aria-haspopup="menu"
             aria-label="View email options"
