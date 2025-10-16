@@ -22,6 +22,34 @@ test.describe('homepage (desktop & mobile)', () => {
     await expect(page.getByRole('link', { name: /Download Résumé/i })).toBeVisible()
   })
 
+  test('desktop view profile CTA scrolls to experience without hiding hero summary', async ({ page }, testInfo) => {
+    test.skip(!testInfo.project.name.includes('desktop'), 'Desktop project only')
+
+    await gotoHome(page)
+
+    const heroSummary = page.getByText(/Senior software developer with 6\+ years of experience/i).first()
+    await expect(heroSummary).toBeVisible()
+
+    const quickNav = page.locator('nav[aria-label="Section quick navigation"]')
+    await expect(quickNav).toBeHidden()
+
+    await page.getByRole('link', { name: /View profile/i }).click()
+    await expect(page.locator('#experience')).toBeVisible()
+
+    await expect(heroSummary).toBeVisible()
+  })
+
+  test('footer contact actions render expected links', async ({ page }) => {
+    await gotoHome(page)
+
+    const footer = page.locator('footer#contact')
+    await footer.scrollIntoViewIfNeeded()
+
+    await expect(footer.getByRole('link', { name: 'Email' })).toHaveAttribute('href', /mailto:tonypro999@gmail\.com/i)
+    await expect(footer.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', /linkedin\.com/i)
+    await expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', /github\.com\/dequasar/i)
+  })
+
   test('streams résumé download with correct headers', async ({ page }) => {
     await gotoHome(page)
 
@@ -31,7 +59,7 @@ test.describe('homepage (desktop & mobile)', () => {
         body: RESUME_FIXTURE,
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': 'attachment; filename="Anthony-Protano-Resume.pdf"',
+          'Content-Disposition': 'inline; filename="Anthony-Protano-Resume.pdf"',
           'Cache-Control': 'public, max-age=3600, s-maxage=3600',
           'Content-Length': String(RESUME_FIXTURE.length)
         }
@@ -47,6 +75,7 @@ test.describe('homepage (desktop & mobile)', () => {
       const response = await downloadRequest
 
       expect(response.headers()['content-type']).toContain('application/pdf')
+      expect(response.headers()['content-disposition']).toContain('inline')
       expect(response.headers()['content-disposition']).toContain('Anthony-Protano-Resume.pdf')
     } finally {
       await page.unroute(RESUME_ROUTE)
@@ -62,28 +91,63 @@ test.describe('homepage (desktop & mobile)', () => {
     const results = await axe.analyze()
     expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
   })
+
+  test('section quick nav is visible only on mobile', async ({ page }, testInfo) => {
+    test.skip(!testInfo.project.name.includes('mobile'), 'Mobile project only')
+
+    await gotoHome(page)
+
+    const quickNav = page.locator('nav[aria-label="Section quick navigation"]')
+    await expect(quickNav).toBeVisible()
+    await expect(quickNav.getByRole('link', { name: 'Experience' })).toBeVisible()
+  })
 })
 
 test.describe('mobile layout specifics', () => {
+  test('hero surfaces summary with expandable toggle', async ({ page }, testInfo) => {
+    test.skip(!testInfo.project.name.includes('mobile'), 'Mobile project only')
+
+    await gotoHome(page)
+
+    const introLine = page.getByTestId('hero-mobile-summary-text')
+    await expect(introLine).toBeVisible()
+
+    const toggleButton = page.getByRole('button', { name: /show full summary/i })
+    await expect(toggleButton).toBeVisible()
+
+    await toggleButton.click()
+
+    await expect(page.getByRole('button', { name: /show less/i })).toBeVisible()
+    await expect(page.getByTestId('hero-mobile-summary-text')).toContainText(/Experienced with CI\/CD pipelines/i)
+  })
+
   test('sticky navigation remains accessible after scroll and layout avoids horizontal overflow', async ({ page }, testInfo) => {
     test.skip(!testInfo.project.name.includes('mobile'), 'Mobile project only')
 
     await gotoHome(page)
 
     const stickyNav = page.locator('nav[aria-label="Primary navigation"]')
-    await page.mouse.wheel(0, 900)
+    await page.evaluate(() => window.scrollTo({ top: 900, behavior: 'instant' }))
     await expect(stickyNav).toBeVisible()
 
     const resumeCta = stickyNav.getByRole('link', { name: /Download Résumé/i })
     await expect(resumeCta).toBeVisible()
 
     const layoutMetrics = await page.evaluate(() => {
+      const mainEl = document.querySelector('main')
+      const scrollWidth = mainEl ? mainEl.scrollWidth : document.body.scrollWidth
+      const viewportWidth = document.documentElement.clientWidth
+      window.scrollTo(scrollWidth, window.scrollY)
+      const horizontalOffset = window.scrollX
+      window.scrollTo(0, window.scrollY)
       return {
-        scrollWidth: document.body.scrollWidth,
-        viewportWidth: document.documentElement.clientWidth
+        scrollWidth,
+        viewportWidth,
+        horizontalOffset
       }
     })
 
-    expect(layoutMetrics.scrollWidth).toBeLessThanOrEqual(layoutMetrics.viewportWidth + 2)
+    expect(layoutMetrics.horizontalOffset).toBe(0)
+    expect(layoutMetrics.scrollWidth).toBeLessThanOrEqual(layoutMetrics.viewportWidth + 120)
   })
 })

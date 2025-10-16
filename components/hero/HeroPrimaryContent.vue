@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppLink from '~/components/ui/AppLink.vue'
 import type { ClipboardState } from '~/composables/useClipboard'
@@ -46,6 +46,7 @@ const props = defineProps<{
   activeTooltipPreset: TooltipPreset
   tooltipArrowStyle: Record<string, string>
   floatingStyles: Record<string, string | number>
+  tooltipAnchorSource: 'hero' | 'nav'
   tooltipReady: boolean
   emailTriggerRef: { value: ButtonInstance | null } | ((value: ButtonInstance | null) => void)
   emailPanelRef: { value: HTMLElement | null } | ((value: HTMLElement | null) => void)
@@ -56,6 +57,17 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<Emit>()
+
+const descriptionText = computed(() => props.description?.trim() ?? '')
+const isDescriptionLong = computed(() => descriptionText.value.length > 220)
+const mobileSummaryExpanded = ref(false)
+const mobileSummaryDisplay = computed(() => {
+  if (!isDescriptionLong.value || mobileSummaryExpanded.value) {
+    return descriptionText.value
+  }
+  return `${descriptionText.value.slice(0, 190).trimEnd().replace(/[.,;:]$/, '')}…`
+})
+const mobileSummaryToggleLabel = computed(() => (mobileSummaryExpanded.value ? 'Show less' : 'Show full summary'))
 
 const heroEmailTriggerLocal = ref<ButtonInstance | null>(null)
 const heroEmailPanelLocal = ref<HTMLElement | null>(null)
@@ -103,42 +115,53 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="relative z-10 w-full max-w-4xl rounded-[1.9rem] border border-white/75 bg-white/98 px-6 py-10 shadow-[0_48px_120px_-62px_rgba(17,31,22,0.72)] backdrop-blur-lg sm:px-10"
+    class="relative z-10 w-full max-w-4xl overflow-hidden rounded-[1.9rem] border border-white/75 bg-white/98 px-5 py-8 shadow-[0_48px_120px_-62px_rgba(17,31,22,0.72)] backdrop-blur-lg sm:px-10 sm:py-10"
   >
     <span
-      class="pointer-events-none absolute -right-20 -top-24 -z-10 h-56 w-56 rounded-full bg-[radial-gradient(circle,_rgba(108,180,138,0.45)_0%,_rgba(108,180,138,0)_68%)]"
+      class="pointer-events-none absolute inset-x-10 bottom-[22px] -z-10 hidden h-[140px] rounded-[1.6rem] border border-white/24 opacity-55 sm:block"
       aria-hidden="true"
     ></span>
     <span
-      class="pointer-events-none absolute -left-24 bottom-[-80px] -z-10 h-64 w-64 rounded-full bg-[radial-gradient(circle,_rgba(56,94,70,0.38)_0%,_rgba(56,94,70,0)_72%)]"
-      aria-hidden="true"
-    ></span>
-    <span
-      class="pointer-events-none absolute inset-x-16 top-14 -z-10 h-24 rounded-full bg-[radial-gradient(circle,_rgba(255,255,255,0.45)_0%,_rgba(255,255,255,0)_75%)] opacity-55 blur-[38px]"
-      aria-hidden="true"
-    ></span>
-    <span
-      class="pointer-events-none absolute inset-x-10 bottom-[22px] -z-10 h-[140px] rounded-[1.6rem] border border-white/24 opacity-55"
+      class="pointer-events-none absolute inset-x-16 top-14 -z-10 hidden h-24 rounded-full bg-[radial-gradient(circle,_rgba(255,255,255,0.45)_0%,_rgba(255,255,255,0)_75%)] opacity-55 blur-[38px] sm:block"
       aria-hidden="true"
     ></span>
 
-    <div class="relative flex flex-col items-center gap-8 text-center">
+    <div class="relative flex flex-col items-center gap-6 text-center sm:gap-8">
       <h1 class="font-display text-[clamp(2.2rem,4.3vw,3.3rem)] font-semibold leading-[1.08] text-sage-900">
         {{ hero.name }}
       </h1>
-      <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sage-600">
+      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-600">
         {{ hero.role }}
       </p>
-      <p v-if="description" class="max-w-2xl text-base leading-relaxed text-sage-600 sm:text-[1.05rem]">
+      <p v-if="description" class="hidden max-w-2xl text-base leading-relaxed text-sage-600 sm:block sm:text-[1.05rem]">
         {{ description }}
       </p>
 
-      <div class="flex flex-wrap items-center justify-center gap-3">
+      <div
+        v-if="descriptionText"
+        class="flex w-full flex-col items-stretch gap-2 text-left sm:hidden"
+        data-testid="hero-mobile-summary"
+      >
+        <p class="text-sm leading-relaxed text-sage-600" data-testid="hero-mobile-summary-text">
+          {{ mobileSummaryDisplay }}
+        </p>
+        <AppButton
+          v-if="isDescriptionLong"
+          variant="minimal"
+          class="self-start px-0 text-xs font-semibold uppercase tracking-[0.18em] text-sage-500 hover:text-sage-700"
+          :aria-expanded="mobileSummaryExpanded"
+          @click="mobileSummaryExpanded = !mobileSummaryExpanded"
+        >
+          {{ mobileSummaryToggleLabel }}
+        </AppButton>
+      </div>
+
+      <div class="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
         <AppLink
           :href="hero.primaryCta.href"
           variant="cta"
           :class="[
-            'group relative min-h-[48px] overflow-hidden rounded-full border border-sage-500/80 bg-gradient-to-r from-sage-600 via-sage-600 to-sage-500 px-6 text-[0.82rem] font-semibold uppercase tracking-[0.18em] text-white shadow-[0_24px_48px_-28px_rgba(46,79,51,0.68)] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-200 sm:px-8',
+            'group relative min-h-[48px] overflow-hidden rounded-full border border-sage-500/80 bg-gradient-to-r from-sage-600 via-sage-600 to-sage-500 px-6 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[0_24px_48px_-28px_rgba(46,79,51,0.68)] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-200 sm:px-8',
             resumeIsDownloading && 'pointer-events-none brightness-95'
           ]"
           :aria-label="resumeIsDownloading ? 'Downloading résumé' : 'Download résumé'"
@@ -178,9 +201,9 @@ onBeforeUnmount(() => {
                 <path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" />
               </svg>
             </span>
-            <span class="flex items-center gap-1.5 text-[0.78rem] tracking-[0.18em] uppercase">
+            <span class="flex items-center gap-1.5 text-sm tracking-[0.18em] uppercase">
               <span>{{ hero.primaryCta.label }}</span>
-              <span v-if="resumeDownloadProgressDisplay !== null" class="text-[0.68rem] font-semibold tracking-normal">
+              <span v-if="resumeDownloadProgressDisplay !== null" class="text-xs font-semibold tracking-normal">
                 {{ resumeDownloadProgressDisplay }}%
               </span>
             </span>
@@ -188,6 +211,14 @@ onBeforeUnmount(() => {
           <span v-if="resumeAnnouncementText" class="sr-only" role="status" aria-live="polite">
             {{ resumeAnnouncementText }}
           </span>
+        </AppLink>
+
+        <AppLink
+          href="#experience"
+          variant="secondary"
+          class="w-full min-h-[48px] items-center justify-center gap-2 rounded-full border-sage-200/80 px-6 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-sage-600 shadow-sm transition duration-200 hover:border-sage-400 hover:text-sage-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:w-auto"
+        >
+          View profile
         </AppLink>
 
         <div
@@ -221,10 +252,10 @@ onBeforeUnmount(() => {
               </svg>
             </span>
             <span class="flex flex-col text-left leading-tight">
-              <span class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-sage-500">
+              <span class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-500">
                 {{ emailLink.label || 'Email' }}
               </span>
-              <span class="flex items-center gap-1 text-[0.82rem] font-semibold tracking-[0.02em] text-sage-700">
+              <span class="flex items-center gap-1 text-sm font-semibold tracking-tight text-sage-700">
                 <span>Compose message</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -247,7 +278,7 @@ onBeforeUnmount(() => {
           <div
             role="group"
             aria-labelledby="hero-socials-label"
-            class="flex flex-wrap items-center justify-center gap-3"
+            class="hidden flex-wrap items-center justify-center gap-3 sm:flex"
           >
             <AppLink
               v-for="link in otherSocials"
@@ -309,20 +340,20 @@ onBeforeUnmount(() => {
           </div>
 
           <Transition name="dropdown-fade">
-          <div
-            v-if="showHeroEmailPanel && activeEmailHref"
-            key="email-inline"
-            class="absolute left-1/2 top-[calc(100%+0.85rem)] z-[120] w-[min(20rem,calc(100vw-3rem))] -translate-x-1/2"
-            :style="{ visibility: emailPanelReady ? 'visible' : 'hidden' }"
-            role="group"
-            aria-label="Email options"
-          >
+            <div
+              v-if="showHeroEmailPanel && activeEmailHref"
+              key="email-inline"
+          class="absolute left-1/2 top-[calc(100%+0.85rem)] z-[120] w-[min(20rem,calc(100vw-3rem))] -translate-x-1/2"
+          :style="{ visibility: emailPanelReady ? 'visible' : 'hidden' }"
+          role="group"
+          aria-label="Email options"
+        >
               <div
                 ref="heroEmailPanelLocal"
                 class="flex flex-col gap-3 rounded-2xl border border-sage-200/80 bg-white/98 p-4 text-left shadow-xl backdrop-blur"
               >
                 <div class="flex items-center justify-between">
-                  <p class="text-xs font-semibold uppercase tracking-[0.2em] text-sage-500">
+                  <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-500">
                     Email options
                   </p>
                   <AppButton
@@ -350,7 +381,7 @@ onBeforeUnmount(() => {
                 <AppButton
                   ref="heroEmailCopyButtonLocal"
                   variant="primary"
-                  class="flex items-center justify-between gap-2 rounded-xl !px-4 !py-2.5 text-sm shadow-md transition hover:shadow-lg"
+                  class="flex min-h-[48px] items-center justify-between gap-2 rounded-xl !px-4 !py-2.5 text-sm shadow-md transition hover:shadow-lg"
                   :class="[
                     copyState === 'copied' && 'ring-2 ring-sage-200/80 shadow-[0_0_0_4px_rgba(74,108,77,0.12)]',
                     copyState === 'error' && 'ring-2 ring-rose-200/80 shadow-[0_0_0_4px_rgba(251,113,133,0.12)]'
@@ -443,7 +474,10 @@ onBeforeUnmount(() => {
         <div
           v-if="tooltipVariant !== 'idle'"
           ref="tooltipBubbleLocal"
-          class="absolute z-[80] inline-grid w-52 grid-cols-[auto_1fr] items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-sm font-semibold tracking-[0.01em]"
+          :class="[
+            'absolute inline-grid w-52 grid-cols-[auto_1fr] items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-sm font-semibold tracking-[0.01em]',
+            tooltipAnchorSource === 'nav' ? 'z-[120]' : 'z-[80]'
+          ]"
           :style="[
             floatingStyles,
             {

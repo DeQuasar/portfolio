@@ -130,10 +130,19 @@ export DEBUG_HERO_TOOLTIP_TRACE="${DEBUG_HERO_TOOLTIP_TRACE:-1}"
 echo "[playwright] Running Vitest suite with Playwright enabled (tooltip duration=${NUXT_PUBLIC_TOOLTIP_PROGRESS_DURATION}ms, rest=${NUXT_PUBLIC_TOOLTIP_REST_DELAY}ms)..."
 
 if [ "$#" -gt 0 ]; then
-  if [ "$PACKAGE_MANAGER" = "pnpm" ]; then
-    exec pnpm exec vitest run "$@"
+  if [ "$1" = "playwright" ]; then
+    shift
+    if [ "$PACKAGE_MANAGER" = "pnpm" ]; then
+      exec pnpm exec playwright "$@"
+    else
+      exec npx playwright "$@"
+    fi
   else
-    exec npm test -- "$@"
+    if [ "$PACKAGE_MANAGER" = "pnpm" ]; then
+      exec pnpm exec vitest run "$@"
+    else
+      exec npm test -- "$@"
+    fi
   fi
 else
   if [ "$PACKAGE_MANAGER" = "pnpm" ]; then

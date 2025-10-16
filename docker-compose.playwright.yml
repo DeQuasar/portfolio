@@ -1,6 +1,6 @@
 services:
   playwright:
-    image: mcr.microsoft.com/playwright:v1.47.0-jammy
+    image: mcr.microsoft.com/playwright:v1.55.1-jammy
     user: "${PLAYWRIGHT_UID:-1000}:${PLAYWRIGHT_GID:-1000}"
     working_dir: /workspace
     volumes:

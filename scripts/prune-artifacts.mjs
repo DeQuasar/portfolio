@@ -12,6 +12,28 @@ const directories = [
 
 const results = []
 
+const ensureWritableDir = async (target) => {
+  try {
+    await fs.mkdir(target, { recursive: true })
+    await fs.chmod(target, 0o777)
+  } catch (error) {
+    if (error.code === 'EPERM' || error.code === 'EACCES') {
+      try {
+        await fs.rm(target, { recursive: true, force: true })
+        await fs.mkdir(target, { recursive: true })
+        await fs.chmod(target, 0o777)
+        return
+      } catch (retryError) {
+        console.warn(`[prune-artifacts] Failed to reset permissions for ${target}:`, retryError.message)
+        return
+      }
+    }
+    if (error.code !== 'ENOENT') {
+      console.warn(`[prune-artifacts] Failed to prepare ${target}:`, error.message)
+    }
+  }
+}
+
 for (const entry of directories) {
   const absolute = path.join(projectRoot, entry.path)
   let existed = false
@@ -19,21 +41,23 @@ for (const entry of directories) {
     const stat = await fs.stat(absolute)
     if (stat.isDirectory()) {
       existed = true
-      await fs.rm(absolute, { recursive: true, force: true })
+      const items = await fs.readdir(absolute)
+      await Promise.all(items.map(async (item) => {
+        const target = path.join(absolute, item)
+        await fs.rm(target, { recursive: true, force: true })
+      }))
     } else {
-      // Remove non-directory artifact occupying the target name
       await fs.rm(absolute, { force: true })
     }
   } catch (error) {
-    // ENOENT just means nothing to prune
     if (error.code !== 'ENOENT') {
       console.error(`Failed to prune ${entry.path}:`, error)
     }
   }
 
-  await fs.mkdir(absolute, { recursive: true })
+  await ensureWritableDir(absolute)
   for (const sub of entry.subdirs) {
-    await fs.mkdir(path.join(absolute, sub), { recursive: true })
+    await ensureWritableDir(path.join(absolute, sub))
   }
 
   results.push({ name: entry.path, pruned: existed })

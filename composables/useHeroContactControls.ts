@@ -130,6 +130,7 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
   })
 
   const isNavReference = computed(() => tooltipReferenceSource.value === 'nav')
+  const tooltipAnchorSource = computed(() => tooltipReferenceSource.value)
 
   const tooltipArrowStyle = computed(() => {
     const arrowData = middlewareData.value.arrow
@@ -364,6 +365,7 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     emailCopyButtonEl,
     tooltipBubbleEl,
     tooltipArrowEl,
+    tooltipAnchorSource,
     tooltipReady,
     emailPanelReady,
     showNavEmailPanel,
