@@ -213,14 +213,6 @@ onBeforeUnmount(() => {
           </span>
         </AppLink>
 
-        <AppLink
-          href="#experience"
-          variant="secondary"
-          class="w-full min-h-[44px] items-center justify-center gap-2 rounded-full border-sage-200/70 px-5 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-sage-600 shadow-sm transition duration-200 hover:border-sage-400 hover:text-sage-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:w-auto"
-        >
-          View profile
-        </AppLink>
-
         <div
           class="relative flex flex-wrap items-center justify-center gap-3"
           data-testid="hero-socials-root"

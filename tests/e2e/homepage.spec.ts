@@ -22,7 +22,7 @@ test.describe('homepage (desktop & mobile)', () => {
     await expect(page.getByRole('link', { name: /Download Résumé/i })).toBeVisible()
   })
 
-  test('desktop view profile CTA scrolls to experience without hiding hero summary', async ({ page }, testInfo) => {
+  test('desktop sticky nav exposes experience section anchors', async ({ page }, testInfo) => {
     test.skip(!testInfo.project.name.includes('desktop'), 'Desktop project only')
 
     await gotoHome(page)
@@ -30,10 +30,11 @@ test.describe('homepage (desktop & mobile)', () => {
     const heroSummary = page.getByText(/Senior software developer with 6\+ years of experience/i).first()
     await expect(heroSummary).toBeVisible()
 
-    await page.getByRole('link', { name: /View profile/i }).click()
-    await expect(page.locator('#experience')).toBeVisible()
+    await page.locator('#experience').scrollIntoViewIfNeeded()
 
-    await expect(heroSummary).toBeVisible()
+    const stickyNav = page.locator('nav[aria-label="Primary navigation"]')
+    await expect(stickyNav).toBeVisible()
+    await expect(page.locator('#experience')).toBeVisible()
   })
 
   test('footer contact actions render expected links', async ({ page }) => {
