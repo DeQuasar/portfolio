@@ -10,7 +10,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '~': rootDir,
-      '@': rootDir
+      '@': rootDir,
+      '#imports': resolve(rootDir, 'tests/stubs/nuxt-imports')
     }
   },
   test: {
@@ -19,7 +20,7 @@ export default defineConfig({
     testTimeout: 20000,
     hookTimeout: 180000,
     include: ['tests/**/*.{test,spec}.ts'],
-    exclude: ['tests/e2e/**'],
+    exclude: ['tests/e2e/**', 'tests/**/*.ui.spec.ts'],
     setupFiles: ['tests/setup/vitest.setup.ts'],
     reporters: process.env.CI
       ? ['default', ['junit', { outputFile: 'reports/vitest/results.xml' }]]

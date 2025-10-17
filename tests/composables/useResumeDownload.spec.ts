@@ -47,7 +47,18 @@ describe('useResumeDownload internals', () => {
 
   describe('toAbsoluteUrl', () => {
     it('returns absolute URL when window is unavailable', () => {
+      const originalWindow = globalThis.window
+      // @ts-expect-error intentionally unset window to simulate SSR
+      globalThis.window = undefined
+
       expect(toAbsoluteUrl('/download/resume')).toBe('/download/resume')
+
+      if (typeof originalWindow === 'undefined') {
+        // @ts-expect-error cleanup stubbed window
+        delete (globalThis as any).window
+      } else {
+        globalThis.window = originalWindow
+      }
     })
 
     it('resolves relative paths against window origin when available', () => {

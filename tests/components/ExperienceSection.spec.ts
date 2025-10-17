@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { defineComponent, h, ref } from 'vue'
+import { defineComponent, h, nextTick, ref, type ComputedRef } from 'vue'
 import ExperienceSection from '../../components/ExperienceSection.vue'
 import type { ExperienceContent, ExperienceEntry } from '../../types/content'
 
@@ -12,6 +12,7 @@ const getProjectHighlightsSpy = vi.fn()
 const getActiveHighlightSpy = vi.fn()
 const isEntryVisibleSpy = vi.fn()
 const isToolkitExpandedSpy = vi.fn()
+let capturedEntries: ComputedRef<ExperienceEntry[]> | null = null
 
 const activeStyle = { opacity: '1' }
 const inactiveStyle = { opacity: '0.5' }
@@ -26,10 +27,12 @@ const resetSpies = () => {
   getActiveHighlightSpy.mockReset()
   isEntryVisibleSpy.mockReset()
   isToolkitExpandedSpy.mockReset()
+  capturedEntries = null
 }
 
 vi.mock('~/composables/useExperienceSection', () => ({
-  useExperienceSection: (entries: ReturnType<typeof ref>) => {
+  useExperienceSection: (entries: ComputedRef<ExperienceEntry[]>) => {
+    capturedEntries = entries
     const registerCard = (slug: string) => {
       const fn = vi.fn()
       registerCardSpies.set(slug, fn)
@@ -48,7 +51,9 @@ vi.mock('~/composables/useExperienceSection', () => ({
       },
       getToolkitDisplay: (slug: string) => {
         getToolkitDisplaySpy(slug)
-        return { groups: [], empty: true }
+        return slug === 'first'
+          ? { visible: ['Nuxt', 'Vue'], hasOverflow: true }
+          : { visible: ['TypeScript'], hasOverflow: false }
       },
       isToolkitExpanded: (slug: string) => {
         isToolkitExpandedSpy(slug)
@@ -156,6 +161,8 @@ describe('ExperienceSection', () => {
     const wrapper = mountSection()
     const cards = wrapper.findAllComponents(ExperienceEntryCardStub)
     expect(cards).toHaveLength(2)
+    expect(registerCardSpies.has('first')).toBe(true)
+    expect(registerCardSpies.has('second')).toBe(true)
 
     const firstCard = cards[0].props()
     expect(firstCard.entry.slug).toBe('first')
@@ -163,12 +170,25 @@ describe('ExperienceSection', () => {
     expect(firstCard.cardStyle).toBe(activeStyle)
     expect(firstCard.glowOverlayStyle).toBe(glowStyle)
     expect(firstCard.entryDuration).toBe('2 years')
+    expect(firstCard.isHydrated).toBe(true)
+    expect(firstCard.toolkitDisplay).toEqual({ visible: ['Nuxt', 'Vue'], hasOverflow: true })
 
     const secondCard = cards[1].props()
     expect(secondCard.entry.slug).toBe('second')
     expect(secondCard.isActive).toBe(false)
     expect(secondCard.cardStyle).toBe(inactiveStyle)
     expect(secondCard.toolkitExpanded).toBe(true)
+    expect(secondCard.toolkitDisplay).toEqual({ visible: ['TypeScript'], hasOverflow: false })
+    expect(firstCard.registerCard).not.toBe(secondCard.registerCard)
+
+    expect(isEntryVisibleSpy).toHaveBeenCalledWith('first')
+    expect(isEntryVisibleSpy).toHaveBeenCalledWith('second')
+    expect(isToolkitExpandedSpy).toHaveBeenCalledWith('first')
+    expect(isToolkitExpandedSpy).toHaveBeenCalledWith('second')
+    expect(getToolkitDisplaySpy).toHaveBeenCalledWith('first')
+    expect(getToolkitDisplaySpy).toHaveBeenCalledWith('second')
+    expect(getEntryDurationSpy).toHaveBeenCalledWith('first')
+    expect(getEntryDurationSpy).toHaveBeenCalledWith('second')
   })
 
   it('invokes composable helpers when child handlers are executed', () => {
@@ -187,5 +207,32 @@ describe('ExperienceSection', () => {
 
     firstCardProps.getActiveProjectHighlight('Project Alpha')
     expect(getActiveHighlightSpy).toHaveBeenCalledWith('first', 'Project Alpha')
+  })
+
+  it('provides reactive computed entries to the composable', async () => {
+    const wrapper = mountSection()
+    expect(capturedEntries).not.toBeNull()
+    expect(capturedEntries?.value.map((entry) => entry.slug)).toEqual(['first', 'second'])
+
+    const next = [
+      {
+        slug: 'updated',
+        role: 'IC',
+        organization: 'Next Org',
+        location: 'Remote',
+        period: '2024 — Present',
+        projects: [],
+        summary: []
+      }
+    ] satisfies ExperienceEntry[]
+
+    await wrapper.setProps({
+      experience: {
+        entries: next
+      } as ExperienceContent
+    })
+    await nextTick()
+
+    expect(capturedEntries?.value.map((entry) => entry.slug)).toEqual(['updated'])
   })
 })

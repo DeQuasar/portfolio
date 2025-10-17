@@ -12,6 +12,23 @@ const contactControlsState = vi.hoisted(() => ({
   current: null as ReturnType<typeof createContactControlsState> | null
 }))
 
+const heroContactControlsArgs = vi.hoisted(() => ({
+  last: null as null | Record<string, unknown>
+}))
+
+const heroContactControlsFactory = vi.hoisted(() => ({
+  mock: vi.fn((options: Record<string, unknown>) => {
+    heroContactControlsArgs.last = options
+    return contactControlsState.current as ReturnType<typeof createContactControlsState>
+  })
+}))
+
+const runtimeConfigState = vi.hoisted(() => ({
+  heroTooltipTrace: false,
+  tooltipProgressDuration: 4000,
+  tooltipRestDelay: 220
+}))
+
 vi.mock('@vueuse/core', () => ({
   useIntersectionObserver: vi.fn((_target: unknown, callback: (entries: Array<Pick<IntersectionObserverEntry, 'intersectionRatio' | 'isIntersecting'>>) => void) => {
     observerState.callbacks.push(callback)
@@ -22,8 +39,10 @@ vi.mock('@vueuse/core', () => ({
 }))
 
 vi.mock('~/composables/useHeroContactControls', () => ({
-  useHeroContactControls: vi.fn(() => contactControlsState.current as ReturnType<typeof createContactControlsState>)
+  useHeroContactControls: heroContactControlsFactory.mock
 }))
+
+const useHeroContactControlsMock = heroContactControlsFactory.mock
 
 vi.mock('~/composables/useHeroVisuals', () => {
   const { ref } = require('vue') as typeof import('vue')
@@ -39,21 +58,35 @@ vi.mock('~/composables/useHeroVisuals', () => {
 const HeroStickyNavStub = defineComponent({
   name: 'HeroStickyNav',
   props: {
-    visible: { type: Boolean, default: false }
+    visible: { type: Boolean, default: false },
+    resumeIsDownloading: { type: Boolean, default: false },
+    resumeDownloadProgressDisplay: { type: Number, default: null },
+    resumeAnnouncementText: { type: String, default: null }
   },
   emits: ['height-change', 'start-resume-download', 'toggle-nav-email', 'copy-email', 'mailto'],
   setup(props, { emit, expose }) {
     const triggerHeight = (height: number) => emit('height-change', height)
     const triggerToggleEmail = (href: string) => emit('toggle-nav-email', href)
-    expose({ triggerHeight, triggerToggleEmail })
-    return () => (props.visible ? h('div', { 'data-testid': 'hero-sticky-nav' }) : null)
+    const triggerResumeDownload = () => emit('start-resume-download')
+    expose({ triggerHeight, triggerToggleEmail, triggerResumeDownload })
+    return () =>
+      props.visible
+        ? h('button', { 'data-testid': 'hero-sticky-nav', onClick: triggerResumeDownload })
+        : null
   }
 })
 
 const HeroPrimaryContentStub = defineComponent({
   name: 'HeroPrimaryContent',
-  setup() {
-    return () => h('div', { 'data-testid': 'hero-primary-content' })
+  props: {
+    resumeIsDownloading: { type: Boolean, required: true },
+    resumeDownloadProgressDisplay: { type: [Number, null], default: null },
+    resumeAnnouncementText: { type: [String, null], default: null }
+  },
+  emits: ['start-resume-download', 'toggle-hero-email', 'copy-email', 'mailto'],
+  setup(_props, { emit }) {
+    return () =>
+      h('button', { 'data-testid': 'hero-primary-content', onClick: () => emit('start-resume-download') })
   }
 })
 
@@ -80,9 +113,9 @@ const heroContent: HeroContent = {
 beforeAll(() => {
   vi.stubGlobal('useRuntimeConfig', () => ({
     public: {
-      heroTooltipTrace: false,
-      tooltipProgressDuration: 4000,
-      tooltipRestDelay: 220
+      heroTooltipTrace: runtimeConfigState.heroTooltipTrace,
+      tooltipProgressDuration: runtimeConfigState.tooltipProgressDuration,
+      tooltipRestDelay: runtimeConfigState.tooltipRestDelay
     }
   }))
 })
@@ -101,6 +134,8 @@ beforeEach(() => {
   ;(process as unknown as { client?: boolean }).client = true
   document.documentElement.style.removeProperty('--sticky-nav-height')
   vi.clearAllMocks()
+  runtimeConfigState.heroTooltipTrace = false
+  heroContactControlsArgs.last = null
 })
 
 function createContactControlsState() {
@@ -210,5 +245,70 @@ describe('HeroSection', () => {
     const afterValue = document.documentElement.style.getPropertyValue('--sticky-nav-height')
     expect(afterValue).not.toBe('142px')
     expect(['', '0px']).toContain(afterValue)
+  })
+
+  it('forwards resume download events from the hero primary content to the composable', async () => {
+    const wrapper = mountHeroSection()
+    const controls = contactControlsState.current!
+    controls.startResumeDownload.mockClear()
+
+    const primary = wrapper.findComponent(HeroPrimaryContentStub)
+    expect(primary.exists()).toBe(true)
+
+    primary.vm.$emit('start-resume-download')
+    expect(controls.startResumeDownload).toHaveBeenCalledTimes(1)
+
+    controls.resumeIsDownloading.value = true
+    controls.resumeDownloadProgressDisplay.value = 68
+   controls.resumeAnnouncementText.value = 'Preparing résumé download'
+    await nextTick()
+
+    const updatedPrimary = wrapper.findComponent(HeroPrimaryContentStub)
+    expect(updatedPrimary.props('resumeIsDownloading')).toBe(true)
+    expect(updatedPrimary.props('resumeDownloadProgressDisplay')).toBe(68)
+    expect(updatedPrimary.props('resumeAnnouncementText')).toBe('Preparing résumé download')
+
+    wrapper.unmount()
+  })
+
+  it('forwards resume download events from the sticky nav and syncs download state', async () => {
+    const wrapper = mountHeroSection()
+    const controls = contactControlsState.current!
+    await triggerIntersection(0)
+
+    const sticky = wrapper.findComponent(HeroStickyNavStub)
+    expect(sticky.exists()).toBe(true)
+    controls.startResumeDownload.mockClear()
+
+    sticky.vm.$emit('start-resume-download')
+    expect(controls.startResumeDownload).toHaveBeenCalledTimes(1)
+
+    controls.resumeIsDownloading.value = true
+    controls.resumeDownloadProgressDisplay.value = 32
+    controls.resumeAnnouncementText.value = 'Résumé downloading'
+    await nextTick()
+
+    const refreshedSticky = wrapper.findComponent(HeroStickyNavStub)
+    expect(refreshedSticky.props('resumeIsDownloading')).toBe(true)
+    expect(refreshedSticky.props('resumeDownloadProgressDisplay')).toBe(32)
+    expect(refreshedSticky.props('resumeAnnouncementText')).toBe('Résumé downloading')
+
+    wrapper.unmount()
+  })
+
+  it('enables tooltip trace mode when runtime configuration requests it', () => {
+    runtimeConfigState.heroTooltipTrace = true
+    contactControlsState.current = createContactControlsState()
+
+    const wrapper = mountHeroSection()
+
+    expect(heroContactControlsArgs.last).not.toBeNull()
+    expect(heroContactControlsArgs.last).toEqual(
+      expect.objectContaining({
+        enableTrace: true
+      })
+    )
+
+    wrapper.unmount()
   })
 })
