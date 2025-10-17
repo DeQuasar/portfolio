@@ -39,6 +39,14 @@ export default defineConfig({
       }
     },
     {
+      name: 'tablet-chrome',
+      use: {
+        ...devices['iPad Mini'],
+        viewport: { width: 1024, height: 768 },
+        deviceScaleFactor: 2
+      }
+    },
+    {
       name: 'desktop-firefox',
       use: {
         ...devices['Desktop Firefox']

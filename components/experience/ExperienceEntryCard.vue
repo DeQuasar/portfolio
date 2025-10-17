@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import CardSurface from '~/components/ui/CardSurface.vue'
-import Pill from '~/components/ui/Pill.vue'
 import ExperienceProjectCard from '~/components/experience/ExperienceProjectCard.vue'
 import type { ExperienceEntry } from '~/types/content'
 import type {
@@ -8,7 +7,16 @@ import type {
   ExperienceToolkitDisplay
 } from '~/composables/useExperienceSection'
 
-defineProps<{
+const {
+  entry,
+  isActive,
+  registerCard,
+  cardStyle,
+  glowOverlayStyle,
+  entryDuration,
+  getProjectHighlights,
+  getActiveProjectHighlight
+} = defineProps<{
   entry: ExperienceEntry
   isActive: boolean
   registerCard: (value: Element | { $el?: Element } | null) => void
@@ -67,39 +75,6 @@ defineProps<{
         </p>
       </div>
     </header>
-
-    <ul
-      v-if="entry.toolkit?.length"
-      class="flex flex-nowrap gap-2 overflow-x-auto pb-1" role="list" aria-label="Key tools and focus areas"
-    >
-      <li
-        v-for="tool in toolkitDisplay.visible"
-        :key="tool"
-        class="list-none flex-shrink-0"
-      >
-        <Pill
-          tone="neutral"
-          size="sm"
-          uppercase
-          class="items-center gap-1.5 whitespace-nowrap tracking-[0.12em] text-sage-600/95"
-        >
-          {{ tool }}
-        </Pill>
-      </li>
-      <li
-        v-if="isHydrated && toolkitDisplay.hasOverflow"
-        :key="`${entry.slug}-toolkit-toggle`"
-        class="list-none"
-      >
-        <button
-          type="button"
-          class="inline-flex min-h-[44px] items-center rounded-full border border-sage-200/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sage-500 transition-colors duration-200 hover:border-sage-400 hover:text-sage-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
-          @click="onToggleToolkit"
-        >
-          {{ toolkitExpanded ? 'Show fewer' : `Show all ${entry.toolkit.length}` }}
-        </button>
-      </li>
-    </ul>
 
     <ul
       v-if="entry.summary?.length"

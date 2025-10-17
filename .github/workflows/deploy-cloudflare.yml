@@ -51,6 +51,12 @@ jobs:
       - name: Generate static site
         run: pnpm generate
 
+      - name: Run responsive UI suite (desktop/tablet/mobile)
+        env:
+          ENABLE_BROWSER_TESTS: 'true'
+          PLAYWRIGHT_NODE_VERSION: '22.20.0'
+        run: pnpm test:ui:container
+
       - name: Run Playwright E2E suite
         env:
           SKIP_GENERATE: '1'

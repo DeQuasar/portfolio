@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useBreakpoints } from '@vueuse/core'
 import SectionHeader from '~/components/ui/SectionHeader.vue'
 import Pill from '~/components/ui/Pill.vue'
 import SkillCoreGroupCard from '~/components/skills/SkillCoreGroupCard.vue'
@@ -19,15 +20,34 @@ const {
   additionalSkills
 } = useSkillStack({ skills: skillsRef, experience: experienceRef })
 
-const additionalPreviewLimit = 10
+const breakpoints = useBreakpoints({
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+  '2xl': 1536
+})
+
+const mobileQuery = breakpoints.smaller('sm')
+const isMobile = computed(() => {
+  if (process.client) {
+    return mobileQuery.value
+  }
+  return true
+})
+const ADDITIONAL_MOBILE_LIMIT = 5
 const additionalExpanded = ref(false)
 
-const hasAdditionalOverflow = computed(() => additionalSkills.value.length > additionalPreviewLimit)
-const additionalVisibleSkills = computed(() => (
-  additionalExpanded.value || !hasAdditionalOverflow.value
-    ? additionalSkills.value
-    : additionalSkills.value.slice(0, additionalPreviewLimit)
+const hasAdditionalOverflow = computed(() => (
+  isMobile.value && additionalSkills.value.length > ADDITIONAL_MOBILE_LIMIT
 ))
+
+const additionalVisibleSkills = computed(() => {
+  if (!isMobile.value || additionalExpanded.value) {
+    return additionalSkills.value
+  }
+  return additionalSkills.value.slice(0, ADDITIONAL_MOBILE_LIMIT)
+})
 
 const toggleAdditional = () => {
   additionalExpanded.value = !additionalExpanded.value
@@ -72,13 +92,13 @@ const toggleAdditional = () => {
             Extras that surface less often but stay in rotation.
           </p>
         </header>
-        <div class="flex flex-wrap gap-2">
+        <div class="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           <Pill
             v-for="item in additionalVisibleSkills"
             :key="item.label"
             tone="neutral"
             size="md"
-            class="justify-center px-3.5 py-1.5 text-[0.82rem] tracking-[0.06em]"
+            class="w-full justify-center px-3.5 py-1.5 text-center text-[0.82rem] tracking-[0.06em] whitespace-normal break-words leading-snug sm:w-auto"
           >
             {{ item.label }}
           </Pill>
