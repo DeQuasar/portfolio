@@ -6,7 +6,8 @@ import type { HeroContent } from '../../types/content'
 
 vi.mock('@vueuse/core', () => ({
   useEventListener: vi.fn(() => vi.fn()),
-  useResizeObserver: vi.fn(() => vi.fn())
+  useResizeObserver: vi.fn(() => vi.fn()),
+  useIntersectionObserver: vi.fn(() => vi.fn())
 }))
 
 const AppButtonStub = defineComponent({
