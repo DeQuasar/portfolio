@@ -1,9 +1,20 @@
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 
+const rootDir = dirname(fileURLToPath(new URL('./vitest.config.ts', import.meta.url)))
+
 export default defineConfig({
   plugins: [vue()],
+  resolve: {
+    alias: {
+      '~': rootDir,
+      '@': rootDir
+    }
+  },
   test: {
+    environment: 'jsdom',
     globals: true,
     testTimeout: 20000,
     hookTimeout: 180000,
