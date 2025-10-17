@@ -79,10 +79,25 @@ defineProps<{
 
     <details
       v-if="highlights.length && activeHighlight"
-      class="mt-5 rounded-2xl border border-sage-200/70 bg-white/95 px-4 py-3 text-left text-sm leading-relaxed text-sage-600 shadow-sm sm:hidden"
+      class="group mt-5 rounded-2xl border border-sage-200/70 bg-white/95 px-4 py-3 text-left text-sm leading-relaxed text-sage-600 shadow-sm sm:hidden"
     >
-      <summary class="cursor-pointer list-none text-sm font-semibold text-sage-600">
-        Project impact
+      <summary
+        class="flex w-full cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-sage-600 transition-colors group-open:text-sage-700"
+      >
+        <span>Project impact</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-4 w-4 shrink-0 text-sage-500 transition-transform duration-200 group-open:rotate-180"
+          aria-hidden="true"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
       </summary>
       <div class="mt-3 space-y-3">
         <div v-for="facet in projectFacetOrder" :key="`mobile-${facet}`" class="space-y-1.5">
