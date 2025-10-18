@@ -20,7 +20,7 @@ defineProps<{ group: SkillCoreGroupDisplay }>()
         {{ group.description }}
       </p>
     </header>
-    <ul class="flex flex-col gap-2" role="list">
+    <ul class="flex flex-col gap-2">
       <li v-for="item in group.skills" :key="item.label" class="flex flex-col gap-1">
         <Pill
           tone="sage"

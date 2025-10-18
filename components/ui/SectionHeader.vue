@@ -39,7 +39,11 @@ const alignmentClasses = computed(() => (props.align === 'left' ? 'items-start t
       </h2>
     </slot>
 
-    <div v-if="props.accent === 'double-bar'" class="flex flex-col items-center gap-1" :class="props.align === 'left' ? 'items-start' : 'items-center'">
+    <div
+      v-if="props.accent === 'double-bar'"
+      class="flex flex-col gap-1"
+      :class="props.align === 'left' ? 'items-start' : 'items-center'"
+    >
       <span class="block h-1 w-28 rounded-full bg-sage-500"></span>
       <span class="block h-1 w-12 rounded-full bg-sage-300"></span>
     </div>

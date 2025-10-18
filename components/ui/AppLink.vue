@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
+
+defineOptions({
+  inheritAttrs: false
+})
 
 const props = withDefaults(
   defineProps<{
@@ -21,6 +25,26 @@ const emit = defineEmits<{
   (event: 'click', payload: MouseEvent): void
 }>()
 
+const attrs = useAttrs() as Record<string, unknown>
+
+const flattenClassTokens = (value: unknown): string[] => {
+  if (!value) {
+    return []
+  }
+  if (typeof value === 'string') {
+    return value.split(/\s+/).filter(Boolean)
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap(flattenClassTokens)
+  }
+  if (typeof value === 'object') {
+    return Object.entries(value)
+      .filter(([, active]) => Boolean(active))
+      .map(([token]) => token)
+  }
+  return []
+}
+
 const baseClasses =
   'inline-flex items-center justify-center gap-2 rounded-full font-semibold cursor-pointer transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/45 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50'
 
@@ -39,7 +63,26 @@ const variantClasses: Record<NonNullable<typeof props.variant>, string> = {
     'relative overflow-hidden bg-gradient-to-r from-sage-600 via-sage-500 to-sage-700 text-white shadow-[0_14px_28px_-18px_rgba(47,70,49,0.55)] px-5 py-2 text-sm font-semibold uppercase tracking-[0.16em] transition-transform duration-200 hover:translate-y-[-1px] hover:shadow-[0_22px_44px_-24px_rgba(31,52,36,0.6)] focus-visible:ring-white/60'
 }
 
-const classes = computed(() => [baseClasses, variantClasses[props.variant], props.block && 'w-full'])
+const forwardedAttrs = computed(() => {
+  const entries = Object.entries(attrs).filter(([key]) => key !== 'class')
+  return Object.fromEntries(entries)
+})
+
+const classes = computed(() => {
+  const tokens = new Set<string>()
+  const addTokens = (value: unknown) => {
+    flattenClassTokens(value).forEach((token) => tokens.add(token))
+  }
+
+  addTokens(baseClasses)
+  addTokens(variantClasses[props.variant])
+  if (props.block) {
+    tokens.add('w-full')
+  }
+  addTokens(attrs.class)
+
+  return Array.from(tokens)
+})
 
 const rel = computed(() => {
   if (props.target === '_blank') {
@@ -55,6 +98,7 @@ const rel = computed(() => {
     :target="props.target"
     :rel="rel"
     :class="classes"
+    v-bind="forwardedAttrs"
     @click="emit('click', $event)"
   >
     <slot />

@@ -38,7 +38,9 @@
     "posttest:e2e": "pnpm run prune:artifacts",
     "posttest:e2e:ci": "pnpm run prune:artifacts",
     "posttest:performance": "pnpm run prune:artifacts",
-    "posttest:coverage": "pnpm run prune:artifacts"
+    "posttest:coverage": "pnpm run prune:artifacts",
+    "validate:html": "node ./scripts/validate-html.mjs",
+    "check:bundle": "node ./scripts/check-bundle-budgets.mjs"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.7.4",
@@ -67,6 +69,7 @@
     "cross-env": "^10.1.0",
     "eslint": "^8.57.1",
     "eslint-plugin-vue": "^9.27.0",
+    "html-validate": "^10.1.2",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",

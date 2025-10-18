@@ -19,9 +19,8 @@ defineProps<{
 </script>
 
 <template>
-  <div
+  <article
     class="relative overflow-hidden rounded-[1.4rem] border border-sage-200/70 bg-white/90 p-5 shadow-md transition-shadow sm:p-6 sm:shadow-[0_18px_32px_-26px_rgba(47,70,49,0.28)]"
-    role="article"
     :aria-label="`${project.title} project summary`"
   >
     <div class="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -136,5 +135,5 @@ defineProps<{
         <span>{{ link.text }}</span>
       </AppLink>
     </div>
-  </div>
+  </article>
 </template>

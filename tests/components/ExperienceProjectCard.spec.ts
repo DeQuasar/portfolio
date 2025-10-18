@@ -49,7 +49,7 @@ const mountProjectCard = (overrides: {
 describe('ExperienceProjectCard', () => {
   it('renders highlight facets, media, and links in the expected order', () => {
     const { wrapper } = mountProjectCard()
-    const article = wrapper.get('[role="article"]')
+    const article = wrapper.get('article')
 
     expect(article.attributes('aria-label')).toBe('Project Alpha project summary')
     expect(wrapper.text()).toContain('Scaled ingestion pipeline')

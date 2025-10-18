@@ -90,6 +90,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate static site & validate HTML
+        run: pnpm run validate:html
+
+      - name: Enforce bundle budgets
+        run: pnpm run check:bundle
+
       - name: Prepare Playwright volume
         run: mkdir -p .playwright/node_modules
 
@@ -97,12 +103,14 @@ jobs:
         env:
           ENABLE_BROWSER_TESTS: 'true'
           PLAYWRIGHT_BROWSERS: 'chromium'
+          SKIP_GENERATE: '1'
           NUXT_CONTENT_LOCAL_CACHE_DIR: "/tmp/content-cache-${{ github.run_id }}-${{ github.run_attempt }}-a11y"
         run: pnpm test:accessibility:container
 
       - name: Run Lighthouse performance checks (docker)
         env:
           PLAYWRIGHT_BROWSERS: 'chromium'
+          SKIP_GENERATE: '1'
           NUXT_CONTENT_LOCAL_CACHE_DIR: "/tmp/content-cache-${{ github.run_id }}-${{ github.run_attempt }}-lhci"
         run: pnpm test:performance:container
 

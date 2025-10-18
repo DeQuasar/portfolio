@@ -52,7 +52,7 @@ async function readAdditionalTools(section: import('playwright-core').Locator) {
 
 async function readCategoryState(card: import('playwright-core').Locator) {
   return card.evaluate((node) => {
-    const list = node.querySelector('ul[role="list"]')
+    const list = node.querySelector('ul')
     const items = list
       ? Array.from(list.querySelectorAll<HTMLLIElement>('li'))
       : []
@@ -177,21 +177,21 @@ describeMaybe('[chromium] skill stack (desktop & tablet)', () => {
     await page.reload()
     await page.waitForLoadState('networkidle')
 
-  const categoryCard = page.locator('div.flex.h-full.flex-col:has(h3:has-text("Product Engineering"))').first()
-  await categoryCard.waitFor({ state: 'visible' })
+    const categoryCard = page.locator('div.flex.h-full.flex-col:has(h3:has-text("Product Engineering"))').first()
+    await categoryCard.waitFor({ state: 'visible' })
 
-  const state = await categoryCard.evaluate((node) => {
-    const list = node.querySelector('ul[role="list"]')
-    const computed = list ? window.getComputedStyle(list) : null
-    return {
-      display: computed?.display ?? null,
-      hasToggle: Boolean(node.querySelector('button')),
-      wrap: computed?.flexWrap ?? null
-    }
-  })
+    const state = await categoryCard.evaluate((node) => {
+      const list = node.querySelector('ul')
+      const computed = list ? window.getComputedStyle(list) : null
+      return {
+        display: computed?.display ?? null,
+        hasToggle: Boolean(node.querySelector('button')),
+        wrap: computed?.flexWrap ?? null
+      }
+    })
 
-  expect(state?.display).toBe('flex')
-  expect(state?.hasToggle).toBe(false)
-  expect(state?.wrap).toBe('wrap')
+    expect(state?.display).toBe('flex')
+    expect(state?.hasToggle).toBe(false)
+    expect(state?.wrap).toBe('wrap')
   }, 20000)
 })

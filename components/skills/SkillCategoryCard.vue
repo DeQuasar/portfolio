@@ -54,7 +54,7 @@ const toggleExpanded = () => {
         {{ category.description }}
       </p>
     </div>
-    <ul class="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap" role="list">
+    <ul class="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap">
       <li v-for="item in visibleSkills" :key="item.label" class="max-w-full">
         <Pill
           tone="neutral"

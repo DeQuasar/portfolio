@@ -87,7 +87,7 @@ describeMaybe('[chromium] experience section', () => {
     await setViewport(page, 'desktop')
     await page.reload()
     await page.waitForLoadState('networkidle')
-    const project = page.locator(experienceCardSelector(EXPERIENCE_SLUGS.frontlineSupport)).locator('[role="article"][aria-label="Portfolio support modernization project summary"]')
+    const project = page.locator(experienceCardSelector(EXPERIENCE_SLUGS.frontlineSupport)).locator('article[aria-label="Portfolio support modernization project summary"]')
     await project.waitFor({ state: 'visible' })
 
     const facets = await project.evaluate((article) => {

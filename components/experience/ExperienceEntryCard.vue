@@ -51,8 +51,8 @@ const {
     <header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between transition-colors duration-500">
       <div class="space-y-1.5">
         <h3
-          class="flex items-center font-display text-xl font-semibold text-sage-600"
-          :class="isActive ? 'text-sage-900' : ''"
+          class="flex items-center font-display text-xl font-semibold transition-colors duration-500"
+          :class="isActive ? 'text-sage-900' : 'text-sage-600'"
         >
           <span>{{ entry.role }}</span>
         </h3>
@@ -61,8 +61,8 @@ const {
       </div>
       <div class="flex flex-col items-start gap-1 text-left sm:items-end sm:text-right">
         <p
-          class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-600 transition-colors duration-500"
-          :class="isActive ? 'text-sage-600' : ''"
+          class="text-sm font-semibold uppercase tracking-[0.18em] transition-colors duration-500"
+          :class="isActive ? 'text-sage-600' : 'text-sage-500'"
         >
           {{ entry.period }}
         </p>
