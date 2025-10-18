@@ -3,7 +3,13 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import yaml from 'yaml'
+
+let YAML
+try {
+  ({ default: YAML } = await import('yaml'))
+} catch (error) {
+  console.warn('[update-experience]', 'yaml dependency is not available; skipping résumé parsing.')
+}
 
 let PDFParse
 try {
@@ -72,7 +78,7 @@ const isSectionTerminator = (line) => {
 }
 
 const loadExistingExperience = async () => {
-  if (!existsSync(EXPERIENCE_CONTENT_PATH)) {
+  if (!YAML || !existsSync(EXPERIENCE_CONTENT_PATH)) {
     return []
   }
 
@@ -87,7 +93,7 @@ const loadExistingExperience = async () => {
     }
   }
 
-  const content = body ? yaml.parse(body) : {}
+  const content = body ? YAML.parse(body) : {}
   return Array.isArray(content.entries) ? content.entries : []
 }
 
@@ -121,7 +127,7 @@ const deriveSlug = (organization, period, baseFrequency, baseCounts, usedSlugs) 
 }
 
 const parseExperienceFromResume = async (resumePath) => {
-  if (!PDFParse) {
+  if (!PDFParse || !YAML) {
     return []
   }
 
@@ -238,7 +244,10 @@ const mergeWithExisting = (parsedEntries, existingEntries) => {
 }
 
 const writeExperienceContent = async (entries) => {
-  const doc = yaml.stringify({ entries }, { lineWidth: 0 })
+  if (!YAML) {
+    return
+  }
+  const doc = YAML.stringify({ entries }, { lineWidth: 0 })
   const output = `---\n${doc.trimEnd()}\n---\n`
   await writeFile(EXPERIENCE_CONTENT_PATH, output, 'utf8')
 }
