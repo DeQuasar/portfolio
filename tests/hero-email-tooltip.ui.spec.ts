@@ -75,8 +75,21 @@ if (shouldRunBrowserTests) {
 
 for (const browserType of browsersToRun) {
   if (hasPlaywright) {
+    const buildDir = `.nuxt/test-hero-tooltip-${browserType}`
+    const contentDbPath = `/tmp/nuxt-content-${browserType}.sqlite`
     await setup({
       rootDir: uiTestRootDir,
+      buildDir,
+      nuxtConfig: {
+        buildDir,
+        content: {
+          _localDatabase: {
+            type: 'sqlite',
+            // Use browser-scoped temp storage so multiple Playwright launches avoid read-only sqlite locks in Docker
+            filename: contentDbPath
+          }
+        }
+      },
       browser: true,
       browserOptions: {
         type: browserType,
