@@ -5,6 +5,8 @@ set -euo pipefail
 DESIRED_NODE_VERSION=${PLAYWRIGHT_NODE_VERSION:-system}
 TOOLS_ROOT=${PLAYWRIGHT_TOOLS_ROOT:-/workspace/.playwright-tools}
 NPM_GLOBAL_DIR="${TOOLS_ROOT}/npm-global"
+PNPM_HOME_DIR="${TOOLS_ROOT}/pnpm-home"
+PNPM_STORE_DIR="${TOOLS_ROOT}/pnpm-store"
 PLAYWRIGHT_RUNTIME_DIR="${TOOLS_ROOT}/playwright-runtime"
 
 if [ "$DESIRED_NODE_VERSION" != "system" ]; then
@@ -30,17 +32,16 @@ else
 fi
 
 mkdir -p "$NPM_GLOBAL_DIR/bin"
+mkdir -p "$PNPM_HOME_DIR/bin" "$PNPM_STORE_DIR"
+NPM_CACHE_DIR="${TOOLS_ROOT}/npm-cache"
+mkdir -p "$NPM_CACHE_DIR"
 
 export NPM_CONFIG_PREFIX="$NPM_GLOBAL_DIR"
-export PATH="$NPM_GLOBAL_DIR/bin:$PATH"
-
-DESIRED_NPM_VERSION=${PLAYWRIGHT_NPM_VERSION:-11.6.0}
-CURRENT_NPM_VERSION=$(npm -v 2>/dev/null || echo "")
-if [ "$CURRENT_NPM_VERSION" != "$DESIRED_NPM_VERSION" ]; then
-  echo "[playwright] Installing npm v${DESIRED_NPM_VERSION} locally..."
-  npm install -g "npm@${DESIRED_NPM_VERSION}"
-  hash -r
-fi
+export NPM_CONFIG_CACHE="$NPM_CACHE_DIR"
+export PNPM_HOME="$PNPM_HOME_DIR"
+export PNPM_STORE_PATH="$PNPM_STORE_DIR"
+export PATH="$NPM_GLOBAL_DIR/bin:$PNPM_HOME_DIR/bin:$PATH"
+export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
 # Detect package manager (pnpm preferred, fallback to npm) and lockfile.
 if [ -f pnpm-lock.yaml ]; then
@@ -60,14 +61,29 @@ PNPM_VERSION=""
 if [ "$PACKAGE_MANAGER" = "pnpm" ]; then
   PACKAGE_MANAGER_SPEC=$(node -p "require('./package.json').packageManager || ''" 2>/dev/null || echo '')
   PNPM_VERSION="${PACKAGE_MANAGER_SPEC#*@}"
+  if [ "$PNPM_VERSION" = "$PACKAGE_MANAGER_SPEC" ]; then
+    PNPM_VERSION=""
+  fi
+
+  if command -v corepack >/dev/null 2>&1; then
+    echo "[playwright] Activating pnpm via corepack..."
+    corepack enable pnpm >/dev/null 2>&1 || true
+    if [ -n "$PNPM_VERSION" ]; then
+      corepack prepare "pnpm@${PNPM_VERSION}" --activate >/dev/null 2>&1 || true
+    else
+      corepack prepare pnpm@latest --activate >/dev/null 2>&1 || true
+    fi
+    hash -r
+  fi
 
   if ! command -v pnpm >/dev/null 2>&1; then
-    echo "[playwright] Installing pnpm globally..."
-    if [ -n "$PNPM_VERSION" ] && [ "$PNPM_VERSION" != "$PACKAGE_MANAGER_SPEC" ]; then
+    echo "[playwright] Installing pnpm via npm fallback..."
+    if [ -n "$PNPM_VERSION" ]; then
       npm install -g "pnpm@${PNPM_VERSION}" >/dev/null 2>&1 || npm install -g pnpm >/dev/null 2>&1
     else
       npm install -g pnpm >/dev/null 2>&1
     fi
+    hash -r
   fi
 fi
 
@@ -124,7 +140,20 @@ if ! node -e "require.resolve('playwright-core/package.json')" >/dev/null 2>&1; 
   PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION:-"1.47.0"}
   echo "[playwright] Installing playwright-core@${PLAYWRIGHT_VERSION} for test runtime..."
   mkdir -p "$PLAYWRIGHT_RUNTIME_DIR"
-  npm install --prefix "$PLAYWRIGHT_RUNTIME_DIR" --no-save "playwright-core@${PLAYWRIGHT_VERSION}"
+  if command -v pnpm >/dev/null 2>&1; then
+    cat > "$PLAYWRIGHT_RUNTIME_DIR/package.json" <<EOF
+{
+  "name": "playwright-runtime",
+  "private": true,
+  "dependencies": {
+    "playwright-core": "${PLAYWRIGHT_VERSION}"
+  }
+}
+EOF
+    pnpm install --dir "$PLAYWRIGHT_RUNTIME_DIR" --link-workspace-packages=false --ignore-workspace-root-check >/dev/null 2>&1
+  else
+    npm install --prefix "$PLAYWRIGHT_RUNTIME_DIR" --no-save "playwright-core@${PLAYWRIGHT_VERSION}"
+  fi
   rm -rf node_modules/playwright-core
   mkdir -p node_modules
   cp -R "$PLAYWRIGHT_RUNTIME_DIR/node_modules/playwright-core" node_modules/
