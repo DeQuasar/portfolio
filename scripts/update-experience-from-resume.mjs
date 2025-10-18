@@ -3,8 +3,14 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { PDFParse } from 'pdf-parse'
 import yaml from 'yaml'
+
+let PDFParse
+try {
+  ({ PDFParse } = await import('pdf-parse'))
+} catch (error) {
+  console.warn('[update-experience]', 'pdf-parse dependency is not available; skipping résumé parsing.')
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -115,6 +121,10 @@ const deriveSlug = (organization, period, baseFrequency, baseCounts, usedSlugs) 
 }
 
 const parseExperienceFromResume = async (resumePath) => {
+  if (!PDFParse) {
+    return []
+  }
+
   const buffer = await readFile(resumePath)
   const parser = new PDFParse({ data: buffer })
 
