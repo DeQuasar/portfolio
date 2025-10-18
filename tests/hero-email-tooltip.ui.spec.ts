@@ -107,7 +107,13 @@ for (const browserType of browsersToRun) {
       const page = await createPage('/')
       await page.waitForLoadState('domcontentloaded')
       const origin = new URL(page.url()).origin
-      await page.context().grantPermissions(CLIPBOARD_PERMISSIONS, { origin })
+      try {
+        await page.context().grantPermissions(CLIPBOARD_PERMISSIONS, { origin })
+      } catch (permissionError) {
+        if (SHOULD_LOG_TOOLTIP_TRACE) {
+          console.warn('[hero tooltip debug] failed to grant clipboard permissions', permissionError)
+        }
+      }
       if (SHOULD_LOG_TOOLTIP_TRACE) {
         console.info(`[hero tooltip debug] stage: page-ready (${browserType}) url=${page.url()}`)
         page.on('console', (message) => {
@@ -173,7 +179,10 @@ for (const browserType of browsersToRun) {
 
       await waitForTooltipState(page, 'copied', 2000)
 
-      await page.waitForFunction(() => !document.querySelector('[role="group"][aria-label="Email options"]'), undefined, { timeout: 2000 })
+      await emailOptions.waitFor({
+        state: 'hidden',
+        timeout: PROGRESS_DURATION + REST_DELAY + 4000
+      })
 
       await page.waitForTimeout(100)
 
