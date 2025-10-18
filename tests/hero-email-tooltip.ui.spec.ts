@@ -31,6 +31,10 @@ const DEFAULT_BROWSERS: BrowserType[] = ['chromium', 'firefox', 'webkit']
 
 const CLIPBOARD_PERMISSIONS = ['clipboard-read']
 
+if (typeof process !== 'undefined') {
+  (process as typeof process & { client?: boolean }).client = true
+}
+
 const requestedInput = process.env.PLAYWRIGHT_BROWSERS ?? process.env.PLAYWRIGHT_BROWSER
 const browsersToRun = new Set<BrowserType>()
 const SHOULD_LOG_TOOLTIP_TRACE = process.env.DEBUG_HERO_TOOLTIP_TRACE === '1'

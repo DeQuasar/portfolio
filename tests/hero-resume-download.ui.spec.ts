@@ -7,6 +7,11 @@ import { setViewport } from './utils/viewport'
 import { uiTestRootDir } from './utils/nuxt-root'
 
 type BrowserType = 'chromium' | 'firefox' | 'webkit'
+type ResumeStatus = 'idle' | 'downloading' | 'success' | 'error'
+
+if (typeof process !== 'undefined') {
+  (process as typeof process & { client?: boolean }).client = true
+}
 
 const VALID_BROWSERS = new Set<BrowserType>(['chromium', 'firefox', 'webkit'])
 const DEFAULT_BROWSERS: BrowserType[] = ['chromium', 'firefox', 'webkit']
@@ -97,6 +102,15 @@ for (const browserType of browsersToRun) {
       await setViewport(page, 'desktop')
       await page.waitForLoadState('domcontentloaded')
       await page.waitForLoadState('networkidle')
+      await page.evaluate(() => {
+        const globalWithProcess = window as typeof window & { process?: { client?: boolean } }
+        globalWithProcess.process = globalWithProcess.process ?? { client: true }
+        globalWithProcess.process.client = true
+      })
+      if (SHOULD_PERSIST_TRACE || process.env.DEBUG_HERO_TOOLTIP_TRACE === '1') {
+        const isClient = await page.evaluate(() => Boolean((window as typeof window & { process?: { client?: boolean } }).process?.client))
+        console.warn('[hero resume debug] process.client', isClient)
+      }
 
       await stubResumeRoute(page)
 
@@ -112,6 +126,21 @@ for (const browserType of browsersToRun) {
 
       try {
         await heroResumeCta.click()
+        if (SHOULD_PERSIST_TRACE || process.env.DEBUG_HERO_TOOLTIP_TRACE === '1') {
+          const resumeStateSnapshot = await page.evaluate(() => {
+            const nuxtState = (window as typeof window & { __NUXT__?: any }).__NUXT__
+            const store = nuxtState?.state ?? nuxtState?.payload?.state ?? null
+            const resumeKey = store && ('$sresume-download-state' in store ? '$sresume-download-state' : 'resume-download-state')
+            return {
+              keys: store ? Object.keys(store) : null,
+              resumeKey,
+              resume: resumeKey ? store?.[resumeKey] ?? null : null,
+              nuxtKeys: nuxtState ? Object.keys(nuxtState) : null
+            }
+          })
+          console.warn('[hero resume debug] state after click', resumeStateSnapshot)
+        }
+        await waitForResumeStatus(page, 'downloading')
 
         await page.evaluate(() => {
           window.scrollTo({ top: 900, behavior: 'instant' })
@@ -120,22 +149,16 @@ for (const browserType of browsersToRun) {
         const stickyNav = page.locator('nav[aria-label="Primary navigation"]')
         await stickyNav.waitFor({ state: 'visible' })
 
-        await page.waitForFunction(() => {
-          const status = document.querySelector('main a[href="/download/resume"] [role="status"]')
-          return typeof status?.textContent === 'string' && status.textContent.includes('Downloading résumé')
-        })
-
         await resumeResponse
+
+        await waitForResumeStatus(page, 'success')
 
         await page.waitForFunction(() => {
           const status = document.querySelector('main a[href="/download/resume"] [role="status"]')
           return typeof status?.textContent === 'string' && status.textContent.includes('Résumé download started in your browser.')
         })
 
-        await page.waitForFunction(() => {
-          const link = document.querySelector('main a[href="/download/resume"]')
-          return link?.getAttribute('aria-label') === 'Download résumé'
-        }, { timeout: 7000 })
+        await waitForDownloadLabel(page, 'Download résumé', 7000)
 
         const tracePayload = await page.evaluate(() => {
           const globalWithTrace = window as typeof window & { __heroTooltipTrace__?: Array<{ event: string }> }
@@ -163,4 +186,46 @@ for (const browserType of browsersToRun) {
       }
     }, 40000)
   })
+}
+
+async function waitForResumeStatus(page: Page, expected: ResumeStatus, timeout = 12000) {
+  try {
+    await page.waitForFunction((target: ResumeStatus) => {
+      const nuxtState = (window as typeof window & { __NUXT__?: any }).__NUXT__
+      const store = nuxtState?.state ?? nuxtState?.payload?.state ?? null
+      if (!store) {
+        return false
+      }
+      const resumeKey = '$sresume-download-state' in store ? '$sresume-download-state' : 'resume-download-state'
+      const resumeState = store?.[resumeKey] ?? null
+      return resumeState?.status === target
+    }, expected, { timeout })
+  } catch (error) {
+    if (SHOULD_PERSIST_TRACE || process.env.DEBUG_HERO_TOOLTIP_TRACE === '1') {
+      console.warn('[hero resume debug] waitForResumeStatus timeout', { expected, error })
+    }
+  }
+}
+
+async function waitForDownloadLabel(page: Page, containsText: string, timeout = 12000) {
+  try {
+    await page.waitForFunction(
+      (expected) => {
+        const link = document.querySelector('main a[href="/download/resume"]')
+        const label = link?.getAttribute('aria-label') ?? ''
+        return label.includes(expected)
+      },
+      containsText,
+      { timeout }
+    )
+  } catch (error) {
+    if (SHOULD_PERSIST_TRACE || process.env.DEBUG_HERO_TOOLTIP_TRACE === '1') {
+      const currentLabel = await page.evaluate(() => {
+        const link = document.querySelector('main a[href="/download/resume"]')
+        return link?.getAttribute('aria-label') ?? null
+      })
+      console.warn('[hero resume debug] waitForDownloadLabel timeout', { expected: containsText, currentLabel, error })
+    }
+    throw error
+  }
 }
