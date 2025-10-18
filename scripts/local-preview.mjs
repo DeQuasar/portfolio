@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createServer } from 'node:http'
-import { createReadStream } from 'node:fs'
+import { createReadStream, appendFileSync } from 'node:fs'
 import { stat, access } from 'node:fs/promises'
 import { join, resolve, extname } from 'node:path'
 import { createBrotliCompress, createGzip, constants as zlibConstants } from 'node:zlib'
@@ -73,7 +73,27 @@ const resolveResumePath = async () => {
   return null
 }
 
-const log = (...messages) => console.log('[local-preview]', ...messages)
+const logFile = process.env.LOCAL_PREVIEW_LOG
+const log = (...messages) => {
+  const entry = ['[local-preview]', ...messages].map((chunk) => {
+    if (typeof chunk === 'string') {
+      return chunk
+    }
+    try {
+      return JSON.stringify(chunk)
+    } catch {
+      return String(chunk)
+    }
+  }).join(' ')
+  console.log(entry)
+  if (logFile) {
+    try {
+      appendFileSync(logFile, `${entry}\n`, 'utf8')
+    } catch {
+      // ignore file logging errors
+    }
+  }
+}
 
 const ensureWithinRoot = (candidate) => {
   const resolved = resolve(candidate)
@@ -210,6 +230,7 @@ const serveStatic = async (request, response, pathname) => {
     if (!extname(pathname)) {
       filePath = join(root, 'index.html')
     } else {
+      log('Not found', { pathname })
       response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
       response.end('Not found')
       return
@@ -228,6 +249,7 @@ const serveStatic = async (request, response, pathname) => {
 const server = createServer(async (request, response) => {
   try {
     const url = new URL(request.url ?? '/', `http://${request.headers.host ?? `${host}:${port}`}`)
+    log(`${request.method ?? 'GET'} ${url.pathname}`)
     if (request.method && !['GET', 'HEAD'].includes(request.method)) {
       response.writeHead(405, { 'Content-Type': 'text/plain; charset=utf-8' })
       response.end('Method not allowed')
@@ -244,7 +266,7 @@ const server = createServer(async (request, response) => {
     const status = error.statusCode ?? 500
     response.writeHead(status, { 'Content-Type': 'text/plain; charset=utf-8' })
     response.end(status === 403 ? 'Forbidden' : 'Internal server error')
-    log('Unhandled error', error)
+    log('Unhandled error', { status, error: error?.message ?? error })
   }
 })
 

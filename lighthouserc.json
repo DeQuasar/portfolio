@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "startServerCommand": "node ./scripts/local-preview.mjs --dir ./.output/public --host 127.0.0.1 --port 4300",
+      "startServerCommand": "LOCAL_PREVIEW_LOG=reports/local-preview.log node ./scripts/local-preview.mjs --dir ./.output/public --host 127.0.0.1 --port 4300",
       "startServerReadyPattern": "Local preview listening",
       "startServerReadyTimeout": 120000,
       "url": [
