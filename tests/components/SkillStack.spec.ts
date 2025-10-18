@@ -117,7 +117,7 @@ beforeEach(() => {
 })
 
 describe('SkillStack', () => {
-  it('renders core and supporting sections with data from useSkillStack', () => {
+it('renders core and supporting sections with data from useSkillStack', async () => {
     coreGroupsData.value = [
       {
         title: 'Frontend',
@@ -148,6 +148,7 @@ describe('SkillStack', () => {
     ]
 
     const wrapper = mountSkillStack()
+    await nextTick()
 
     const header = wrapper.get('[data-section-title="Skills & Tools"]')
     expect(header.attributes()['data-section-description']).toBe('Skills intro copy')
@@ -171,6 +172,7 @@ describe('SkillStack', () => {
     }))
 
     const wrapper = mountSkillStack()
+    await nextTick()
 
     let pills = wrapper.findAll('[data-pill]')
     expect(pills).toHaveLength(5)

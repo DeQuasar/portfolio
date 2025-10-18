@@ -230,7 +230,6 @@ onBeforeUnmount(() => {
             class="flex w-full min-h-[44px] items-center gap-2 rounded-full border-sage-200/70 bg-white/95 !px-4 !py-0 text-[0.78rem] font-semibold text-sage-600 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:text-sage-700 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:w-auto"
             :aria-expanded="showHeroEmailPanel"
             aria-haspopup="menu"
-            aria-label="View email options"
             @click="emit('toggle-hero-email', emailLink.href)"
           >
             <span class="grid h-8 w-8 place-items-center rounded-full border border-sage-100 bg-sage-50 text-sage-600 shadow-inner">

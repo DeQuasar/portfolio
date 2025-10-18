@@ -155,7 +155,7 @@ for (const browserType of browsersToRun) {
         console.info('[hero tooltip debug] runtime heroTooltipTrace flag', configDurations.heroTooltipTrace)
       }
 
-      await page.getByRole('button', { name: 'View email options' }).click()
+      await page.getByRole('button', { name: /compose message/i }).click()
       const emailOptions = page.getByRole('group', { name: 'Email options' })
       await emailOptions.waitFor({ state: 'visible', timeout: 3200 })
       if (SHOULD_LOG_TOOLTIP_TRACE) {

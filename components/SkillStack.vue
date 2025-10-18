@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useBreakpoints } from '@vueuse/core'
 import SectionHeader from '~/components/ui/SectionHeader.vue'
 import Pill from '~/components/ui/Pill.vue'
@@ -29,12 +29,13 @@ const breakpoints = useBreakpoints({
 })
 
 const mobileQuery = breakpoints.smaller('sm')
-const isMobile = computed(() => {
-  if (process.client) {
-    return mobileQuery.value
-  }
-  return true
+const isMounted = ref(false)
+
+onMounted(() => {
+  isMounted.value = true
 })
+
+const isMobile = computed(() => (isMounted.value ? mobileQuery.value : false))
 const ADDITIONAL_MOBILE_LIMIT = 5
 const additionalExpanded = ref(false)
 

@@ -53,7 +53,7 @@ describeMaybe('[chromium] hero email layout', () => {
 
     const idle = await measureBox(root)
 
-    await page.getByRole('button', { name: 'View email options' }).click()
+    await page.getByRole('button', { name: /compose message/i }).click()
     await page.getByRole('group', { name: 'Email options' }).waitFor({ state: 'visible', timeout: 2000 })
     await page.waitForTimeout(150)
 

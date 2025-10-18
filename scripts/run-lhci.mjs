@@ -2,6 +2,8 @@
 import { spawn } from 'node:child_process'
 import { chmodSync, chownSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { createConnection, createServer } from 'node:net'
+import { setTimeout as sleep } from 'node:timers/promises'
 import { chromium } from '@playwright/test'
 import { createRequire } from 'node:module'
 
@@ -26,10 +28,10 @@ const defaultChromeFlags = [
   '--disable-features=BackForwardCache',
   '--no-sandbox',
   '--disable-setuid-sandbox',
-  '--single-process',
   '--disable-gpu',
   `--user-data-dir=${userDataDir}`
 ]
+
 if (!env.LHCI_CHROME_FLAGS) {
   env.LHCI_CHROME_FLAGS = defaultChromeFlags.join(' ')
 } else {
@@ -41,9 +43,8 @@ const canQueryIds = typeof process.getuid === 'function' && typeof process.getgi
 const currentUid = canQueryIds ? process.getuid() : undefined
 const currentGid = canQueryIds ? process.getgid() : undefined
 const isRoot = currentUid === 0
-const shouldDropPrivileges = isRoot && process.env.LHCI_DISABLE_UID_SWITCH !== '1'
-const defaultUid = shouldDropPrivileges ? 1000 : currentUid ?? 1000
-const defaultGid = shouldDropPrivileges ? 1000 : currentGid ?? 1000
+const defaultUid = currentUid ?? 1000
+const defaultGid = currentGid ?? 1000
 const fallbackUid = Number(process.env.LHCI_RUNNER_UID ?? defaultUid)
 const fallbackGid = Number(process.env.LHCI_RUNNER_GID ?? defaultGid)
 
@@ -51,7 +52,7 @@ const ensureWritableDir = (path) => {
   try {
     mkdirSync(path, { recursive: true })
     chmodSync(path, 0o777)
-    if (shouldDropPrivileges) {
+    if (isRoot) {
       try {
         chownSync(path, fallbackUid, fallbackGid)
       } catch (chownError) {
@@ -68,35 +69,150 @@ const ensureWritableDir = (path) => {
 ensureWritableDir('.lighthouseci')
 ensureWritableDir(userDataDir)
 
-if (shouldDropPrivileges) {
-  const safeHome = process.env.LHCI_HOME_DIR ?? `${tmpdir()}/lhci-home`
-  ensureWritableDir(safeHome)
-  ensureWritableDir(`${safeHome}/.cache`)
-  ensureWritableDir(`${safeHome}/.config`)
-  env.HOME = safeHome
-  env.XDG_CACHE_HOME = env.XDG_CACHE_HOME ?? `${safeHome}/.cache`
-  env.XDG_CONFIG_HOME = env.XDG_CONFIG_HOME ?? `${safeHome}/.config`
-}
-
 const args = process.argv.slice(2)
 
 const cliPath = require.resolve('@lhci/cli/src/cli.js')
 
 console.log('[lhci]', 'Using Chrome executable at', chromePath)
 console.log('[lhci]', 'Chrome flags:', env.LHCI_CHROME_FLAGS)
+if (!isRoot) {
+  console.warn('[lhci]', 'Running without elevated privileges; ensure your kernel allows unprivileged user namespaces')
+} else {
+  console.warn('[lhci]', 'Running as root with --no-sandbox fallback')
+}
 
 const spawnOptions = {
   stdio: 'inherit',
   env
 }
 
-if (shouldDropPrivileges) {
-  spawnOptions.uid = fallbackUid
-  spawnOptions.gid = fallbackGid
+const parseFlags = (flags) => flags.split(/\s+/).filter(Boolean)
+
+const findAvailablePort = async () =>
+  new Promise((resolve, reject) => {
+    const server = createServer()
+    server.unref()
+    server.on('error', reject)
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address()
+      if (address && typeof address === 'object') {
+        const { port } = address
+        server.close(() => resolve(port))
+      } else {
+        server.close(() => reject(new Error('Failed to acquire port for Chrome remote debugging')))
+      }
+    })
+  })
+
+const waitForDebugPort = async (port, timeoutMs = 15000) => {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    try {
+      await new Promise((resolve, reject) => {
+        const socket = createConnection(port, '127.0.0.1')
+        const timer = setTimeout(() => {
+          socket.destroy()
+          reject(new Error('timeout'))
+        }, 500)
+        socket.once('connect', () => {
+          clearTimeout(timer)
+          socket.end()
+          resolve()
+        })
+        socket.once('error', (error) => {
+          clearTimeout(timer)
+          reject(error)
+        })
+      })
+      return
+    } catch {
+      await sleep(100)
+    }
+  }
+
+  throw new Error(`Timed out waiting for Chrome to expose remote debugging port ${port}`)
 }
 
-const child = spawn(process.execPath, [cliPath, ...args], spawnOptions)
+const launchChrome = async () => {
+  const remoteDebugPort = await findAvailablePort()
+  const flagList = parseFlags(env.LHCI_CHROME_FLAGS).filter(
+    (flag) => !flag.startsWith('--remote-debugging-port=')
+  )
+  flagList.push(`--remote-debugging-port=${remoteDebugPort}`)
+  const chromeArgs = [...flagList, 'about:blank']
 
-child.on('exit', (code) => {
-  process.exit(code ?? 1)
-})
+  console.log('[lhci]', `Launching Chrome with remote debugging port ${remoteDebugPort}`)
+  const chromeProcess = spawn(chromePath, chromeArgs, {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env
+  })
+
+  chromeProcess.stdout.on('data', (chunk) => {
+    process.stdout.write(`[chrome] ${chunk}`)
+  })
+  chromeProcess.stderr.on('data', (chunk) => {
+    process.stderr.write(`[chrome] ${chunk}`)
+  })
+
+  let closed = false
+  chromeProcess.once('exit', (code, signal) => {
+    closed = true
+    if (code !== 0) {
+      console.error('[lhci]', `Chrome exited early (code=${code ?? 'null'}, signal=${signal ?? 'null'})`)
+    }
+  })
+
+  try {
+    await waitForDebugPort(remoteDebugPort)
+  } catch (error) {
+    if (!closed) {
+      chromeProcess.kill('SIGKILL')
+    }
+    throw error
+  }
+
+  return { chromeProcess, remoteDebugPort, chromeFlags: flagList.filter((flag) => !flag.startsWith('--remote-debugging-port=')) }
+}
+
+const run = async () => {
+  let chromeProcess
+  try {
+    const { chromeProcess: proc, remoteDebugPort, chromeFlags } = await launchChrome()
+    chromeProcess = proc
+
+    const overrides = [
+      `--collect.settings.port=${remoteDebugPort}`,
+      `--collect.settings.chromeFlags=${chromeFlags.join(' ')}`
+    ]
+
+    const child = spawn(process.execPath, [cliPath, ...args, ...overrides], spawnOptions)
+
+    const shutdown = (code) => {
+      if (chromeProcess && !chromeProcess.killed) {
+        chromeProcess.kill('SIGTERM')
+        setTimeout(() => {
+          if (!chromeProcess.killed) chromeProcess.kill('SIGKILL')
+        }, 5000)
+      }
+      process.exit(code ?? 1)
+    }
+
+    child.on('exit', shutdown)
+    process.on('SIGINT', () => {
+      child.kill('SIGINT')
+      shutdown(130)
+    })
+    process.on('SIGTERM', () => {
+      child.kill('SIGTERM')
+      shutdown(143)
+    })
+  } catch (error) {
+    if (chromeProcess && !chromeProcess.killed) {
+      chromeProcess.kill('SIGKILL')
+    }
+    console.error('[lhci]', error.message || error)
+    process.exit(1)
+  }
+}
+
+run()

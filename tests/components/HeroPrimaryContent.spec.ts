@@ -163,14 +163,15 @@ describe('HeroPrimaryContent', () => {
       activeEmailHref: 'mailto:anthony@example.com'
     })
 
-    const emailButton = wrapper.get('button[aria-label="View email options"]')
-    await emailButton.trigger('click')
+    const emailButton = wrapper.findAll('button').find((button) => button.text().includes('Compose message'))
+    expect(emailButton).toBeTruthy()
+    await emailButton!.trigger('click')
     const emitted = wrapper.emitted('toggle-hero-email')
     expect(emitted?.[0]?.[0]).toBe('mailto:anthony@example.com')
 
     await nextTick()
-    const caret = emailButton.get('svg[viewBox="0 0 24 24"]')
-    expect(emailButton.html()).toContain('rotate-180')
+    const caret = emailButton!.get('svg[viewBox="0 0 24 24"]')
+    expect(emailButton!.html()).toContain('rotate-180')
   })
 
   it('renders download CTA in loading state when resume is downloading', () => {

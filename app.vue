@@ -10,6 +10,10 @@ useHead({
     {
       name: 'viewport',
       content: 'width=device-width, initial-scale=1, viewport-fit=cover'
+    },
+    {
+      name: 'description',
+      content: 'Portfolio for Anthony Protano, a senior software developer showcasing experience in product engineering, platform leadership, and accessible UX.'
     }
   ],
   link: [
@@ -31,7 +35,15 @@ useHead({
     },
     {
       rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap'
+      href: 'https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap',
+      crossorigin: '',
+      media: 'print',
+      onload: "this.media='all'"
+    }
+  ],
+  noscript: [
+    {
+      children: '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" crossorigin>'
     }
   ]
 })

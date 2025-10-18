@@ -176,6 +176,22 @@ if [ "$#" -gt 0 ]; then
     else
       exec npx playwright "$@"
     fi
+  elif [ "$1" = "pnpm" ]; then
+    shift
+    if [ "$PACKAGE_MANAGER" = "pnpm" ]; then
+      exec pnpm "$@"
+    else
+      exec npx pnpm "$@"
+    fi
+  elif [ "$1" = "npm" ]; then
+    shift
+    exec npm "$@"
+  elif [ "$1" = "node" ]; then
+    shift
+    exec node "$@"
+  elif [ "$1" = "bash" ] || [ "$1" = "/bin/bash" ]; then
+    shift
+    exec /bin/bash "$@"
   else
     if [ "$PACKAGE_MANAGER" = "pnpm" ]; then
       exec pnpm exec vitest run "$@"

@@ -68,3 +68,44 @@ jobs:
       - name: Cleanup Playwright containers
         if: always()
         run: docker compose -f docker-compose.playwright.yml down --remove-orphans || true
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clean Nuxt content cache
+        run: rm -rf .data
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare Playwright volume
+        run: mkdir -p .playwright/node_modules
+
+      - name: Run accessibility audits (docker)
+        env:
+          ENABLE_BROWSER_TESTS: 'true'
+          PLAYWRIGHT_BROWSERS: 'chromium'
+          NUXT_CONTENT_LOCAL_CACHE_DIR: "/tmp/content-cache-${{ github.run_id }}-${{ github.run_attempt }}-a11y"
+        run: pnpm test:accessibility:container
+
+      - name: Run Lighthouse performance checks (docker)
+        env:
+          PLAYWRIGHT_BROWSERS: 'chromium'
+          NUXT_CONTENT_LOCAL_CACHE_DIR: "/tmp/content-cache-${{ github.run_id }}-${{ github.run_attempt }}-lhci"
+        run: pnpm test:performance:container
+
+      - name: Cleanup Playwright containers
+        if: always()
+        run: docker compose -f docker-compose.playwright.yml down --remove-orphans || true

@@ -3,6 +3,7 @@ import { createServer } from 'node:http'
 import { createReadStream } from 'node:fs'
 import { stat, access } from 'node:fs/promises'
 import { join, resolve, extname } from 'node:path'
+import { createBrotliCompress, createGzip, constants as zlibConstants } from 'node:zlib'
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -24,6 +25,17 @@ const MIME_TYPES = {
   '.txt': 'text/plain; charset=utf-8',
   '.pdf': 'application/pdf'
 }
+
+const COMPRESSIBLE_TYPES = new Set([
+  'text/html',
+  'text/css',
+  'application/javascript',
+  'application/json',
+  'image/svg+xml',
+  'application/xml',
+  'text/plain',
+  'application/manifest+json'
+])
 
 const parseArgs = (argv) => {
   const map = new Map()
@@ -71,22 +83,92 @@ const ensureWithinRoot = (candidate) => {
   return resolved
 }
 
+const shouldCompress = (contentType) => {
+  if (!contentType) {
+    return false
+  }
+  const [type] = contentType.split(';')
+  if (!type) {
+    return false
+  }
+  if (COMPRESSIBLE_TYPES.has(type.trim())) {
+    return true
+  }
+  return type.startsWith('text/') || type === 'application/javascript'
+}
+
+const negotiateEncoding = (request) => {
+  const header = request.headers['accept-encoding'] ?? ''
+  if (/\bbr\b/.test(header)) {
+    return 'br'
+  }
+  if (/\bgzip\b/.test(header)) {
+    return 'gzip'
+  }
+  return null
+}
+
 const sendStream = async (request, response, filePath, headers = {}) => {
   const stats = await stat(filePath)
   const isHead = request.method === 'HEAD'
   const ext = extname(filePath).toLowerCase()
   const contentType = headers['Content-Type'] ?? MIME_TYPES[ext] ?? 'application/octet-stream'
-  response.writeHead(200, {
+  const isNuxtAsset = filePath.startsWith(join(root, '_nuxt'))
+  const defaultCacheControl = headers['Cache-Control']
+    ?? (ext === '.html'
+      ? 'no-store'
+      : isNuxtAsset
+        ? 'public, max-age=31536000, immutable'
+        : 'public, max-age=3600')
+
+  const shouldEncode = shouldCompress(contentType)
+  const encoding = shouldEncode ? negotiateEncoding(request) : null
+
+  const responseHeaders = {
     'Content-Type': contentType,
-    'Content-Length': stats.size,
-    'Cache-Control': headers['Cache-Control'] ?? (ext === '.html' ? 'no-store' : 'public, max-age=300'),
+    'Cache-Control': defaultCacheControl,
     ...headers
-  })
+  }
+
+  if (!headers['Content-Length'] && !encoding) {
+    responseHeaders['Content-Length'] = stats.size
+  }
+
+  if (encoding) {
+    responseHeaders['Content-Encoding'] = encoding
+    responseHeaders['Vary'] = [headers['Vary'], 'Accept-Encoding'].filter(Boolean).join(', ') || 'Accept-Encoding'
+    delete responseHeaders['Content-Length']
+  }
+
+  response.writeHead(200, responseHeaders)
+
   if (isHead) {
     response.end()
     return
   }
-  createReadStream(filePath).pipe(response)
+
+  let stream = createReadStream(filePath)
+
+  stream.on('error', (error) => {
+    console.error('[local-preview] stream error', error)
+    if (!response.headersSent) {
+      response.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' })
+    }
+    response.end('Internal server error')
+  })
+
+  if (encoding === 'br') {
+    const brotli = createBrotliCompress({
+      params: {
+        [zlibConstants.BROTLI_PARAM_QUALITY]: 5
+      }
+    })
+    stream = stream.pipe(brotli)
+  } else if (encoding === 'gzip') {
+    stream = stream.pipe(createGzip({ level: 6 }))
+  }
+
+  stream.pipe(response)
 }
 
 const serveResume = async (request, response) => {

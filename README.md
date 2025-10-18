@@ -1,5 +1,8 @@
 # Portfolio (Nuxt 3)
 
+[![CI Audit](https://img.shields.io/github/actions/workflow/status/DeQuasar/portfolio/ci.yml?branch=main&label=CI%20Audit&logo=github)](https://github.com/DeQuasar/portfolio/actions/workflows/ci.yml)
+[![Lighthouse](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/DeQuasar/portfolio/main/docs/badges/lighthouse.json)](docs/badges/lighthouse.json)
+
 Anthony Protano’s portfolio runs on Nuxt 3 with a Cloudflare Pages streaming résumé endpoint, comprehensive Playwright coverage, and Lighthouse performance gates wired into CI.
 
 ## Setup
@@ -65,20 +68,23 @@ Native commands:
 - `pnpm test:e2e` – Playwright desktop & mobile coverage (generates `.output/public` unless `SKIP_GENERATE=1`).
 - `pnpm test:performance` – Lighthouse CI assertions using the desktop preset. On bare metal you’ll need Chrome shared libraries (e.g. `libnspr4`, `libnss3`, `libasound2`); otherwise prefer the Docker variant.
 
-Container equivalents (mirroring CI):
+Container equivalents (mirroring CI). These commands invoke the shared Playwright image and finish by running `scripts/cleanup-playwright-workdir.mjs`, so `.nuxt`, `.output`, `.data`, `reports/`, `.lighthouseci/`, and `test-results/` never linger between runs:
 
 ```bash
 # Unit tests + coverage (browser specs skipped)
 docker compose run --rm coverage
 
-# Full Playwright E2E suite
-docker compose run --rm e2e
+# Full Playwright E2E suite (chromium, firefox, webkit)
+pnpm test:ui:container
+
+# Axe accessibility audit
+pnpm test:accessibility:container
 
 # Lighthouse performance checks
-LOCAL_UID=$(id -u) LOCAL_GID=$(id -g) docker compose run --rm performance
+pnpm test:performance:container
 ```
 
-Artifacts land in `reports/` and `test-results/` (ignored by git). The `pnpm prune:artifacts` helper clears those directories and recreates the expected subfolders; it now runs automatically before dev/test commands that generate heavy output, but you can call it manually if you want a clean slate between runs.
+Artifacts land in `reports/` and `test-results/` (ignored by git). The cleanup helper above removes them after each containerised run; `pnpm prune:artifacts` is still available if you need to reset things manually before hacking on new tests.
 
 ## Cloudflare Pages deployment
 
@@ -111,4 +117,4 @@ Then visit `http://127.0.0.1:8787/download/resume` to validate the streaming res
 
 ## UI regression tests
 
-`docker compose run --rm e2e` drives the Playwright suite (desktop + mobile) with axe audits and Lighthouse pre-flight baked in. The legacy helper `pnpm test:ui:container` still maps to `docker-compose.playwright.yml` if you need the standalone Playwright image for Vitest-specific runs.
+`pnpm test:ui:container` drives the Playwright suite (desktop + mobile) with axe audits and Lighthouse pre-flight baked in via `docker-compose.playwright.yml`. Pass `PLAYWRIGHT_BROWSERS=chromium` (or similar) to target a subset locally, though CI pins the multi-browser matrix by default.
