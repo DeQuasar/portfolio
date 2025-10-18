@@ -18,7 +18,7 @@
     "test:ci": "pnpm run test:unit",
     "test:changed": "cross-env VITE_DISABLE_HMR=1 vitest --changed --run",
     "test:smoke": "cross-env VITE_DISABLE_HMR=1 vitest run tests/external-link-guard.spec.ts",
-    "test:ui:container": "PLAYWRIGHT_UID=$(id -u) PLAYWRIGHT_GID=$(id -g) docker compose -f docker-compose.playwright.yml run --rm playwright",
+    "test:ui:container": "ENABLE_BROWSER_TESTS=true PLAYWRIGHT_BROWSERS=${PLAYWRIGHT_BROWSERS:-chromium} PLAYWRIGHT_UID=$(id -u) PLAYWRIGHT_GID=$(id -g) docker compose -f docker-compose.playwright.yml run --rm playwright --config vitest.playwright.config.ts",
     "pretest:e2e": "if [ \"$SKIP_GENERATE\" != \"1\" ]; then pnpm generate; fi",
     "test:e2e": "playwright test",
     "pretest:e2e:ci": "if [ \"$SKIP_GENERATE\" != \"1\" ]; then pnpm generate; fi",

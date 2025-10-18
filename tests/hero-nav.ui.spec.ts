@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { createPage, setup } from '@nuxt/test-utils'
-import { fileURLToPath } from 'node:url'
 import type { Page } from 'playwright-core'
 import { setViewport } from './utils/viewport'
+import { uiTestRootDir } from './utils/nuxt-root'
 
 const shouldRunBrowserTests = process.env.ENABLE_BROWSER_TESTS === 'true'
 let hasPlaywright = shouldRunBrowserTests
@@ -18,7 +18,7 @@ if (shouldRunBrowserTests) {
 
 if (hasPlaywright) {
   await setup({
-    rootDir: fileURLToPath(new URL('../', import.meta.url)),
+    rootDir: uiTestRootDir,
     browser: true,
     browserOptions: { type: 'chromium' }
   })

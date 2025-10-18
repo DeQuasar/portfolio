@@ -1,29 +1,38 @@
 #!/bin/bash
 set -euo pipefail
 
-# Ensure we have the expected Node.js version (Nuxt 3.19 requires >=20.19, prefer 22 LTS).
-DESIRED_NODE_VERSION=${PLAYWRIGHT_NODE_VERSION:-22.12.0}
-NODE_INSTALL_DIR="/workspace/.playwright-tools/node-v${DESIRED_NODE_VERSION}-linux-x64"
+# Ensure we have the expected Node.js version (Nuxt 3.19 requires >=20.19).
+DESIRED_NODE_VERSION=${PLAYWRIGHT_NODE_VERSION:-system}
 TOOLS_ROOT=${PLAYWRIGHT_TOOLS_ROOT:-/workspace/.playwright-tools}
 NPM_GLOBAL_DIR="${TOOLS_ROOT}/npm-global"
 PLAYWRIGHT_RUNTIME_DIR="${TOOLS_ROOT}/playwright-runtime"
 
-if ! command -v node >/dev/null 2>&1 || [ "$(node -v 2>/dev/null | cut -c2-)" != "${DESIRED_NODE_VERSION}" ]; then
-  echo "[playwright] Installing Node.js v${DESIRED_NODE_VERSION} locally..."
-  mkdir -p "${NODE_INSTALL_DIR%/*}"
-  ARCHIVE="node-v${DESIRED_NODE_VERSION}-linux-x64.tar.gz"
-  URL="https://nodejs.org/dist/v${DESIRED_NODE_VERSION}/${ARCHIVE}"
-  TMP_TARBALL="/tmp/${ARCHIVE}"
-  curl -fsSL "$URL" -o "$TMP_TARBALL"
-  rm -rf "$NODE_INSTALL_DIR"
-  tar -xzf "$TMP_TARBALL" -C "${NODE_INSTALL_DIR%/*}"
-  rm -f "$TMP_TARBALL"
+if [ "$DESIRED_NODE_VERSION" != "system" ]; then
+  NODE_INSTALL_DIR="${TOOLS_ROOT}/node-v${DESIRED_NODE_VERSION}-linux-x64"
+  if ! command -v node >/dev/null 2>&1 || [ "$(node -v 2>/dev/null | cut -c2-)" != "${DESIRED_NODE_VERSION}" ]; then
+    echo "[playwright] Installing Node.js v${DESIRED_NODE_VERSION} locally..."
+    mkdir -p "${NODE_INSTALL_DIR%/*}"
+    ARCHIVE="node-v${DESIRED_NODE_VERSION}-linux-x64.tar.gz"
+    URL="https://nodejs.org/dist/v${DESIRED_NODE_VERSION}/${ARCHIVE}"
+    TMP_TARBALL="/tmp/${ARCHIVE}"
+    curl -fsSL "$URL" -o "$TMP_TARBALL"
+    rm -rf "$NODE_INSTALL_DIR"
+    tar -xzf "$TMP_TARBALL" -C "${NODE_INSTALL_DIR%/*}"
+    rm -f "$TMP_TARBALL"
+  fi
+  export PATH="$NODE_INSTALL_DIR/bin:$PATH"
+else
+  if ! command -v node >/dev/null 2>&1; then
+    echo "[playwright] ERROR: system Node.js not found. Set PLAYWRIGHT_NODE_VERSION to install a specific version." >&2
+    exit 1
+  fi
+  echo "[playwright] Using system Node.js $(node -v)"
 fi
 
 mkdir -p "$NPM_GLOBAL_DIR/bin"
 
 export NPM_CONFIG_PREFIX="$NPM_GLOBAL_DIR"
-export PATH="$NPM_GLOBAL_DIR/bin:$NODE_INSTALL_DIR/bin:$PATH"
+export PATH="$NPM_GLOBAL_DIR/bin:$PATH"
 
 DESIRED_NPM_VERSION=${PLAYWRIGHT_NPM_VERSION:-11.6.0}
 CURRENT_NPM_VERSION=$(npm -v 2>/dev/null || echo "")
@@ -126,6 +135,7 @@ export NUXT_PUBLIC_TOOLTIP_PROGRESS_DURATION="${NUXT_PUBLIC_TOOLTIP_PROGRESS_DUR
 export NUXT_PUBLIC_TOOLTIP_REST_DELAY="${NUXT_PUBLIC_TOOLTIP_REST_DELAY:-300}"
 export NUXT_PUBLIC_HERO_TOOLTIP_TRACE="${NUXT_PUBLIC_HERO_TOOLTIP_TRACE:-1}"
 export DEBUG_HERO_TOOLTIP_TRACE="${DEBUG_HERO_TOOLTIP_TRACE:-1}"
+export ENABLE_BROWSER_TESTS="${ENABLE_BROWSER_TESTS:-true}"
 
 echo "[playwright] Running Vitest suite with Playwright enabled (tooltip duration=${NUXT_PUBLIC_TOOLTIP_PROGRESS_DURATION}ms, rest=${NUXT_PUBLIC_TOOLTIP_REST_DELAY}ms)..."
 

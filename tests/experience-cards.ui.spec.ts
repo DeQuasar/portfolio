@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { createPage, setup } from '@nuxt/test-utils'
-import { fileURLToPath } from 'node:url'
 import type { Page } from 'playwright-core'
 import { setViewport } from './utils/viewport'
+import { uiTestRootDir } from './utils/nuxt-root'
 
-const rootDir = fileURLToPath(new URL('../', import.meta.url))
+const rootDir = uiTestRootDir
 
 const shouldRunBrowserTests = process.env.ENABLE_BROWSER_TESTS === 'true'
 let hasPlaywright = shouldRunBrowserTests

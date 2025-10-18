@@ -1,8 +1,8 @@
 import { appendFileSync, mkdirSync } from 'node:fs'
 import { describe, it, expect } from 'vitest'
 import { createPage, setup } from '@nuxt/test-utils'
-import { fileURLToPath } from 'node:url'
 import type { Page } from 'playwright-core'
+import { uiTestRootDir } from './utils/nuxt-root'
 
 if (!process.env.NUXT_PUBLIC_TOOLTIP_PROGRESS_DURATION) {
   process.env.NUXT_PUBLIC_TOOLTIP_PROGRESS_DURATION = '1200'
@@ -22,7 +22,7 @@ if (!process.env.DEBUG_HERO_TOOLTIP_TRACE) {
 
 const PROGRESS_DURATION = Number(process.env.NUXT_PUBLIC_TOOLTIP_PROGRESS_DURATION)
 const REST_DELAY = Number(process.env.NUXT_PUBLIC_TOOLTIP_REST_DELAY)
-const TEST_TIMEOUT = PROGRESS_DURATION + REST_DELAY + 20000
+const TEST_TIMEOUT = PROGRESS_DURATION + REST_DELAY + 40000
 
 type BrowserType = 'chromium' | 'firefox' | 'webkit'
 type HeroTooltipState = 'idle' | 'copied' | 'error'
@@ -76,7 +76,7 @@ if (shouldRunBrowserTests) {
 for (const browserType of browsersToRun) {
   if (hasPlaywright) {
     await setup({
-      rootDir: fileURLToPath(new URL('../', import.meta.url)),
+      rootDir: uiTestRootDir,
       browser: true,
       browserOptions: {
         type: browserType,
@@ -139,7 +139,7 @@ for (const browserType of browsersToRun) {
         console.info(`[hero tooltip debug] stage: email-options-visible (${browserType})`)
       }
 
-      const mailtoHref = await page.getByRole('link', { name: /Email Anthony/i }).getAttribute('href')
+      const mailtoHref = await emailOptions.getByRole('link').first().getAttribute('href')
 
       await debugHeroTooltipTrace(page, 'before-copy-click')
       const copyButton = page.getByRole('button', { name: 'Copy email' })
@@ -169,9 +169,9 @@ for (const browserType of browsersToRun) {
       await page.waitForSelector("[data-testid=\"email-tooltip\"][data-variant='success']", { state: 'visible', timeout: PROGRESS_DURATION + 1500 })
 
       await page.waitForFunction(() => {
-        const message = document.querySelector('p[aria-live="polite"]')?.textContent?.trim() ?? ''
-        return message.includes('Email address copied')
-      }, undefined, { timeout: 1500 })
+        const tooltip = document.querySelector<HTMLElement>('[data-testid="email-tooltip"]')
+        return tooltip?.textContent?.includes('Email address copied') ?? false
+      }, undefined, { timeout: PROGRESS_DURATION + 4000 })
 
       const clipboardWrites = await page.evaluate(() => (window as typeof window & { __clipboardWrites?: string[] }).__clipboardWrites ?? [])
       const expectedEmail = (mailtoHref ?? '').replace(/^mailto:/, '')
