@@ -436,7 +436,13 @@ onBeforeUnmount(() => {
                   </span>
                 </span>
               </span>
-              <span v-if="resumeAnnouncementText" class="sr-only" role="status" aria-live="polite">
+              <span
+                v-if="resumeAnnouncementText"
+                class="sr-only"
+                role="status"
+                aria-live="polite"
+                data-testid="hero-resume-status"
+              >
                 {{ resumeAnnouncementText }}
               </span>
             </AppLink>

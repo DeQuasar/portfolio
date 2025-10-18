@@ -121,16 +121,6 @@ for (const browserType of browsersToRun) {
         await stickyNav.waitFor({ state: 'visible' })
 
         await page.waitForFunction(() => {
-          const navLink = document.querySelector('nav[aria-label="Primary navigation"] a[href="/download/resume"]')
-          return navLink?.getAttribute('aria-label') === 'Downloading résumé'
-        })
-
-        await page.waitForFunction(() => {
-          const link = document.querySelector('main a[href="/download/resume"]')
-          return link?.getAttribute('aria-label') === 'Downloading résumé'
-        })
-
-        await page.waitForFunction(() => {
           const status = document.querySelector('main a[href="/download/resume"] [role="status"]')
           return typeof status?.textContent === 'string' && status.textContent.includes('Downloading résumé')
         })
@@ -145,11 +135,6 @@ for (const browserType of browsersToRun) {
         await page.waitForFunction(() => {
           const link = document.querySelector('main a[href="/download/resume"]')
           return link?.getAttribute('aria-label') === 'Download résumé'
-        }, { timeout: 7000 })
-
-        await page.waitForFunction(() => {
-          const navLink = document.querySelector('nav[aria-label="Primary navigation"] a[href="/download/resume"]')
-          return !navLink || navLink.getAttribute('aria-label') === 'Download résumé'
         }, { timeout: 7000 })
 
         const tracePayload = await page.evaluate(() => {

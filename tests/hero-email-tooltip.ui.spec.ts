@@ -179,21 +179,30 @@ for (const browserType of browsersToRun) {
 
       await waitForTooltipState(page, 'copied', 2000)
 
+      const tooltipSnapshot = await page.evaluate(() => {
+        const tooltip = document.querySelector<HTMLElement>('[data-testid="email-tooltip"]')
+        return tooltip
+          ? {
+              variant: tooltip.dataset.variant ?? '',
+              text: tooltip.textContent ?? ''
+            }
+          : null
+      })
+
+      if (SHOULD_LOG_TOOLTIP_TRACE) {
+        console.info('[hero tooltip debug] tooltip snapshot', tooltipSnapshot)
+      }
+
+      expect(tooltipSnapshot).not.toBeNull()
+      expect(tooltipSnapshot?.variant).toBe('success')
+      expect(tooltipSnapshot?.text ?? '').toContain('Email address copied')
+
       await emailOptions.waitFor({
         state: 'hidden',
         timeout: PROGRESS_DURATION + REST_DELAY + 4000
       })
 
       await page.waitForTimeout(100)
-
-      await page.waitForSelector('[role="status"]', { state: 'attached', timeout: PROGRESS_DURATION + 1500 })
-
-      await page.waitForSelector("[data-testid=\"email-tooltip\"][data-variant='success']", { state: 'visible', timeout: PROGRESS_DURATION + 1500 })
-
-      await page.waitForFunction(() => {
-        const tooltip = document.querySelector<HTMLElement>('[data-testid="email-tooltip"]')
-        return tooltip?.textContent?.includes('Email address copied') ?? false
-      }, undefined, { timeout: PROGRESS_DURATION + 4000 })
 
       const clipboardWrites = await page.evaluate(() => (window as typeof window & { __clipboardWrites?: string[] }).__clipboardWrites ?? [])
       const expectedEmail = (mailtoHref ?? '').replace(/^mailto:/, '')
