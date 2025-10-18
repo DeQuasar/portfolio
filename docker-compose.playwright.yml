@@ -11,5 +11,6 @@ services:
       PLAYWRIGHT_VERSION: "1.47.0"
       PLAYWRIGHT_BROWSERS: "${PLAYWRIGHT_BROWSERS:-}"
       PLAYWRIGHT_BROWSER: "${PLAYWRIGHT_BROWSER:-}"
+      NUXT_CONTENT_LOCAL_CACHE_DIR: "${NUXT_CONTENT_LOCAL_CACHE_DIR:-/tmp/nuxt-content-cache}"
     entrypoint: ["/bin/bash", "/workspace/docker/playwright/entrypoint.sh"]
     shm_size: 1gb

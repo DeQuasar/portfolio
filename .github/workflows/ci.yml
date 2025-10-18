@@ -32,6 +32,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Prepare Playwright volume
+        run: mkdir -p .playwright/node_modules
+
       - name: Run Vitest unit suite
         env:
           ENABLE_BROWSER_TESTS: 'false'
@@ -40,6 +43,7 @@ jobs:
       - name: Run dockerized Playwright UI suite
         env:
           ENABLE_BROWSER_TESTS: 'true'
+          NUXT_CONTENT_LOCAL_CACHE_DIR: "/tmp/content-cache-${{ github.run_id }}-${{ github.run_attempt }}"
         run: pnpm test:ui:container
 
       - name: Cleanup Playwright containers
