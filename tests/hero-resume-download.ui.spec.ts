@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, it, expect } from 'vitest'
 import { createPage, setup } from '@nuxt/test-utils'
@@ -12,6 +12,11 @@ const VALID_BROWSERS = new Set<BrowserType>(['chromium', 'firefox', 'webkit'])
 const DEFAULT_BROWSERS: BrowserType[] = ['chromium', 'firefox', 'webkit']
 const RESUME_ROUTE = '**/download/resume'
 const RESUME_FIXTURE = readFileSync(join(process.cwd(), 'public', 'resume.pdf'))
+const SHOULD_PERSIST_TRACE = process.env.DEBUG_HERO_TOOLTIP_TRACE === '1'
+
+if (SHOULD_PERSIST_TRACE) {
+  mkdirSync('.vitest-artifacts', { recursive: true })
+}
 
 const shouldRunBrowserTests = process.env.ENABLE_BROWSER_TESTS === 'true'
 let hasPlaywright = shouldRunBrowserTests
@@ -78,6 +83,8 @@ for (const browserType of browsersToRun) {
         }
       },
       browser: true,
+      setupTimeout: 60000,
+      teardownTimeout: 45000,
       browserOptions: { type: browserType }
     })
   }
@@ -145,16 +152,27 @@ for (const browserType of browsersToRun) {
           return !navLink || navLink.getAttribute('aria-label') === 'Download résumé'
         }, { timeout: 7000 })
 
-        const traceMetadata = await page.evaluate(() => {
+        const tracePayload = await page.evaluate(() => {
           const globalWithTrace = window as typeof window & { __heroTooltipTrace__?: Array<{ event: string }> }
+          const entries = Array.isArray(globalWithTrace.__heroTooltipTrace__) ? globalWithTrace.__heroTooltipTrace__ : []
           return {
-            hasTraceArray: Array.isArray(globalWithTrace.__heroTooltipTrace__),
-            traceLength: globalWithTrace.__heroTooltipTrace__?.length ?? 0
+            hasTraceArray: Array.isArray(entries),
+            traceLength: entries.length,
+            entries
           }
         })
 
-        expect(traceMetadata.hasTraceArray).toBe(true)
-        expect(traceMetadata.traceLength).toBeGreaterThanOrEqual(0)
+        expect(tracePayload.hasTraceArray).toBe(true)
+        expect(tracePayload.traceLength).toBeGreaterThanOrEqual(0)
+
+        if (SHOULD_PERSIST_TRACE) {
+          const tracePath = `.vitest-artifacts/hero-resume-trace-${browserType}.json`
+          writeFileSync(tracePath, JSON.stringify({
+            browser: browserType,
+            generatedAt: new Date().toISOString(),
+            entries: tracePayload.entries
+          }, null, 2))
+        }
       } finally {
         await page.unroute(RESUME_ROUTE)
       }
