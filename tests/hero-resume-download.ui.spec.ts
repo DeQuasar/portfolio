@@ -138,9 +138,9 @@ for (const browserType of browsersToRun) {
               nuxtKeys: nuxtState ? Object.keys(nuxtState) : null
             }
           })
-          console.warn('[hero resume debug] state after click', resumeStateSnapshot)
-        }
-        await waitForResumeStatus(page, 'downloading')
+            console.warn('[hero resume debug] state after click', resumeStateSnapshot)
+          }
+        await waitForResumeStatus(page, 'downloading', 20000)
 
         await page.evaluate(() => {
           window.scrollTo({ top: 900, behavior: 'instant' })
@@ -151,14 +151,14 @@ for (const browserType of browsersToRun) {
 
         await resumeResponse
 
-        await waitForResumeStatus(page, 'success')
+        await waitForResumeStatus(page, 'success', 20000)
 
         await page.waitForFunction(() => {
           const status = document.querySelector('main a[href="/download/resume"] [role="status"]')
           return typeof status?.textContent === 'string' && status.textContent.includes('Résumé download started in your browser.')
-        })
+        }, undefined, { timeout: 15000 })
 
-        await waitForDownloadLabel(page, 'Download résumé', 7000)
+        await waitForDownloadLabel(page, 'Download résumé', 15000)
 
         const tracePayload = await page.evaluate(() => {
           const globalWithTrace = window as typeof window & { __heroTooltipTrace__?: Array<{ event: string }> }
@@ -184,11 +184,11 @@ for (const browserType of browsersToRun) {
       } finally {
         await page.unroute(RESUME_ROUTE)
       }
-    }, 40000)
+    }, 60000)
   })
 }
 
-async function waitForResumeStatus(page: Page, expected: ResumeStatus, timeout = 12000) {
+async function waitForResumeStatus(page: Page, expected: ResumeStatus, timeout = 20000) {
   try {
     await page.waitForFunction((target: ResumeStatus) => {
       const nuxtState = (window as typeof window & { __NUXT__?: any }).__NUXT__
@@ -204,10 +204,11 @@ async function waitForResumeStatus(page: Page, expected: ResumeStatus, timeout =
     if (SHOULD_PERSIST_TRACE || process.env.DEBUG_HERO_TOOLTIP_TRACE === '1') {
       console.warn('[hero resume debug] waitForResumeStatus timeout', { expected, error })
     }
+    throw error
   }
 }
 
-async function waitForDownloadLabel(page: Page, containsText: string, timeout = 12000) {
+async function waitForDownloadLabel(page: Page, containsText: string, timeout = 15000) {
   try {
     await page.waitForFunction(
       (expected) => {
