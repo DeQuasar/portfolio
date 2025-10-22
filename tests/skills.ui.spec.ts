@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { createPage, setup } from '@nuxt/test-utils'
 import { fileURLToPath } from 'node:url'
-import type { Page } from 'playwright-core'
 import { setViewport } from './utils/viewport'
 
 const rootDir = fileURLToPath(new URL('../', import.meta.url))

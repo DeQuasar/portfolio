@@ -1,8 +1,10 @@
+/* eslint-disable vue/one-component-per-file */
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { h, nextTick, defineComponent, ref } from 'vue'
+import { h, nextTick, defineComponent, ref, computed } from 'vue'
 import HeroPrimaryContent from '../../components/hero/HeroPrimaryContent.vue'
 import type { HeroContent } from '../../types/content'
+import { isExternalUrl } from '../../utils/url'
 
 const AppButtonStub = defineComponent({
   name: 'AppButtonStub',
@@ -29,15 +31,27 @@ const AppLinkStub = defineComponent({
   name: 'AppLinkStub',
   inheritAttrs: false,
   props: {
-    href: { type: String, required: true }
+    href: { type: String, required: true },
+    target: { type: String, default: undefined },
+    rel: { type: String, default: undefined }
   },
   emits: ['click'],
   setup(props, { attrs, slots, emit }) {
+    const resolvedTarget = computed(() => props.target ?? (isExternalUrl(props.href) ? '_blank' : undefined))
+    const resolvedRel = computed(() => {
+      if (resolvedTarget.value === '_blank') {
+        return props.rel ?? 'noopener noreferrer'
+      }
+      return props.rel
+    })
+
     return () =>
       h(
         'a',
         {
           href: props.href,
+          target: resolvedTarget.value,
+          rel: resolvedRel.value,
           ...attrs,
           onClick: (event: MouseEvent) => {
             event.preventDefault()
@@ -170,7 +184,6 @@ describe('HeroPrimaryContent', () => {
     expect(emitted?.[0]?.[0]).toBe('mailto:anthony@example.com')
 
     await nextTick()
-    const caret = emailButton!.get('svg[viewBox="0 0 24 24"]')
     expect(emailButton!.html()).toContain('rotate-180')
   })
 
@@ -181,5 +194,25 @@ describe('HeroPrimaryContent', () => {
 
     const cta = wrapper.get('a[aria-label="Downloading résumé"]')
     expect(cta.classes()).toContain('pointer-events-none')
+  })
+
+  it('opens external social links in a new tab without affecting internal links', () => {
+    const wrapper = mountHeroPrimary({
+      showHeroEmailPanel: true,
+      activeEmailHref: 'mailto:anthony@example.com',
+      emailPanelReady: true
+    })
+
+    const socialLink = wrapper.get('a[aria-label="GitHub"]')
+    expect(socialLink.attributes('target')).toBe('_blank')
+
+    const resumeLinks = wrapper.findAll('a[aria-label="Download résumé"]')
+    expect(resumeLinks.length).toBeGreaterThan(0)
+    resumeLinks.forEach((link) => {
+      expect(link.attributes('target')).toBeUndefined()
+    })
+
+    const mailLink = wrapper.get('a[href="mailto:anthony@example.com"]')
+    expect(mailLink.attributes('target')).toBeUndefined()
   })
 })

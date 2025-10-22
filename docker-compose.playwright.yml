@@ -1,11 +1,12 @@
 services:
   playwright:
     image: mcr.microsoft.com/playwright:v1.55.1-jammy
-    user: "${PLAYWRIGHT_UID:-1000}:${PLAYWRIGHT_GID:-1000}"
+    user: "${PLAYWRIGHT_CONTAINER_USER:-0}:${PLAYWRIGHT_CONTAINER_GROUP:-0}"
     working_dir: /workspace
     volumes:
       - .:/workspace:delegated
-      - ./.playwright/node_modules:/workspace/node_modules
+      - playwright_node_modules:/workspace/node_modules
+      - playwright_tools:/workspace/.playwright-tools
     environment:
       NUXT_TELEMETRY_DISABLED: "1"
       PLAYWRIGHT_VERSION: "1.47.0"
@@ -14,3 +15,6 @@ services:
       NUXT_CONTENT_LOCAL_CACHE_DIR: "${NUXT_CONTENT_LOCAL_CACHE_DIR:-/tmp/nuxt-content-cache}"
     entrypoint: ["/bin/bash", "/workspace/docker/playwright/entrypoint.sh"]
     shm_size: 1gb
+volumes:
+  playwright_node_modules:
+  playwright_tools:

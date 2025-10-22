@@ -4,6 +4,7 @@ set -euo pipefail
 # Ensure we have the expected Node.js version (Nuxt 3.19 requires >=20.19).
 DESIRED_NODE_VERSION=${PLAYWRIGHT_NODE_VERSION:-system}
 TOOLS_ROOT=${PLAYWRIGHT_TOOLS_ROOT:-/workspace/.playwright-tools}
+WORKSPACE_ROOT=${PLAYWRIGHT_WORKSPACE_ROOT:-/workspace}
 NPM_GLOBAL_DIR="${TOOLS_ROOT}/npm-global"
 PNPM_HOME_DIR="${TOOLS_ROOT}/pnpm-home"
 PNPM_STORE_DIR="${TOOLS_ROOT}/pnpm-store"
@@ -31,10 +32,18 @@ else
   echo "[playwright] Using system Node.js $(node -v)"
 fi
 
+# Ensure tool directories exist and are owned by the invoking user.
+mkdir -p "$TOOLS_ROOT"
+chown -R "$(id -u):$(id -g)" "$TOOLS_ROOT" 2>/dev/null || true
 mkdir -p "$NPM_GLOBAL_DIR/bin"
 mkdir -p "$PNPM_HOME_DIR/bin" "$PNPM_STORE_DIR"
 NPM_CACHE_DIR="${TOOLS_ROOT}/npm-cache"
 mkdir -p "$NPM_CACHE_DIR"
+
+# Ensure workspace caches remain writable for Nuxt/Vitest fixtures.
+mkdir -p "${WORKSPACE_ROOT}/.nuxt" "${WORKSPACE_ROOT}/.nuxt/content" "${WORKSPACE_ROOT}/.nuxt/cache" "${WORKSPACE_ROOT}/.playwright" "${WORKSPACE_ROOT}/content"
+chown -R "$(id -u):$(id -g)" "${WORKSPACE_ROOT}/.nuxt" "${WORKSPACE_ROOT}/.playwright" "${WORKSPACE_ROOT}/content" 2>/dev/null || true
+chmod -R 775 "${WORKSPACE_ROOT}/.nuxt" "${WORKSPACE_ROOT}/.playwright" "${WORKSPACE_ROOT}/content" 2>/dev/null || true
 
 export NPM_CONFIG_PREFIX="$NPM_GLOBAL_DIR"
 export NPM_CONFIG_CACHE="$NPM_CACHE_DIR"
@@ -42,6 +51,14 @@ export PNPM_HOME="$PNPM_HOME_DIR"
 export PNPM_STORE_PATH="$PNPM_STORE_DIR"
 export PATH="$NPM_GLOBAL_DIR/bin:$PNPM_HOME_DIR/bin:$PATH"
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+export NUXT_CONTENT_LOCAL_CACHE_DIR="${NUXT_CONTENT_LOCAL_CACHE_DIR:-${WORKSPACE_ROOT}/.nuxt/content-cache}"
+
+if [ -d "$NUXT_CONTENT_LOCAL_CACHE_DIR" ]; then
+  rm -rf "$NUXT_CONTENT_LOCAL_CACHE_DIR"
+fi
+mkdir -p "$NUXT_CONTENT_LOCAL_CACHE_DIR"
+chown -R "$(id -u):$(id -g)" "$NUXT_CONTENT_LOCAL_CACHE_DIR" 2>/dev/null || true
+chmod -R 775 "$NUXT_CONTENT_LOCAL_CACHE_DIR" 2>/dev/null || true
 
 # Detect package manager (pnpm preferred, fallback to npm) and lockfile.
 if [ -f pnpm-lock.yaml ]; then

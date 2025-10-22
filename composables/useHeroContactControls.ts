@@ -84,6 +84,7 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
   const tooltipArrowEl = ref<HTMLElement | null>(null)
   const tooltipReferenceSource = ref<PanelSource>('hero')
   const emailPanelReady = ref(false)
+  const ignoreOutsideUntil = ref(0)
   const tooltipReady = ref(false)
   const navPanelRecentlyClosed = ref(false)
 
@@ -208,7 +209,18 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     return style
   })
 
-  const tooltipVariant = computed<'idle' | 'success' | 'error'>(() => (copyState.value === 'error' ? 'error' : copyState.value === 'copied' ? 'success' : 'idle'))
+  const tooltipVariant = computed<'idle' | 'success' | 'error'>(() => {
+    if (tooltipReferenceSource.value === 'nav') {
+      return 'idle'
+    }
+    if (copyState.value === 'error') {
+      return 'error'
+    }
+    if (copyState.value === 'copied') {
+      return 'success'
+    }
+    return 'idle'
+  })
   const tooltipHeading = computed(() => {
     if (copyState.value === 'error') {
       return 'Copy failed — please grab it manually.'
@@ -232,7 +244,14 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     }
 
     recordHeroTooltipTrace('copy-email:begin', { href, email })
+    if (copyState.value !== 'idle') {
+      resetCopyState()
+    }
     const didCopy = await copyToClipboard(email)
+    if (didCopy) {
+      copyState.value = 'copied'
+      await nextTick()
+    }
     recordHeroTooltipTrace('copy-email:end', { href, email, didCopy })
     closeEmailPanel({ preserveCopyState: true })
   }
@@ -244,6 +263,8 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     activeEmailHref.value = href
     activePanelSource.value = source
     tooltipReferenceSource.value = source
+    const now = typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now()
+    ignoreOutsideUntil.value = now + 120
     await nextTick()
     if (source === 'hero') {
       emailCopyButtonEl.value?.focus()
@@ -279,6 +300,7 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     if (!options?.preserveCopyState) {
       resetCopyState()
     }
+    ignoreOutsideUntil.value = 0
     const shouldReturnFocus = options?.returnFocus ?? true
     const closedFromNav = previousSource === 'nav'
 
@@ -362,8 +384,11 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     })
   })
 
-  watch(tooltipReferenceSource, async () => {
+  watch(tooltipReferenceSource, async (source) => {
     tooltipReady.value = false
+    if (source === 'nav') {
+      return
+    }
     await nextTick()
     await updateFloating()
     if (!process.client) {
@@ -382,7 +407,11 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
   })
 
   onClickOutside(emailPanelEl, () => {
-    if (showEmailPanel.value) {
+    const now = typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now()
+    if (now < ignoreOutsideUntil.value) {
+      return
+    }
+    if (showEmailPanel.value && emailPanelReady.value) {
       closeEmailPanel()
     }
   })
@@ -408,7 +437,7 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
       if (delta > 20) {
         if (showNavEmailPanel.value) {
           closeEmailPanel({ returnFocus: false })
-        } else if (tooltipReferenceSource.value === 'nav' && tooltipVariant.value !== 'idle') {
+        } else if (tooltipReferenceSource.value === 'nav' && copyState.value !== 'idle') {
           tooltipReady.value = false
           resetCopyState()
         }
@@ -455,3 +484,5 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     recordHeroTooltipTrace
   }
 }
+
+export type HeroContactControlsBindings = ReturnType<typeof useHeroContactControls>

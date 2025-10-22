@@ -116,6 +116,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     class="relative z-10 w-full max-w-4xl overflow-visible rounded-[1.9rem] border border-white/75 bg-white/98 px-5 py-8 shadow-[0_48px_120px_-62px_rgba(17,31,22,0.72)] backdrop-blur-lg sm:px-10 sm:py-10"
+    data-testid="hero-primary-content"
   >
     <span
       class="pointer-events-none absolute inset-x-10 bottom-[22px] -z-10 hidden h-[140px] rounded-[1.6rem] border border-white/24 opacity-55 sm:block"
@@ -473,7 +474,7 @@ onBeforeUnmount(() => {
             v-if="tooltipVariant !== 'idle'"
             ref="tooltipBubbleLocal"
             :class="[
-              'grid grid-cols-[auto_1fr] items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-sm font-semibold tracking-[0.01em]',
+              'relative grid grid-cols-[auto_1fr] items-center gap-3 rounded-2xl border px-3 pt-2 pb-1.5 text-sm font-semibold tracking-[0.01em]',
               tooltipAnchorSource === 'nav'
                 ? 'w-full max-w-[calc(100vw-2.5rem)] z-[320]'
                 : 'w-[min(22rem,90vw)] sm:w-52 z-[220]'
@@ -547,10 +548,22 @@ onBeforeUnmount(() => {
             <span>
               {{ tooltipHeading }}
             </span>
-            <span ref="tooltipArrowLocal" class="pointer-events-none" :style="tooltipArrowStyle" aria-hidden="true"></span>
-          </div>
-        </Transition>
-      </Teleport>
+            <span
+              ref="tooltipArrowLocal"
+              class="pointer-events-none absolute h-3 w-3 rotate-45 border"
+              :style="[
+                tooltipArrowStyle,
+                {
+                  background: activeTooltipPreset.background,
+                  borderColor: activeTooltipPreset.borderColor,
+                  boxShadow: activeTooltipPreset.arrowShadow
+                }
+              ]"
+              aria-hidden="true"
+            ></span>
+         </div>
+       </Transition>
+     </Teleport>
     </div>
   </div>
 </template>

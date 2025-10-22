@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { createPage, setup } from '@nuxt/test-utils'
 import type { Page } from 'playwright-core'
 import { uiTestRootDir } from './utils/nuxt-root'
+import { installClipboardStub } from './utils/clipboard'
 
 if (!process.env.NUXT_PUBLIC_TOOLTIP_PROGRESS_DURATION) {
   process.env.NUXT_PUBLIC_TOOLTIP_PROGRESS_DURATION = '1200'
@@ -84,6 +85,8 @@ for (const browserType of browsersToRun) {
     await setup({
       rootDir: uiTestRootDir,
       buildDir,
+      setupTimeout: 240000,
+      teardownTimeout: 180000,
       nuxtConfig: {
         buildDir,
         content: {
@@ -215,40 +218,6 @@ for (const browserType of browsersToRun) {
       await waitForTooltipState(page, 'idle', PROGRESS_DURATION + REST_DELAY + 2000)
     }, TEST_TIMEOUT)
   })
-}
-
-async function installClipboardStub(page: Page) {
-  await page.addInitScript(() => {
-    const writes: string[] = []
-    const stub = {
-      writeText(text: string) {
-        const value = typeof text === 'string' ? text : String(text)
-        writes.push(value)
-        return Promise.resolve()
-      },
-      readText() {
-        return Promise.resolve(writes[writes.length - 1] ?? '')
-      }
-    }
-
-    try {
-      Object.defineProperty(navigator, 'clipboard', {
-        configurable: true,
-        value: stub
-      })
-    } catch (error) {
-      try {
-        const clipboard = (navigator as typeof navigator & { clipboard?: any }).clipboard ||= {}
-        Object.assign(clipboard, stub)
-      } catch (assignError) {
-        console.warn('Failed to stub navigator.clipboard', assignError)
-      }
-    }
-    const clipboardState = window as typeof window & { __clipboardWrites?: string[] }
-    clipboardState.__clipboardWrites = writes
-  })
-
-  await page.reload({ waitUntil: 'networkidle' })
 }
 
 async function waitForTooltipState(page: Page, expected: HeroTooltipState, timeout: number) {

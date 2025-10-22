@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { createPage, setup } from '@nuxt/test-utils'
-import type { Page } from 'playwright-core'
 import { setViewport } from './utils/viewport'
 import { uiTestRootDir } from './utils/nuxt-root'
+import { installClipboardStub } from './utils/clipboard'
 
 const shouldRunBrowserTests = process.env.ENABLE_BROWSER_TESTS === 'true'
 let hasPlaywright = shouldRunBrowserTests
@@ -97,4 +97,41 @@ describeMaybe('[chromium] hero sticky navigation', () => {
     await toggleButton.click()
     await panel.first().waitFor({ state: 'hidden', timeout: 3000 })
   }, 25000)
+
+  it('surfaces the copy success tooltip when copying email from the sticky nav', async () => {
+    const page = await createPage('/')
+    await installClipboardStub(page)
+    await setViewport(page, 'desktop')
+    await page.waitForLoadState('networkidle')
+
+    const clipboardSupport = await page.evaluate(() => ({
+      hasClipboard: Boolean((navigator as typeof navigator & { clipboard?: { writeText?: unknown } }).clipboard),
+      hasWriteText: typeof navigator.clipboard?.writeText === 'function'
+    }))
+
+    expect(clipboardSupport.hasClipboard).toBe(true)
+    expect(clipboardSupport.hasWriteText).toBe(true)
+
+    await page.evaluate(() => window.scrollTo({ top: 900, behavior: 'instant' }))
+    const stickyNav = page.locator('nav[aria-label="Primary navigation"]')
+    await stickyNav.waitFor({ state: 'visible', timeout: 5000 })
+
+    const toggleButton = stickyNav.getByRole('button', { name: 'Toggle email options' })
+    await toggleButton.click()
+
+    const panel = stickyNav.locator('div[role="group"][aria-label="Email options"]').first()
+    await panel.waitFor({ state: 'visible', timeout: 3000 })
+
+    await panel.getByRole('button', { name: 'Copy email address' }).click()
+
+    await page.waitForFunction(() => {
+      const button = document.querySelector('nav[aria-label="Primary navigation"] button[aria-label="Toggle email options"]')
+      return button?.getAttribute('data-copy-state') === 'copied'
+    }, {}, { timeout: 5000 })
+
+    const toggleState = await toggleButton.getAttribute('data-copy-state')
+    expect(toggleState).toBe('copied')
+
+    await panel.waitFor({ state: 'hidden', timeout: 3000 })
+  }, 30000)
 })

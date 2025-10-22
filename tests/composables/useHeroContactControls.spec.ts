@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
-import { computed, ref, type Ref } from 'vue'
+import { computed, ref, type Ref, createApp, defineComponent } from 'vue'
 import type { HeroContent } from '../../types/content'
 import { useHeroContactControls } from '../../composables/useHeroContactControls'
 
@@ -18,6 +18,9 @@ let resumeAnnouncement: Ref<string>
 let resumeProgress: Ref<number>
 let floatingUpdateSpy: ReturnType<typeof vi.fn>
 const registeredListeners: Listener[] = []
+const mountedCleanups: Array<() => void> = []
+const originalScrollYDescriptor = Object.getOwnPropertyDescriptor(window, 'scrollY')
+let scrollYValue = typeof window.scrollY === 'number' ? window.scrollY : 0
 
 const stopListener = (listener: Listener) => {
   const index = registeredListeners.indexOf(listener)
@@ -95,18 +98,31 @@ const createControls = () => {
   const hero = computed(() => ({
     primaryCta: { href: 'mailto:anthony@example.com' }
   } as HeroContent))
-  return useHeroContactControls({
-    hero,
-    tooltipProgressDuration: 250,
-    tooltipRestDelay: 500,
-    enableTrace: true
+  let controls!: ReturnType<typeof useHeroContactControls>
+  const app = createApp(defineComponent({
+    name: 'HeroContactControlsHarness',
+    setup() {
+      controls = useHeroContactControls({
+        hero,
+        tooltipProgressDuration: 250,
+        tooltipRestDelay: 500,
+        enableTrace: true
+      })
+      return () => null
+    }
+  }))
+
+  const host = document.createElement('div')
+  document.body.appendChild(host)
+  app.mount(host)
+  mountedCleanups.push(() => {
+    app.unmount()
+    document.body.removeChild(host)
   })
+
+  return controls
 }
 
-const originalWindow = globalThis.window
-const originalDocument = globalThis.document
-const originalGetComputedStyle = globalThis.getComputedStyle
-const originalRequestAnimationFrame = globalThis.requestAnimationFrame
 const originalProcessClient = (process as unknown as { client?: boolean }).client
 
 beforeEach(() => {
@@ -128,35 +144,51 @@ beforeEach(() => {
   resumeProgress = ref(0)
   floatingUpdateSpy = vi.fn(async () => {})
   registeredListeners.splice(0, registeredListeners.length)
+  mountedCleanups.splice(0, mountedCleanups.length)
   vi.spyOn(console, 'info').mockImplementation(() => {})
 
-  const fakeDocument = {
-    documentElement: {}
-  } as Document
+  document.documentElement.style.setProperty('--sticky-nav-height', '64')
 
-  globalThis.document = fakeDocument
-  const requestAnimationFrame = (cb: (time: number) => void) => {
+  scrollYValue = 0
+  if (originalScrollYDescriptor?.configurable ?? true) {
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      get: () => scrollYValue,
+      set: (value: number) => {
+        scrollYValue = value
+      }
+    })
+  }
+
+  vi.spyOn(window, 'scrollTo').mockImplementation((_x: number, y?: number) => {
+    if (typeof y === 'number') {
+      scrollYValue = y
+    }
+  })
+  vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
     cb(0)
     return 1
-  }
-  globalThis.window = {
-    scrollY: 0,
-    scrollTo: vi.fn(),
-    requestAnimationFrame
-  } as unknown as Window
-  globalThis.requestAnimationFrame = requestAnimationFrame
-  globalThis.getComputedStyle = vi.fn(() => ({
+  })
+  vi.spyOn(globalThis, 'getComputedStyle').mockImplementation(() => ({
     getPropertyValue: (name: string) => (name === '--sticky-nav-height' ? '64' : '')
   })) as unknown as typeof getComputedStyle
   ;(process as unknown as { client?: boolean }).client = true
 })
 
 afterEach(() => {
+  mountedCleanups.splice(0).forEach((fn) => {
+    try {
+      fn()
+    } catch {}
+  })
+  registeredListeners.splice(0, registeredListeners.length)
   vi.restoreAllMocks()
-  globalThis.window = originalWindow
-  globalThis.document = originalDocument
-  globalThis.getComputedStyle = originalGetComputedStyle
-  globalThis.requestAnimationFrame = originalRequestAnimationFrame
+  if (originalScrollYDescriptor) {
+    Object.defineProperty(window, 'scrollY', originalScrollYDescriptor)
+  } else {
+    delete (window as unknown as { scrollY?: number }).scrollY
+  }
+  document.documentElement.style.removeProperty('--sticky-nav-height')
   ;(process as unknown as { client?: boolean }).client = originalProcessClient
 })
 
@@ -202,7 +234,7 @@ describe('useHeroContactControls', () => {
     expect(resetSpy).toHaveBeenCalledTimes(1)
   })
 
-  it('resets tooltip state when nav tooltip is active during scroll', async () => {
+  it('resets nav copy state when active during scroll', async () => {
     const controls = createControls()
     await controls.toggleNavEmailPanel('mailto:nav@example.com')
     await controls.toggleNavEmailPanel('mailto:nav@example.com')
@@ -217,8 +249,28 @@ describe('useHeroContactControls', () => {
     globalThis.window.scrollY = 45
     scrollHandler?.({})
 
-    expect(controls.tooltipReady.value).toBe(false)
     expect(resetSpy).toHaveBeenCalledTimes(1)
     expect(controls.copyState.value).toBe('idle')
+  })
+
+  it('restores the nav copy success state on repeated copies', async () => {
+    vi.useFakeTimers()
+    const controls = createControls()
+
+    await controls.toggleNavEmailPanel('mailto:nav@example.com')
+    expect(controls.copyState.value).toBe('idle')
+
+    await controls.copyEmail('mailto:nav@example.com')
+    expect(controls.copyState.value).toBe('copied')
+
+    vi.advanceTimersByTime(50)
+
+    await controls.toggleNavEmailPanel('mailto:nav@example.com')
+    expect(controls.copyState.value).toBe('idle')
+
+    await controls.copyEmail('mailto:nav@example.com')
+    expect(controls.copyState.value).toBe('copied')
+
+    vi.useRealTimers()
   })
 })

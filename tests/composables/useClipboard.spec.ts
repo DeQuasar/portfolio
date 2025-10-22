@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { defineComponent } from 'vue'
+import { mount } from '@vue/test-utils'
 import { useClipboard } from '../../composables/useClipboard'
 
 type ClipboardMock = { writeText: ReturnType<typeof vi.fn> }
@@ -59,6 +61,26 @@ const ensureNavigator = () => {
 let originalClipboard: unknown
 let hadClipboardInitially = false
 let originalExecCommand: Document['execCommand'] | undefined
+const activeCleanups: Array<() => void> = []
+
+const mountClipboard = (timeout?: number) => {
+  let api!: ReturnType<typeof useClipboard>
+
+  const wrapper = mount(defineComponent({
+    name: 'ClipboardHarness',
+    setup() {
+      api = useClipboard(timeout)
+      return () => null
+    }
+  }))
+
+  const cleanup = () => {
+    wrapper.unmount()
+  }
+  activeCleanups.push(cleanup)
+
+  return api
+}
 
 describe('useClipboard', () => {
   beforeEach(() => {
@@ -78,6 +100,12 @@ describe('useClipboard', () => {
   })
 
   afterEach(() => {
+    activeCleanups.splice(0).forEach((fn) => {
+      try {
+        fn()
+      } catch {}
+    })
+
     vi.runOnlyPendingTimers()
     vi.useRealTimers()
     vi.restoreAllMocks()
@@ -90,14 +118,14 @@ describe('useClipboard', () => {
   })
 
   it('returns false when attempting to copy an empty string', async () => {
-    const { copy, state } = useClipboard()
+    const { copy, state } = mountClipboard()
     const result = await copy('')
     expect(result).toBe(false)
     expect(state.value).toBe('idle')
   })
 
   it('uses the native clipboard API when available and schedules a reset', async () => {
-    const { copy, state } = useClipboard(500)
+    const { copy, state } = mountClipboard(500)
     const clipboard = navigator as unknown as { clipboard: ClipboardMock }
     clipboard.clipboard.writeText.mockResolvedValueOnce(undefined)
 
@@ -118,7 +146,7 @@ describe('useClipboard', () => {
     const execSpy = document.execCommand as unknown as ReturnType<typeof vi.fn>
     execSpy.mockReturnValueOnce(true)
 
-    const { copy, state } = useClipboard()
+    const { copy, state } = mountClipboard()
     const result = await copy('copy-me')
 
     expect(result).toBe(true)
@@ -133,7 +161,7 @@ describe('useClipboard', () => {
     const execSpy = document.execCommand as unknown as ReturnType<typeof vi.fn>
     execSpy.mockReturnValueOnce(false)
 
-    const { copy, state } = useClipboard()
+    const { copy, state } = mountClipboard()
     const result = await copy('value')
 
     expect(clipboard.clipboard.writeText).toHaveBeenCalled()

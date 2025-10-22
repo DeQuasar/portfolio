@@ -63,7 +63,7 @@ Uses the same variant vocabulary as buttons, with default variant `secondary`. I
 
 ### 2.3 Tooltip (Hero CTA)
 - Render the bubble with Tailwind utilities: `inline-grid grid-cols-[auto_1fr] items-center gap-3 rounded-2xl border px-3.5 py-2.5`.
-- Gradients come from the `tooltipPresets` map in `HeroSection.vue`; expose the active preset via `data-variant="success|error"` for tests.
+- Gradients come from the `tooltipPresets` map in `components/hero/Hero.vue`; expose the active preset via `data-variant="success|error"` for tests.
 - The icon badge is a `h-8 w-8` circle that inherits the preset background and shadow.
 - The arrow uses the same preset background/border and is positioned with the floating-ui middleware.
 - Reuse the `.tooltip-fade-*` transition helpers for enter/leave states.

@@ -1,17 +1,19 @@
 #!/usr/bin/env node
+import 'dotenv/config'
 import { constants, existsSync } from 'node:fs'
 import { access, copyFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { updateExperienceFromResume } from './update-experience-from-resume.mjs'
+
+import { updateExperienceFromResume } from './update-experience-from-resume'
 
 const DEFAULT_SOURCE = '/mnt/c/Users/tonyp/OneDrive/Desktop/Resumes/anthony_protano_resume.pdf'
 const SOURCE_PATH = process.env.RESUME_SOURCE_PATH || DEFAULT_SOURCE
 const DESTINATION_PATH = resolve(process.cwd(), 'public/resume.pdf')
 
-const log = (...args) => console.log('[sync-resume]', ...args)
-const warn = (...args) => console.warn('[sync-resume]', ...args)
+const log = (...args: unknown[]) => console.log('[sync-resume]', ...args)
+const warn = (...args: unknown[]) => console.warn('[sync-resume]', ...args)
 
-async function run () {
+const run = async () => {
   const source = resolve(SOURCE_PATH)
   let sourceReadable = false
 

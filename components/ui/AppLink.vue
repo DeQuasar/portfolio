@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, useAttrs } from 'vue'
+import { isExternalUrl } from '~/utils/url'
 
 defineOptions({
   inheritAttrs: false
@@ -84,8 +85,15 @@ const classes = computed(() => {
   return Array.from(tokens)
 })
 
+const targetAttr = computed(() => {
+  if (props.target !== undefined) {
+    return props.target
+  }
+  return isExternalUrl(props.href) ? '_blank' : undefined
+})
+
 const rel = computed(() => {
-  if (props.target === '_blank') {
+  if (targetAttr.value === '_blank') {
     return props.rel ?? 'noopener noreferrer'
   }
   return props.rel
@@ -95,7 +103,7 @@ const rel = computed(() => {
 <template>
   <a
     :href="props.href"
-    :target="props.target"
+    :target="targetAttr"
     :rel="rel"
     :class="classes"
     v-bind="forwardedAttrs"

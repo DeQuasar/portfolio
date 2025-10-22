@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import AppFooter from "~/components/AppFooter.vue"
-
 useHead({
   title: 'Anthony Protano | Senior Software Developer',
   htmlAttrs: {
@@ -50,10 +48,9 @@ useHead({
 </script>
 
 <template>
-  <div class="min-h-screen bg-sage-50 text-sage-700 font-body">
-    <NuxtRouteAnnouncer />
-    <NuxtLoadingIndicator color="linear-gradient(120deg, #4A6C4D, #6E8B6D)" />
+  <NuxtRouteAnnouncer />
+  <NuxtLoadingIndicator color="linear-gradient(120deg, #4A6C4D, #6E8B6D)" />
+  <NuxtLayout>
     <NuxtPage />
-    <AppFooter />
-  </div>
+  </NuxtLayout>
 </template>

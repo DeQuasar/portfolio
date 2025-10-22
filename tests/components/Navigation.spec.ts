@@ -1,8 +1,10 @@
+/* eslint-disable vue/one-component-per-file */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { defineComponent, h, ref } from 'vue'
-import HeroStickyNav from '../../components/hero/HeroStickyNav.vue'
+import { defineComponent, h, ref, computed } from 'vue'
+import Navigation from '../../components/navigation/Navigation.vue'
 import type { HeroContent } from '../../types/content'
+import { isExternalUrl } from '../../utils/url'
 
 vi.mock('@vueuse/core', () => ({
   useEventListener: vi.fn(() => vi.fn()),
@@ -35,15 +37,27 @@ const AppLinkStub = defineComponent({
   name: 'AppLinkStub',
   inheritAttrs: false,
   props: {
-    href: { type: String, required: true }
+    href: { type: String, required: true },
+    target: { type: String, default: undefined },
+    rel: { type: String, default: undefined }
   },
   emits: ['click'],
   setup(props, { attrs, slots, emit }) {
+    const resolvedTarget = computed(() => props.target ?? (isExternalUrl(props.href) ? '_blank' : undefined))
+    const resolvedRel = computed(() => {
+      if (resolvedTarget.value === '_blank') {
+        return props.rel ?? 'noopener noreferrer'
+      }
+      return props.rel
+    })
+
     return () =>
       h(
         'a',
         {
           href: props.href,
+          target: resolvedTarget.value,
+          rel: resolvedRel.value,
           ...attrs,
           onClick: (event: MouseEvent) => {
             event.preventDefault()
@@ -69,7 +83,7 @@ const baseHero: HeroContent = {
 }
 
 const createWrapper = (overrides: Record<string, unknown> = {}) => {
-  return mount(HeroStickyNav, {
+  return mount(Navigation, {
     attachTo: document.body,
     props: {
       visible: true,
@@ -125,7 +139,7 @@ afterAll(() => {
   }
 })
 
-describe('HeroStickyNav', () => {
+describe('Navigation', () => {
   it('emits height-change after mounting when visible', async () => {
     const wrapper = createWrapper()
     await flushPromises()
@@ -183,5 +197,48 @@ describe('HeroStickyNav', () => {
     const ctas = wrapper.findAll('a[aria-label="Downloading résumé"]')
     expect(ctas.length).toBeGreaterThan(0)
     expect(ctas.some((cta) => cta.classes().includes('pointer-events-none'))).toBe(true)
+  })
+
+  it('applies success styling and icon to nav toggle when copyState is copied', async () => {
+    const wrapper = createWrapper({
+      copyState: 'copied'
+    })
+    await flushPromises()
+    const toggleButtons = wrapper.findAll('button[aria-label="Toggle email options"]')
+    expect(toggleButtons.length).toBeGreaterThan(0)
+    toggleButtons.forEach((button) => {
+      expect(button.attributes()['data-copy-state']).toBe('copied')
+      expect(button.html()).toContain('polyline points="20 6 9 17 4 12"')
+      expect(button.classes()).toContain('!bg-sage-600')
+    })
+  })
+
+  it('applies error styling to nav toggle when copyState is error', async () => {
+    const wrapper = createWrapper({
+      copyState: 'error'
+    })
+    await flushPromises()
+    const toggleButton = wrapper.find('button[aria-label="Toggle email options"]')
+    expect(toggleButton.attributes()['data-copy-state']).toBe('error')
+    expect(toggleButton.classes()).toContain('!bg-rose-500/95')
+  })
+
+  it('opens external social links in a new tab without forcing internal links to new windows', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    const socialLink = wrapper.get('a[aria-label="GitHub"]')
+    expect(socialLink.attributes('target')).toBe('_blank')
+
+    const resumeLinks = wrapper.findAll('a[aria-label="Download résumé"]')
+    expect(resumeLinks.length).toBeGreaterThan(0)
+    resumeLinks.forEach((link) => {
+      expect(link.attributes('target')).toBeUndefined()
+    })
+
+    const mailLinks = wrapper.findAll('a[href="mailto:anthony@example.com"]')
+    mailLinks.forEach((link) => {
+      expect(link.attributes('target')).toBeUndefined()
+    })
   })
 })
