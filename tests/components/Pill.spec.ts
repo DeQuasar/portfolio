@@ -18,7 +18,7 @@ describe('Pill', () => {
 
     const classes = getClassTokens(wrapper)
     expect(classes).toContain('bg-sage-100')
-    expect(classes).toContain('text-sage-600')
+    expect(classes).toContain('text-sage-700')
     expect(classes).toContain('extra-token')
     expect(classes.filter(token => token === 'extra-token')).toHaveLength(1)
     expect(wrapper.text()).toBe('Neutral')
@@ -51,4 +51,3 @@ describe('Pill', () => {
     expect(wrapper.attributes('data-testid')).toBe('cta-pill')
   })
 })
-
