@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import AppButton from '~/components/ui/AppButton.vue'
+import Button from '~/components/ui/Button.vue'
 import AppLink from '~/components/ui/AppLink.vue'
 import type { ClipboardState } from '~/composables/useClipboard'
 import type { NormalizedSocialLink } from './types'
 
-type ButtonInstance = InstanceType<typeof AppButton>
+type ButtonInstance = InstanceType<typeof Button>
 
 const props = defineProps<{
   variant: 'mobile' | 'desktop'
@@ -62,7 +62,7 @@ onBeforeUnmount(() => {
         role="group"
         aria-label="Email options"
       >
-        <AppButton
+        <Button
           ref="emailCopyButtonRef"
           variant="secondary"
           class="flex min-h-[44px] items-center justify-between rounded-xl border-sage-200 bg-white/92 px-4 py-2.5 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
@@ -103,7 +103,7 @@ onBeforeUnmount(() => {
               <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
             </svg>
           </Transition>
-        </AppButton>
+        </Button>
         <AppLink
           v-if="emailLink"
           :href="emailLink.href"
@@ -138,7 +138,7 @@ onBeforeUnmount(() => {
       role="group"
       aria-label="Email options"
     >
-      <AppButton
+      <Button
         ref="emailCopyButtonRef"
         variant="secondary"
         class="flex min-h-[44px] items-center justify-between rounded-xl border-sage-200 bg-white/92 px-4 py-2.5 text-sm font-semibold text-sage-600 shadow-sm transition hover:border-sage-400 hover:text-sage-700"
@@ -179,7 +179,7 @@ onBeforeUnmount(() => {
             <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
           </svg>
         </Transition>
-      </AppButton>
+      </Button>
       <AppLink
         v-if="emailLink"
         :href="emailLink.href"

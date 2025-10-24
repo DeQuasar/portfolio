@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BackgroundCanvas from '~/components/layout/BackgroundCanvas.vue'
 import Hero from '~/components/hero/Hero.vue'
 import { useHeroContent, useSkillsContent, useExperienceContent } from '~/composables/useContentSources'
 
@@ -9,9 +10,7 @@ const { data: experience } = await useExperienceContent()
 
 <template>
   <main class="relative pb-[calc(env(safe-area-inset-bottom)+3rem)] sm:pb-20">
-    <div class="absolute inset-0">
-      <div class="h-full w-full bg-sage-50"></div>
-    </div>
+    <BackgroundCanvas />
     <div class="relative mx-auto flex w-full max-w-5xl flex-col gap-6 px-0 sm:gap-16 sm:px-6">
       <Hero v-if="hero" :hero="hero" />
       <ExperienceSection

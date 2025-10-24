@@ -12,8 +12,8 @@ vi.mock('@vueuse/core', () => ({
   useIntersectionObserver: vi.fn(() => vi.fn())
 }))
 
-const AppButtonStub = defineComponent({
-  name: 'AppButtonStub',
+const ButtonStub = defineComponent({
+  name: 'ButtonStub',
   inheritAttrs: false,
   emits: ['click'],
   setup(_props, { attrs, slots, emit, expose }) {
@@ -69,6 +69,13 @@ const AppLinkStub = defineComponent({
   }
 })
 
+const ThemeToggleStub = defineComponent({
+  name: 'ThemeToggleStub',
+  setup() {
+    return () => h('button', { 'data-testid': 'theme-toggle-stub' })
+  }
+})
+
 const baseHero: HeroContent = {
   name: 'Anthony Protano',
   role: 'Senior Full-Stack Engineer',
@@ -110,8 +117,9 @@ const createWrapper = (overrides: Record<string, unknown> = {}) => {
     },
     global: {
       stubs: {
-        AppButton: AppButtonStub,
+        Button: ButtonStub,
         AppLink: AppLinkStub,
+        ThemeToggle: ThemeToggleStub,
         Transition: false,
         Teleport: true
       }
@@ -176,7 +184,7 @@ describe('Navigation', () => {
 
     await flushPromises()
 
-    const copyButton = wrapper.findAllComponents(AppButtonStub).find((button) => button.text().includes('Copy email address'))
+    const copyButton = wrapper.findAllComponents(ButtonStub).find((button) => button.text().includes('Copy email address'))
     expect(copyButton).toBeTruthy()
     await copyButton!.trigger('click')
     const copyEmitted = wrapper.emitted<'copy-email', [string]>('copy-email')

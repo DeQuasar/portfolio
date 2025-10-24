@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useEventListener, useResizeObserver } from '@vueuse/core'
-import AppButton from '~/components/ui/AppButton.vue'
 import NavigationDesktopActions from './NavigationDesktopActions.vue'
 import NavigationEmailDropdown from './NavigationEmailDropdown.vue'
 import NavigationIdentity from './NavigationIdentity.vue'
@@ -10,7 +9,9 @@ import type { ClipboardState } from '~/composables/useClipboard'
 import type { HeroContent } from '~/types/content'
 import type { NormalizedSocialLink } from './types'
 
-type ButtonInstance = InstanceType<typeof AppButton>
+import Button from '~/components/ui/Button.vue'
+
+type ButtonInstance = InstanceType<typeof Button>
 
 type Emit = {
   (event: 'height-change', height: number): void

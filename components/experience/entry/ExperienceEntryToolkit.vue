@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import Button from '~/components/ui/Button.vue'
 import Pill from '~/components/ui/Pill.vue'
 import type { ExperienceToolkitDisplay } from '~/composables/useExperienceSection'
 
@@ -30,14 +31,15 @@ const toolkitItems = computed(() => props.toolkitDisplay.visible ?? [])
         {{ tool }}
       </Pill>
     </div>
-    <button
+    <Button
       v-if="props.toolkitDisplay.hasOverflow && props.isHydrated"
+      variant="ghost"
       type="button"
-      class="self-start inline-flex min-h-[40px] items-center rounded-full border border-sage-200/70 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-sage-500 transition-colors hover:border-sage-400 hover:text-sage-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
+      class="self-start min-h-[40px] border border-[color:var(--border-soft)] border-solid px-3.5 py-1.5 text-xs uppercase tracking-[0.16em] text-sage-500 !bg-transparent hover:border-[color:var(--border-strong)] hover:text-sage-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 focus-visible:ring-0 focus-visible:ring-offset-0"
       :aria-expanded="props.toolkitExpanded"
       @click="props.onToggleToolkit()"
     >
       {{ buttonLabel }}
-    </button>
+    </Button>
   </div>
 </template>

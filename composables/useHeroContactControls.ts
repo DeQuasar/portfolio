@@ -2,7 +2,7 @@ import { computed, nextTick, onMounted, ref, type ComputedRef, watch } from 'vue
 import { useEventListener, onClickOutside } from '@vueuse/core'
 import { useFloating, offset, flip, shift, arrow } from '@floating-ui/vue'
 import { autoUpdate } from '@floating-ui/dom'
-import AppButton from '~/components/ui/AppButton.vue'
+import Button from '~/components/ui/Button.vue'
 import { useClipboard } from '~/composables/useClipboard'
 import { useResumeDownload, RESUME_DEFAULT_FILENAME } from '~/composables/useResumeDownload'
 import type { HeroContent } from '~/types/content'
@@ -76,10 +76,10 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
   const activeEmailHref = ref<string | null>(null)
   const activePanelSource = ref<PanelSource | null>(null)
 
-  const emailTriggerEl = ref<InstanceType<typeof AppButton> | null>(null)
-  const navEmailTriggerEl = ref<InstanceType<typeof AppButton> | null>(null)
+  const emailTriggerEl = ref<InstanceType<typeof Button> | null>(null)
+  const navEmailTriggerEl = ref<InstanceType<typeof Button> | null>(null)
   const emailPanelEl = ref<HTMLElement | null>(null)
-  const emailCopyButtonEl = ref<InstanceType<typeof AppButton> | null>(null)
+  const emailCopyButtonEl = ref<InstanceType<typeof Button> | null>(null)
   const tooltipBubbleEl = ref<HTMLElement | null>(null)
   const tooltipArrowEl = ref<HTMLElement | null>(null)
   const tooltipReferenceSource = ref<PanelSource>('hero')
@@ -437,9 +437,6 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
       if (delta > 20) {
         if (showNavEmailPanel.value) {
           closeEmailPanel({ returnFocus: false })
-        } else if (tooltipReferenceSource.value === 'nav' && copyState.value !== 'idle') {
-          tooltipReady.value = false
-          resetCopyState()
         }
       }
       lastNavScrollY.value = current

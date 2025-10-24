@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue'
-import AppButton from '~/components/ui/AppButton.vue'
+import Button from '~/components/ui/Button.vue'
 import AppLink from '~/components/ui/AppLink.vue'
 import type { ClipboardState } from '~/composables/useClipboard'
 import type { HeroContent } from '~/types/content'
+import ThemeToggle from './ThemeToggle.vue'
 import type { NormalizedSocialLink } from './types'
 
-type ButtonInstance = InstanceType<typeof AppButton>
+type ButtonInstance = InstanceType<typeof Button>
 
 const props = defineProps<{
   hero: HeroContent
@@ -88,18 +89,18 @@ onBeforeUnmount(() => {
       </AppLink>
 
       <div v-if="emailLink" class="relative inline-flex">
-        <AppButton
-          ref="navEmailTriggerLocal"
-          variant="icon"
-          :data-copy-state="copyState"
-          :class="[
-            '!h-10 !w-10 border-sage-200/70 bg-white text-sage-600 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-400 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300',
-            copyState === 'copied' && '!bg-sage-600 !text-white !border-sage-500 shadow-[0_18px_30px_-20px_rgba(25,65,40,0.55)]',
-            copyState === 'error' && '!bg-rose-500/95 !text-white !border-rose-600 shadow-[0_18px_30px_-24px_rgba(120,23,46,0.55)]'
-          ]"
-          :aria-label="'Toggle email options'"
-          @click="emit('toggle-nav-email', emailLink.href)"
-        >
+      <Button
+        ref="navEmailTriggerLocal"
+        variant="icon"
+        :data-copy-state="copyState"
+        :class="[
+          '!h-10 !w-10 border-sage-200/70 bg-white text-sage-600 shadow-sm transition hover:-translate-y-0.5 hover:border-sage-400 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300',
+          copyState === 'copied' && '!bg-sage-600 !text-white !border-sage-500 shadow-[0_18px_30px_-20px_rgba(25,65,40,0.55)]',
+          copyState === 'error' && '!bg-rose-500/95 !text-white !border-rose-600 shadow-[0_18px_30px_-24px_rgba(120,23,46,0.55)]'
+        ]"
+        :aria-label="'Toggle email options'"
+        @click="emit('toggle-nav-email', emailLink.href)"
+      >
           <svg
             v-if="copyState === 'copied'"
             xmlns="http://www.w3.org/2000/svg"
@@ -144,8 +145,10 @@ onBeforeUnmount(() => {
             <rect x="2" y="5" width="20" height="14" rx="2" />
             <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
           </svg>
-        </AppButton>
+      </Button>
       </div>
+
+      <ThemeToggle />
     </div>
   </div>
 </template>

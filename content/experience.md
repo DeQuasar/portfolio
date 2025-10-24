@@ -56,7 +56,7 @@ entries:
       - Mentored a developer through the UI implementation process, promoting maintainable code practices and consistency across the project.
       - Optimized time-series queries, improving performance by approximately 70% through targeted SQL refactoring and query analysis.
       - Strengthened frontend testing coverage and introduced Laravel Pint for automated code formatting, improving team consistency and code quality.
-      - Contributed to planning and technical discussions for the company’s Vue 3 migration, supporting a smooth transition path for future development.
+      - Contributed to planning and technical discussions for the companyʼs Vue 3 migration, supporting a smooth transition path for future development.
     projects:
       - title: Lease analytics dashboard
         summary: Guided a brand-new team through delivering the dashboard that Leasecake needed for investor conversations.
@@ -157,7 +157,7 @@ entries:
     summary:
       - Developed a Vue-based online ordering platform with server-side rendering and Algolia search, delivering a responsive and performant customer experience.
       - Integrated third-party APIs including Stripe, Heartland, Facebook, Twitter, and Instagram to support payments, subscriptions, and social engagement features.
-      - Enhanced the company’s in-house CMS by adding publishing workflows, role management, and analytics tools to improve usability and content oversight.
+      - Enhanced the companyʼs in-house CMS by adding publishing workflows, role management, and analytics tools to improve usability and content oversight.
     projects: []
     slug: liquid-fish
     toolkit:

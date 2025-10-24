@@ -1,21 +1,21 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import AppButton from '~/components/ui/AppButton.vue'
+import Button from '~/components/ui/Button.vue'
 
 const getClassTokens = (wrapper: ReturnType<typeof mount>) =>
   wrapper.attributes('class')?.split(/\s+/).filter(Boolean) ?? []
 
 const variantExpectations: Record<string, string[]> = {
-  primary: ['bg-sage-600', 'hover:bg-sage-700'],
-  secondary: ['border', 'border-sage-300', 'shadow-sm'],
-  ghost: ['border', 'border-dashed', 'bg-white/60'],
-  minimal: ['text-sage-500', 'font-medium'],
-  icon: ['h-12', 'w-12']
+  primary: ['bg-sage-600', 'hover:bg-sage-700', 'motion-safe:hover:-translate-y-0.5', 'active:translate-y-0.5'],
+  secondary: ['border-sage-300', 'motion-safe:hover:-translate-y-0.5', 'motion-safe:hover:shadow-md', 'active:translate-y-0.5'],
+  ghost: ['border-dashed', 'motion-safe:hover:-translate-y-0.5', 'active:translate-y-0.5'],
+  minimal: ['text-sage-500', 'motion-safe:hover:-translate-y-0.5', 'active:translate-y-0.5'],
+  icon: ['h-12', 'w-12', 'motion-safe:hover:-translate-y-0.5', 'active:translate-y-0.5']
 }
 
-describe('AppButton', () => {
+describe('Button', () => {
   it('applies the primary variant classes by default and de-duplicates merged class tokens', () => {
-    const wrapper = mount(AppButton, {
+    const wrapper = mount(Button, {
       attrs: {
         class: ['shadow-md', { 'shadow-md': true }, 'custom-token']
       },
@@ -32,7 +32,7 @@ describe('AppButton', () => {
   })
 
   it('adds the `w-full` token when block is true', () => {
-    const wrapper = mount(AppButton, {
+    const wrapper = mount(Button, {
       props: {
         block: true
       },
@@ -45,7 +45,7 @@ describe('AppButton', () => {
   })
 
   it('applies alternate variants and forwards attributes', () => {
-    const wrapper = mount(AppButton, {
+    const wrapper = mount(Button, {
       props: {
         variant: 'icon',
         type: 'submit'
@@ -72,7 +72,7 @@ describe('AppButton', () => {
   it.each(
     Object.entries(variantExpectations) as Array<[keyof typeof variantExpectations, string[]]>
   )('applies expected classes for the %s variant', (variant, expectedTokens) => {
-    const wrapper = mount(AppButton, {
+    const wrapper = mount(Button, {
       props: {
         variant: variant as never
       },
@@ -88,7 +88,7 @@ describe('AppButton', () => {
   })
 
   it('exposes the focus method that proxies to the underlying element', async () => {
-    const wrapper = mount(AppButton, {
+    const wrapper = mount(Button, {
       attachTo: document.body,
       slots: {
         default: () => 'Focusable'

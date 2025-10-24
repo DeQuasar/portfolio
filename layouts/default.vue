@@ -6,6 +6,7 @@ import { useHeroContent } from '~/composables/useContentSources'
 import { useHeroContactControls } from '~/composables/useHeroContactControls'
 import { provideHeroContactControls } from '~/composables/heroContactControlsContext'
 import { provideHeroVisibility } from '~/composables/heroVisibilityContext'
+import ThemeFloatingToggle from '~/components/navigation/ThemeFloatingToggle.vue'
 import type { HeroContent } from '~/types/content'
 
 const { data: hero } = await useHeroContent()
@@ -109,7 +110,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-sage-50 font-body text-sage-700">
+  <div class="min-h-screen bg-[var(--surface-page)] font-body text-[color:var(--text-primary)] transition-colors duration-300">
     <Navigation
       :visible="showStickyNav"
       :hero="heroContent"
@@ -133,5 +134,6 @@ onBeforeUnmount(() => {
     />
     <slot />
     <AppFooter />
+    <ThemeFloatingToggle />
   </div>
 </template>

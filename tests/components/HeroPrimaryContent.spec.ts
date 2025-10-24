@@ -6,8 +6,8 @@ import HeroPrimaryContent from '../../components/hero/HeroPrimaryContent.vue'
 import type { HeroContent } from '../../types/content'
 import { isExternalUrl } from '../../utils/url'
 
-const AppButtonStub = defineComponent({
-  name: 'AppButtonStub',
+const ButtonStub = defineComponent({
+  name: 'ButtonStub',
   inheritAttrs: false,
   emits: ['click'],
   setup(_props, { attrs, slots, emit, expose }) {
@@ -123,7 +123,7 @@ const mountHeroPrimary = (overrides: Record<string, unknown> = {}) => {
     },
     global: {
       stubs: {
-        AppButton: AppButtonStub,
+        Button: ButtonStub,
         AppLink: AppLinkStub
       }
     }

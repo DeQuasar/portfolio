@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import Button from '~/components/ui/Button.vue'
 import Pill from '~/components/ui/Pill.vue'
 
 const props = defineProps<{
@@ -31,14 +32,14 @@ const buttonLabel = computed(() => (props.expanded ? 'Show fewer tools' : 'Show 
         {{ item.label }}
       </Pill>
     </div>
-    <button
+    <Button
       v-if="props.hasOverflow"
-      type="button"
-      class="self-start inline-flex min-h-[44px] items-center rounded-full border border-sage-200/70 px-4 py-2 text-sm font-semibold uppercase tracking-[0.16em] text-sage-500 transition-colors hover:border-sage-400 hover:text-sage-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
+      variant="secondary"
+      class="self-start min-h-[44px] px-4 py-2 text-[0.74rem] font-semibold uppercase tracking-[0.16em] text-sage-500 hover:-translate-y-0.5 sm:text-[0.8rem]"
       :aria-expanded="props.expanded"
       @click="props.onToggle()"
     >
       {{ buttonLabel }}
-    </button>
+    </Button>
   </div>
 </template>

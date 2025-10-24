@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import AppButton from '~/components/ui/AppButton.vue'
+import Button from '~/components/ui/Button.vue'
 import AppLink from '~/components/ui/AppLink.vue'
 import type { ClipboardState } from '~/composables/useClipboard'
 import type { HeroContent } from '~/types/content'
@@ -21,7 +21,7 @@ type TooltipPreset = {
   arrowShadow: string
 }
 
-type ButtonInstance = InstanceType<typeof AppButton>
+type ButtonInstance = InstanceType<typeof Button>
 
 type Emit = {
   (event: 'start-resume-download', payload?: MouseEvent | KeyboardEvent): void
@@ -146,7 +146,7 @@ onBeforeUnmount(() => {
         <p class="text-sm leading-relaxed text-sage-600" data-testid="hero-mobile-summary-text">
           {{ mobileSummaryDisplay }}
         </p>
-        <AppButton
+        <Button
           v-if="isDescriptionLong"
           variant="minimal"
           class="self-center px-0 text-xs font-semibold uppercase tracking-[0.18em] text-sage-500 hover:text-sage-700"
@@ -154,7 +154,7 @@ onBeforeUnmount(() => {
           @click="mobileSummaryExpanded = !mobileSummaryExpanded"
         >
           {{ mobileSummaryToggleLabel }}
-        </AppButton>
+        </Button>
       </div>
 
       <div class="flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
@@ -224,7 +224,7 @@ onBeforeUnmount(() => {
           class="relative flex w-full flex-wrap items-center justify-center gap-3"
           data-testid="hero-socials-root"
         >
-          <AppButton
+          <Button
             v-if="emailLink"
             ref="heroEmailTriggerLocal"
             variant="secondary"
@@ -271,7 +271,7 @@ onBeforeUnmount(() => {
                 </svg>
               </span>
             </span>
-          </AppButton>
+          </Button>
 
           <div
             role="group"
@@ -354,7 +354,7 @@ onBeforeUnmount(() => {
                   <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sage-500">
                     Email options
                   </p>
-                  <AppButton
+                  <Button
                     variant="icon"
                     class="!h-10 !w-10 border-sage-200/60 bg-white/80 text-sage-600 transition hover:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300"
                     aria-label="Close email options"
@@ -374,9 +374,9 @@ onBeforeUnmount(() => {
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
-                  </AppButton>
+                  </Button>
                 </div>
-                <AppButton
+                <Button
                   ref="heroEmailCopyButtonLocal"
                   variant="primary"
                   class="flex min-h-[48px] items-center justify-between gap-2 rounded-xl !px-4 !py-2.5 text-sm shadow-md transition hover:shadow-lg"
@@ -433,7 +433,7 @@ onBeforeUnmount(() => {
                   <span class="text-sm font-semibold tracking-[0.02em]">
                     Copy email address
                   </span>
-                </AppButton>
+                </Button>
 
                 <AppLink
                   v-if="emailLink"

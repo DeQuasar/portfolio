@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue'
-import AppButton from '~/components/ui/AppButton.vue'
+import Button from '~/components/ui/Button.vue'
 import AppLink from '~/components/ui/AppLink.vue'
 import type { ClipboardState } from '~/composables/useClipboard'
 import type { HeroContent } from '~/types/content'
 import NavigationEmailDropdown from './NavigationEmailDropdown.vue'
 import type { NormalizedSocialLink } from './types'
 
-type ButtonInstance = InstanceType<typeof AppButton>
+type ButtonInstance = InstanceType<typeof Button>
 
 const props = defineProps<{
   hero: HeroContent
@@ -115,7 +115,7 @@ onBeforeUnmount(() => {
 
     <div class="flex items-center gap-1.5 sm:gap-2">
       <div v-if="emailLink" class="relative inline-flex">
-        <AppButton
+        <Button
           ref="navEmailTriggerLocal"
           variant="icon"
           :data-copy-state="copyState"
@@ -171,7 +171,7 @@ onBeforeUnmount(() => {
             <rect x="2" y="5" width="20" height="14" rx="2" />
             <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
           </svg>
-        </AppButton>
+        </Button>
 
         <NavigationEmailDropdown
           variant="desktop"
@@ -243,6 +243,7 @@ onBeforeUnmount(() => {
           <path d="M22 7l-9.5 6a.8.8 0 01-1 0L2 7" />
         </svg>
       </AppLink>
+
     </div>
   </div>
 </template>

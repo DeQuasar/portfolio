@@ -1,4 +1,36 @@
 <script setup lang="ts">
+const themeInitScript = `(function() {
+  var storageKey = 'theme-preference';
+  var root = document.documentElement;
+  if (!root) {
+    return;
+  }
+
+  var stored = null;
+  try {
+    stored = window.localStorage.getItem(storageKey);
+  } catch (error) {
+    stored = null;
+  }
+
+  var preference = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+
+  var systemMode = 'light';
+  try {
+    var mediaQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    systemMode = mediaQuery && mediaQuery.matches ? 'dark' : 'light';
+  } catch (error) {
+    systemMode = 'light';
+  }
+
+  var resolved = preference === 'system' ? systemMode : preference;
+
+  root.dataset.theme = resolved;
+  root.dataset.themePreference = preference;
+  root.dataset.themeResolved = resolved;
+  root.style.colorScheme = resolved;
+})();`
+
 useHead({
   title: 'Anthony Protano | Senior Software Developer',
   htmlAttrs: {
@@ -42,6 +74,12 @@ useHead({
   noscript: [
     {
       children: '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" crossorigin>'
+    }
+  ],
+  script: [
+    {
+      children: themeInitScript,
+      tagPriority: 'critical'
     }
   ]
 })

@@ -42,7 +42,7 @@ Type scale guidelines:
 
 ## 2. Components
 
-### 2.1 Buttons (`components/ui/AppButton.vue`)
+### 2.1 Buttons (`components/ui/Button.vue`)
 | Variant | Classes | Notes |
 | --- | --- | --- |
 | `primary` | `bg-sage-600 text-white px-6 py-3 shadow-md hover:bg-sage-700 hover:shadow-lg` | Primary CTA, high emphasis |

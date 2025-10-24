@@ -68,8 +68,8 @@ vi.mock('@floating-ui/dom', () => ({
   autoUpdate: vi.fn()
 }))
 
-vi.mock('~/components/ui/AppButton.vue', () => ({
-  default: { name: 'AppButton', template: '<button />' }
+vi.mock('~/components/ui/Button.vue', () => ({
+  default: { name: 'Button', template: '<button />' }
 }))
 
 vi.mock('~/composables/useClipboard', () => ({
@@ -234,7 +234,7 @@ describe('useHeroContactControls', () => {
     expect(resetSpy).toHaveBeenCalledTimes(1)
   })
 
-  it('resets nav copy state when active during scroll', async () => {
+  it('preserves nav copy state when scrolling after a copy', async () => {
     const controls = createControls()
     await controls.toggleNavEmailPanel('mailto:nav@example.com')
     await controls.toggleNavEmailPanel('mailto:nav@example.com')
@@ -249,8 +249,8 @@ describe('useHeroContactControls', () => {
     globalThis.window.scrollY = 45
     scrollHandler?.({})
 
-    expect(resetSpy).toHaveBeenCalledTimes(1)
-    expect(controls.copyState.value).toBe('idle')
+    expect(resetSpy).not.toHaveBeenCalled()
+    expect(controls.copyState.value).toBe('copied')
   })
 
   it('restores the nav copy success state on repeated copies', async () => {

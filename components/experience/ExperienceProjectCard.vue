@@ -20,7 +20,7 @@ defineProps<{
 
 <template>
   <article
-    class="relative overflow-hidden rounded-[1.4rem] border border-sage-200/70 bg-white/90 p-5 shadow-md transition-shadow sm:p-6 sm:shadow-[0_18px_32px_-26px_rgba(47,70,49,0.28)]"
+    class="relative overflow-hidden rounded-[1.4rem] border border-[color:var(--border-soft)] bg-white/90 p-5 shadow-md transition-shadow sm:p-6 sm:shadow-[0_18px_32px_-26px_rgba(47,70,49,0.28)]"
     :aria-label="`${project.title} project summary`"
   >
     <div class="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -40,7 +40,7 @@ defineProps<{
         <div
           v-for="visual in project.media"
           :key="`${visual.type}-${visual.src}`"
-          class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-sage-200/70 bg-white/90 shadow-[0_12px_36px_-20px_rgba(37,60,45,0.45)]"
+        class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-[color:var(--border-soft)] bg-white/90 shadow-[0_12px_36px_-20px_rgba(37,60,45,0.45)]"
         >
           <img
             v-if="visual.type === 'image'"
@@ -62,7 +62,7 @@ defineProps<{
 
     <div
       v-if="highlights.length && activeHighlight"
-      class="mt-6 hidden space-y-5 border-t border-sage-200/70 pt-6 sm:block"
+      class="mt-6 hidden space-y-5 border-t border-[color:var(--border-muted)] pt-6 sm:block"
     >
       <div class="space-y-3 text-base leading-[1.65] text-sage-700">
         <div v-for="facet in projectFacetOrder" :key="facet" class="space-y-1.5">
@@ -78,7 +78,7 @@ defineProps<{
 
     <details
       v-if="highlights.length && activeHighlight"
-      class="group mt-5 rounded-2xl border border-sage-200/70 bg-white/95 px-4 py-3 text-left text-sm leading-relaxed text-sage-600 shadow-sm sm:hidden"
+      class="group mt-5 rounded-2xl border border-[color:var(--border-soft)] bg-white/95 px-4 py-3 text-left text-sm leading-relaxed text-sage-600 shadow-sm sm:hidden"
     >
       <summary
         class="flex w-full cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-sage-600 transition-colors group-open:text-sage-700"

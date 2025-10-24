@@ -5,7 +5,7 @@ import HeroShell from '~/components/hero/HeroShell.vue'
 import { useHeroContactControlsContext } from '~/composables/heroContactControlsContext'
 import { useHeroVisibility } from '~/composables/heroVisibilityContext'
 import { useHeroVisuals } from '~/composables/useHeroVisuals'
-import type AppButton from '~/components/ui/AppButton.vue'
+import type Button from '~/components/ui/Button.vue'
 import type { HeroContent } from '~/types/content'
 
 defineOptions({ name: 'HeroBase' })
@@ -18,7 +18,7 @@ type NormalizedSocialLink = {
   iconKey?: string
 }
 
-type ButtonInstance = InstanceType<typeof AppButton>
+type ButtonInstance = InstanceType<typeof Button>
 
 type ElementOrInstanceRef<T> = { value: T } | ((value: T) => void)
 

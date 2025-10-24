@@ -41,19 +41,19 @@ const flattenClassTokens = (value: unknown): string[] => {
 }
 
 const baseClasses =
-  'inline-flex items-center justify-center gap-2 rounded-full font-semibold cursor-pointer transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/45 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50 disabled:opacity-60 disabled:cursor-not-allowed'
+  'inline-flex items-center justify-center gap-2 rounded-full font-semibold cursor-pointer transition-all duration-200 will-change-transform transform-gpu focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-500/45 focus-visible:ring-offset-2 focus-visible:ring-offset-sage-50 disabled:opacity-60 disabled:cursor-not-allowed'
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-sage-600 text-white shadow-md px-6 py-3 hover:bg-sage-700 hover:shadow-lg focus-visible:ring-opacity-60',
+    'cursor-pointer bg-sage-600 text-white shadow-md px-6 py-3 hover:bg-sage-700 motion-safe:hover:-translate-y-0.5 focus-visible:-translate-y-0.5 motion-safe:hover:shadow-lg focus-visible:ring-opacity-60 active:translate-y-0.5 active:shadow-sm active:bg-sage-700/90',
   secondary:
-    'border border-sage-300 bg-white/85 text-sage-600 shadow-sm px-5 py-2.5 hover:border-sage-500 hover:text-sage-700',
+    'cursor-pointer border border-sage-300 bg-white/85 text-sage-600 shadow-sm px-5 py-2.5 motion-safe:hover:-translate-y-0.5 focus-visible:-translate-y-0.5 hover:border-sage-500 hover:bg-white hover:text-sage-700 motion-safe:hover:shadow-md active:translate-y-0.5 active:shadow-sm active:border-sage-500/80',
   ghost:
-    'border border-dashed border-sage-300 bg-white/60 text-sage-500 px-4 py-2 hover:border-sage-500 hover:text-sage-700',
+    'cursor-pointer border border-dashed border-sage-300 bg-white/60 text-sage-500 px-4 py-2 motion-safe:hover:-translate-y-0.5 focus-visible:-translate-y-0.5 hover:border-sage-500 hover:text-sage-700 active:translate-y-0.5',
   icon:
-    'h-12 w-12 rounded-full border border-sage-300 bg-white/85 text-sage-600 shadow-sm transition-all duration-200 hover:border-sage-500 hover:bg-white hover:text-sage-700 hover:shadow-md',
+    'cursor-pointer h-12 w-12 rounded-full border border-sage-300 bg-white/85 text-sage-600 shadow-sm transition-all duration-200 motion-safe:hover:-translate-y-0.5 focus-visible:-translate-y-0.5 hover:border-sage-500 hover:bg-white hover:text-sage-700 motion-safe:hover:shadow-md active:translate-y-0.5 active:shadow-sm',
   minimal:
-    'px-4 py-2 text-sage-500 hover:text-sage-700 font-medium',
+    'cursor-pointer px-4 py-2 text-sage-500 hover:text-sage-700 font-medium motion-safe:hover:-translate-y-0.5 focus-visible:-translate-y-0.5 active:translate-y-0.5',
 }
 
 const forwardedAttrs = computed(() => {

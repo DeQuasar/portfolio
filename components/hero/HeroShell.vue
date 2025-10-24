@@ -2,7 +2,7 @@
 import { onBeforeUnmount, ref, watch } from 'vue'
 import HeroBackgroundLayers from '~/components/hero/HeroBackgroundLayers.vue'
 import HeroPrimaryContent from '~/components/hero/HeroPrimaryContent.vue'
-import type AppButton from '~/components/ui/AppButton.vue'
+import type Button from '~/components/ui/Button.vue'
 import type { ClipboardState } from '~/composables/useClipboard'
 import type { HeroContent } from '~/types/content'
 
@@ -14,7 +14,7 @@ type NormalizedSocialLink = {
   iconKey?: string
 }
 
-type ButtonInstance = InstanceType<typeof AppButton>
+type ButtonInstance = InstanceType<typeof Button>
 
 type ElementOrInstanceRef<T> = { value: T } | ((value: T) => void)
 
@@ -107,8 +107,8 @@ const handleMailto = () => {
       aria-hidden="true"
     >
       <HeroBackgroundLayers
-        :hero-texture-style="props.heroTextureStyle"
-        :hero-noise-style="props.heroNoiseStyle"
+        :texture-style="props.heroTextureStyle"
+        :noise-style="props.heroNoiseStyle"
       />
     </div>
 
