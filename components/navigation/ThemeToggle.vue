@@ -66,28 +66,50 @@ const baseButtonClasses = computed(() => {
   if (props.layout === 'pill') {
     return [
       'h-11 gap-3 whitespace-nowrap px-4 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.18em]',
-      'shadow-lg shadow-sage-900/18 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300'
+      'rounded-full border shadow-lg shadow-sage-900/18 transition',
+      'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300'
     ]
   }
   return [
-    '!h-10 !w-10 rounded-full shadow-sm transition duration-200',
-    'hover:-translate-y-0.5 focus-visible:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300'
+    '!h-10 !w-10 rounded-full border shadow-sm transition duration-200',
+    'hover:-translate-y-0.5 focus-visible:-translate-y-0.5',
+    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300'
   ]
 })
 
 const themeButtonClasses = computed(() => {
+  const classes = [
+    '!border-[color:var(--border-soft)]',
+    'hover:!border-[color:var(--border-strong)]',
+    'focus-visible:!border-[color:var(--border-strong)]'
+  ]
+
   if (theme.resolved.value === 'dark') {
-    return '!bg-sage-700 !text-white !border-[color:var(--border-strong)] hover:!bg-sage-600 focus-visible:!border-[color:var(--border-strong)]'
+    classes.push(
+      '!bg-[color:var(--surface-contrast)]',
+      '!text-[color:var(--text-primary)]',
+      'hover:!bg-[color:var(--surface-card-alt)]',
+      'hover:!text-[color:var(--text-primary)]'
+    )
+  } else {
+    classes.push(
+      '!bg-[color:var(--surface-contrast)]',
+      '!text-sage-600',
+      'hover:!bg-[color:var(--surface-muted)]',
+      'hover:!text-sage-700'
+    )
   }
-  return '!bg-[color:var(--surface-contrast)] !text-sage-600 !border-[color:var(--border-soft)] hover:!border-[color:var(--border-strong)] hover:!text-sage-700'
+
+  return classes
 })
+
+const buttonClasses = computed(() => [...baseButtonClasses.value, ...themeButtonClasses.value])
 </script>
 
 <template>
   <Button
     v-if="isMounted"
     :variant="buttonVariant"
-    class="inline-flex items-center justify-center !transition-colors"
     :class="buttonClasses"
     :data-state="theme.preference.value"
     :aria-label="`Current theme ${resolvedLabel}. Switch to ${nextPreferenceLabel} theme.`"

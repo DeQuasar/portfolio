@@ -37,15 +37,14 @@ test.describe('homepage (desktop & mobile)', () => {
     await expect(page.locator('#experience')).toBeVisible()
   })
 
-  test('footer contact actions render expected links', async ({ page }) => {
+  test('footer renders legal notice without contact links', async ({ page }) => {
     await gotoHome(page)
 
-    const footer = page.locator('footer#contact')
+    const footer = page.getByRole('contentinfo')
     await footer.scrollIntoViewIfNeeded()
 
-    await expect(footer.getByRole('link', { name: 'Email' })).toHaveAttribute('href', /mailto:tonypro999@gmail\.com/i)
-    await expect(footer.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', /linkedin\.com/i)
-    await expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', /github\.com\/dequasar/i)
+    await expect(footer.getByRole('link')).toHaveCount(0)
+    await expect(footer).toContainText(/© \d{4} Anthony Protano/i)
   })
 
   test('streams résumé download with correct headers', async ({ page }) => {
@@ -106,7 +105,7 @@ test.describe('mobile layout specifics', () => {
     await toggleButton.click()
 
     await expect(page.getByRole('button', { name: /show less/i })).toBeVisible()
-    await expect(page.getByTestId('hero-mobile-summary-text')).toContainText(/Experienced with CI\/CD pipelines/i)
+    await expect(page.getByTestId('hero-mobile-summary-text')).toContainText(/CI\/CD pipelines/i)
   })
 
   test('sticky navigation remains accessible after scroll and layout avoids horizontal overflow', async ({ page }, testInfo) => {

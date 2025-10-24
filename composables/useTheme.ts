@@ -138,16 +138,20 @@ export const useTheme = () => {
     applyPreference(preference)
   }
 
+  const computeNextPreference = (current: ThemePreference): ThemePreference => {
+    if (current === 'system') {
+      return resolvedRef.value === 'dark' ? 'light' : 'dark'
+    }
+    const currentIndex = cycleOrder.indexOf(current)
+    return cycleOrder[(currentIndex + 1) % cycleOrder.length]
+  }
+
   const cyclePreference = () => {
-    const currentIndex = cycleOrder.indexOf(preferenceRef.value)
-    const next = cycleOrder[(currentIndex + 1) % cycleOrder.length]
+    const next = computeNextPreference(preferenceRef.value)
     setPreference(next)
   }
 
-  const nextPreference = computed(() => {
-    const currentIndex = cycleOrder.indexOf(preferenceRef.value)
-    return cycleOrder[(currentIndex + 1) % cycleOrder.length]
-  })
+  const nextPreference = computed(() => computeNextPreference(preferenceRef.value))
 
   return {
     preference: preferenceRef,
