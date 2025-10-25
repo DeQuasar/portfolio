@@ -99,17 +99,7 @@ jobs:
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ env.CLOUDFLARE_PROJECT_NAME }}/deployments/${CF_PAGES_DEPLOYMENT_ID}/alias" \
             -o alias-response.json
 
-          python3 - <<'PY'
-import json
-import sys
-
-with open('alias-response.json', 'r', encoding='utf-8') as fp:
-    data = json.load(fp)
-
-if not data.get('success'):
-    print('Failed to alias preview deployment:', json.dumps(data), file=sys.stderr)
-    sys.exit(1)
-PY
+          node ./scripts/assert-cloudflare-success.mjs alias-response.json "alias preview deployment"
 
           curl -sS -X POST \
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ env.CLOUDFLARE_PROJECT_NAME }}/deployments/${CF_PAGES_DEPLOYMENT_ID}/purge-cache" \
@@ -133,17 +123,7 @@ PY
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ env.CLOUDFLARE_PROJECT_NAME }}/deployments/${CF_PAGES_DEPLOYMENT_ID}/alias" \
             -o alias-response.json
 
-          python3 - <<'PY'
-import json
-import sys
-
-with open('alias-response.json', 'r', encoding='utf-8') as fp:
-    data = json.load(fp)
-
-if not data.get('success'):
-    print('Failed to alias production deployment:', json.dumps(data), file=sys.stderr)
-    sys.exit(1)
-PY
+          node ./scripts/assert-cloudflare-success.mjs alias-response.json "alias production deployment"
 
           curl -sS -X POST \
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ env.CLOUDFLARE_PROJECT_NAME }}/deployments/${CF_PAGES_DEPLOYMENT_ID}/purge-cache" \
