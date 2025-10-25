@@ -100,12 +100,12 @@ jobs:
             -o alias-response.json
 
           python3 - <<'PY'
-            import json, sys
-            data = json.load(open('alias-response.json'))
-            if not data.get('success'):
-                print('Failed to alias preview deployment:', json.dumps(data), file=sys.stderr)
-                sys.exit(1)
-          PY
+import json, sys
+data = json.load(open('alias-response.json'))
+if not data.get('success'):
+    print('Failed to alias preview deployment:', json.dumps(data), file=sys.stderr)
+    sys.exit(1)
+PY
 
           curl -sS -X POST \
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ env.CLOUDFLARE_PROJECT_NAME }}/deployments/${CF_PAGES_DEPLOYMENT_ID}/purge-cache" \
@@ -130,12 +130,12 @@ jobs:
             -o alias-response.json
 
           python3 - <<'PY'
-            import json, sys
-            data = json.load(open('alias-response.json'))
-            if not data.get('success'):
-                print('Failed to alias production deployment:', json.dumps(data), file=sys.stderr)
-                sys.exit(1)
-          PY
+import json, sys
+data = json.load(open('alias-response.json'))
+if not data.get('success'):
+    print('Failed to alias production deployment:', json.dumps(data), file=sys.stderr)
+    sys.exit(1)
+PY
 
           curl -sS -X POST \
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ env.CLOUDFLARE_PROJECT_NAME }}/deployments/${CF_PAGES_DEPLOYMENT_ID}/purge-cache" \
