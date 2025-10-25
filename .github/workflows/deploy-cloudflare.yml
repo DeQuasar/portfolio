@@ -87,49 +87,17 @@ jobs:
         if: ${{ env.IS_PREVIEW == 'true' }}
         env:
           CF_PAGES_DEPLOYMENT_ID: ${{ steps.deploy.outputs.pages-deployment-id }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          cat <<'EOF' > alias.json
-          { "alias": "preview" }
-          EOF
-
-          curl -sS -X PUT \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data @alias.json \
-            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ env.CLOUDFLARE_PROJECT_NAME }}/deployments/${CF_PAGES_DEPLOYMENT_ID}/alias" \
-            -o alias-response.json
-
-          node ./scripts/assert-cloudflare-success.mjs alias-response.json "alias preview deployment"
-
-          curl -sS -X POST \
-            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ env.CLOUDFLARE_PROJECT_NAME }}/deployments/${CF_PAGES_DEPLOYMENT_ID}/purge-cache" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data '{"purge_all":true}' >/dev/null
+          node .github/scripts/promote-cloudflare-alias.mjs preview "alias preview deployment"
 
       - name: Promote production alias
         if: ${{ env.IS_PREVIEW != 'true' }}
         env:
           CF_PAGES_DEPLOYMENT_ID: ${{ steps.deploy.outputs.pages-deployment-id }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          cat <<'EOF' > alias.json
-          { "alias": "production" }
-          EOF
-
-          curl -sS -X PUT \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data @alias.json \
-            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ env.CLOUDFLARE_PROJECT_NAME }}/deployments/${CF_PAGES_DEPLOYMENT_ID}/alias" \
-            -o alias-response.json
-
-          node ./scripts/assert-cloudflare-success.mjs alias-response.json "alias production deployment"
-
-          curl -sS -X POST \
-            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ env.CLOUDFLARE_PROJECT_NAME }}/deployments/${CF_PAGES_DEPLOYMENT_ID}/purge-cache" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data '{"purge_all":true}' >/dev/null
+          node .github/scripts/promote-cloudflare-alias.mjs production "alias production deployment"
 
       - name: Publish GitHub release notes
         if: ${{ env.IS_PREVIEW != 'true' }}
