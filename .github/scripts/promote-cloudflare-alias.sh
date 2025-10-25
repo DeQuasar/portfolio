@@ -25,12 +25,31 @@ JSON
 ALIAS_RESPONSE="$WORKDIR/alias-response.json"
 PURGE_RESPONSE="$WORKDIR/purge-response.json"
 
-curl -fsS -X PUT \
+ALIAS_ENDPOINT="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CLOUDFLARE_PROJECT_NAME}/deployments/${CF_PAGES_DEPLOYMENT_ID}/alias"
+
+HTTP_STATUS=$(curl -sS \
+  -o "$ALIAS_RESPONSE" \
+  -w '%{http_code}' \
+  -X PUT \
   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
   -H "Content-Type: application/json" \
   --data @"$ALIAS_PAYLOAD" \
-  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CLOUDFLARE_PROJECT_NAME}/deployments/${CF_PAGES_DEPLOYMENT_ID}/alias" \
-  -o "$ALIAS_RESPONSE"
+  "$ALIAS_ENDPOINT")
+
+if [[ "$HTTP_STATUS" = "405" ]]; then
+  HTTP_STATUS=$(curl -sS \
+    -o "$ALIAS_RESPONSE" \
+    -w '%{http_code}' \
+    -X POST \
+    -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+    -H "Content-Type: application/json" \
+    --data @"$ALIAS_PAYLOAD" \
+    "$ALIAS_ENDPOINT")
+fi
+
+if [[ "$HTTP_STATUS" != "200" ]]; then
+  echo "Alias request failed with HTTP status $HTTP_STATUS" >&2
+fi
 
 node .github/scripts/assert-cloudflare-success.mjs "$ALIAS_RESPONSE" "$LABEL"
 
