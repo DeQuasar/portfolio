@@ -100,8 +100,8 @@ jobs:
             -o alias-response.json
 
           python3 - <<'PY'
-import json,sys
-data=json.load(open('alias-response.json'))
+import json, sys
+data = json.load(open('alias-response.json'))
 if not data.get('success'):
     print('Failed to alias preview deployment:', json.dumps(data), file=sys.stderr)
     sys.exit(1)
@@ -130,8 +130,8 @@ PY
             -o alias-response.json
 
           python3 - <<'PY'
-import json,sys
-data=json.load(open('alias-response.json'))
+import json, sys
+data = json.load(open('alias-response.json'))
 if not data.get('success'):
     print('Failed to alias production deployment:', json.dumps(data), file=sys.stderr)
     sys.exit(1)
