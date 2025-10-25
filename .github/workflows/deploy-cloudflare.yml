@@ -66,7 +66,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          node .github/scripts/promote-cloudflare-alias.mjs preview "alias preview deployment"
+          ./.github/scripts/promote-cloudflare-alias.sh preview "alias preview deployment"
 
       - name: Promote production alias
         if: ${{ env.IS_PREVIEW != 'true' }}
@@ -75,7 +75,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          node .github/scripts/promote-cloudflare-alias.mjs production "alias production deployment"
+          ./.github/scripts/promote-cloudflare-alias.sh production "alias production deployment"
 
       - name: Publish GitHub release notes
         if: ${{ env.IS_PREVIEW != 'true' }}
