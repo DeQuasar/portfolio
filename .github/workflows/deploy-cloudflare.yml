@@ -5,7 +5,7 @@ on:
     tags:
       - 'v*.*.*'
       - 'v*.*.*-preview'
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
   contents: write
