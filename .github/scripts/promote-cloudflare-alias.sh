@@ -9,10 +9,10 @@ if [[ -z "$ALIAS_NAME" ]]; then
   exit 1
 fi
 
-: "${CLOUDFLARE_API_TOKEN:?Missing CLOUDFLARE_API_TOKEN environment variable}" 
-: "${CLOUDFLARE_ACCOUNT_ID:?Missing CLOUDFLARE_ACCOUNT_ID environment variable}" 
-: "${CLOUDFLARE_PROJECT_NAME:?Missing CLOUDFLARE_PROJECT_NAME environment variable}" 
-: "${CF_PAGES_DEPLOYMENT_ID:?Missing CF_PAGES_DEPLOYMENT_ID environment variable}" 
+: "${CLOUDFLARE_API_TOKEN:?Missing CLOUDFLARE_API_TOKEN environment variable}"
+: "${CLOUDFLARE_ACCOUNT_ID:?Missing CLOUDFLARE_ACCOUNT_ID environment variable}"
+: "${CLOUDFLARE_PROJECT_NAME:?Missing CLOUDFLARE_PROJECT_NAME environment variable}"
+: "${CF_PAGES_DEPLOYMENT_ID:?Missing CF_PAGES_DEPLOYMENT_ID environment variable}"
 
 WORKDIR="$(mktemp -d)"
 trap 'rm -rf "$WORKDIR"' EXIT
@@ -25,26 +25,23 @@ JSON
 ALIAS_RESPONSE="$WORKDIR/alias-response.json"
 PURGE_RESPONSE="$WORKDIR/purge-response.json"
 
-ALIAS_ENDPOINT="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CLOUDFLARE_PROJECT_NAME}/deployments/${CF_PAGES_DEPLOYMENT_ID}/alias"
+BASE_URL="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CLOUDFLARE_PROJECT_NAME}"
+ALIAS_URL="${BASE_URL}/aliases/${ALIAS_NAME}"
+DEPLOYMENT_ALIAS_URL="${BASE_URL}/deployments/${CF_PAGES_DEPLOYMENT_ID}/alias"
+PURGE_URL="${BASE_URL}/deployments/${CF_PAGES_DEPLOYMENT_ID}/purge-cache"
 
-HTTP_STATUS=$(curl -sS \
-  -o "$ALIAS_RESPONSE" \
-  -w '%{http_code}' \
-  -X PUT \
+HTTP_STATUS=$(curl -sS -o "$ALIAS_RESPONSE" -w '%{http_code}' -X PUT \
   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
   -H "Content-Type: application/json" \
   --data @"$ALIAS_PAYLOAD" \
-  "$ALIAS_ENDPOINT")
+  "$ALIAS_URL")
 
-if [[ "$HTTP_STATUS" = "405" ]]; then
-  HTTP_STATUS=$(curl -sS \
-    -o "$ALIAS_RESPONSE" \
-    -w '%{http_code}' \
-    -X POST \
+if [[ "$HTTP_STATUS" = "404" || "$HTTP_STATUS" = "405" ]]; then
+  HTTP_STATUS=$(curl -sS -o "$ALIAS_RESPONSE" -w '%{http_code}' -X PUT \
     -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
     -H "Content-Type: application/json" \
     --data @"$ALIAS_PAYLOAD" \
-    "$ALIAS_ENDPOINT")
+    "$DEPLOYMENT_ALIAS_URL")
 fi
 
 if [[ "$HTTP_STATUS" != "200" ]]; then
@@ -53,12 +50,15 @@ fi
 
 node .github/scripts/assert-cloudflare-success.mjs "$ALIAS_RESPONSE" "$LABEL"
 
-curl -fsS -X POST \
+HTTP_STATUS=$(curl -sS -o "$PURGE_RESPONSE" -w '%{http_code}' -X POST \
   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
   -H "Content-Type: application/json" \
   --data '{"purge_all":true}' \
-  "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CLOUDFLARE_PROJECT_NAME}/deployments/${CF_PAGES_DEPLOYMENT_ID}/purge-cache" \
-  -o "$PURGE_RESPONSE"
+  "$PURGE_URL")
+
+if [[ "$HTTP_STATUS" != "200" ]]; then
+  echo "Cache purge request failed with HTTP status $HTTP_STATUS" >&2
+fi
 
 node .github/scripts/assert-cloudflare-success.mjs "$PURGE_RESPONSE" "purge cache for ${LABEL}"
 
