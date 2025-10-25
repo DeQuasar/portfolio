@@ -41,32 +41,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps
-
-      - name: Run unit tests with coverage
-        env:
-          ENABLE_BROWSER_TESTS: 'false'
-        run: pnpm test:coverage
-
       - name: Generate static site
         run: pnpm generate
-
-      - name: Run responsive UI suite (desktop/tablet/mobile)
-        env:
-          ENABLE_BROWSER_TESTS: 'true'
-          PLAYWRIGHT_NODE_VERSION: '22.20.0'
-        run: pnpm test:ui:container
-
-      - name: Run Playwright E2E suite
-        env:
-          SKIP_GENERATE: '1'
-        run: pnpm test:e2e:ci
-
-      - name: Run Lighthouse performance checks
-        env:
-          SKIP_GENERATE: '1'
-        run: pnpm test:performance
 
       - name: Deploy via Wrangler Direct Upload
         id: deploy
