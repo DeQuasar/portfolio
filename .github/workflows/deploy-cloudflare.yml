@@ -67,20 +67,25 @@ jobs:
           SKIP_GENERATE: '1'
         run: pnpm test:performance
 
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        id: publish
+      - name: Deploy via Wrangler Direct Upload
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ${{ env.CLOUDFLARE_PROJECT_NAME }}
-          directory: .output/public
-          branch: ${{ env.CF_DEPLOY_BRANCH }}
+          wranglerVersion: 3.81.0
+          packageManager: pnpm
+          command: >
+            pages deploy .output/public
+            --project-name=${{ env.CLOUDFLARE_PROJECT_NAME }}
+            --branch=${{ env.CF_DEPLOY_BRANCH }}
+            --commit-hash=${{ github.sha }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Promote preview alias
         if: ${{ env.IS_PREVIEW == 'true' }}
         env:
-          CF_PAGES_DEPLOYMENT_ID: ${{ steps.publish.outputs.deployment_id }}
+          CF_PAGES_DEPLOYMENT_ID: ${{ steps.deploy.outputs.pages-deployment-id }}
         run: |
           cat <<'EOF' > alias.json
           { "alias": "preview" }
@@ -110,7 +115,7 @@ PY
       - name: Promote production alias
         if: ${{ env.IS_PREVIEW != 'true' }}
         env:
-          CF_PAGES_DEPLOYMENT_ID: ${{ steps.publish.outputs.deployment_id }}
+          CF_PAGES_DEPLOYMENT_ID: ${{ steps.deploy.outputs.pages-deployment-id }}
         run: |
           cat <<'EOF' > alias.json
           { "alias": "production" }
