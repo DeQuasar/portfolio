@@ -33,7 +33,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Vitest unit suite (docker)
-        run: docker compose run --rm test pnpm vitest run
+        run: docker compose run --rm test pnpm test:unit
 
   ui:
     runs-on: ubuntu-latest
