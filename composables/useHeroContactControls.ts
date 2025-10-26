@@ -153,6 +153,9 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     return coords
   })
 
+  const heroTriggerElement = computed(() => emailTriggerEl.value?.el ?? null)
+  const navTriggerElement = computed(() => navEmailTriggerEl.value?.el ?? null)
+
   const tooltipFloatingStyles = computed(() => {
     const base = floatingStyles.value ?? {}
 
@@ -339,9 +342,14 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
   const toggleHeroEmailPanel = async (href: string) => {
     if (showHeroEmailPanel.value) {
       closeEmailPanel()
-    } else {
-      await openEmailPanel(href, 'hero')
+      return
     }
+
+    if (!href) {
+      return
+    }
+
+    await openEmailPanel(href, 'hero')
   }
 
   const toggleNavEmailPanel = async (href: string) => {
@@ -414,6 +422,8 @@ export function useHeroContactControls({ hero, tooltipProgressDuration, tooltipR
     if (showEmailPanel.value && emailPanelReady.value) {
       closeEmailPanel()
     }
+  }, {
+    ignore: [heroTriggerElement, navTriggerElement]
   })
 
   useEventListener(document, 'keydown', (event) => {

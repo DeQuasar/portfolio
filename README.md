@@ -25,6 +25,17 @@ docker compose run --rm app pnpm install
 
 All services mount the project directory, a persistent `node_modules` volume, the pnpm store, and the Playwright browser cache so incremental runs stay fast.
 
+### Résumé sync configuration
+
+Local hooks regenerate `content/experience.md` from your résumé PDF on every `predev` run. Copy `.env.example` to `.env` and set the source directory for the PDF so both native and Docker workflows can read it:
+
+```bash
+cp .env.example .env
+echo "HOST_RESUME_SOURCE_DIR=/mnt/c/Users/tonyp/OneDrive/Desktop/Resumes" >> .env
+```
+
+When using Docker, the `HOST_RESUME_SOURCE_DIR` path is mounted into the container at `/app/.resume-source`. You can override it per machine by changing the value before running `docker compose up`.
+
 ## Development server
 
 Start the dev server on `http://localhost:3000`.

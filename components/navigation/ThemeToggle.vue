@@ -9,10 +9,12 @@ const props = withDefaults(
   defineProps<{
     layout?: 'icon' | 'pill'
     label?: string
+    size?: 'md' | 'sm'
   }>(),
   {
     layout: 'icon',
-    label: 'Theme'
+    label: 'Theme',
+    size: 'md'
   }
 )
 
@@ -70,8 +72,9 @@ const baseButtonClasses = computed(() => {
       'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300'
     ]
   }
+  const sizeClass = props.size === 'sm' ? '!h-9 !w-9' : '!h-10 !w-10'
   return [
-    '!h-10 !w-10 rounded-full border shadow-sm transition duration-200',
+    `${sizeClass} rounded-full border shadow-sm transition duration-200`,
     'hover:-translate-y-0.5 focus-visible:-translate-y-0.5',
     'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300'
   ]
@@ -104,6 +107,13 @@ const themeButtonClasses = computed(() => {
 })
 
 const buttonClasses = computed(() => [...baseButtonClasses.value, ...themeButtonClasses.value])
+
+const iconSizeClass = computed(() => {
+  if (props.layout !== 'icon') {
+    return 'h-[1rem] w-[1rem]'
+  }
+  return props.size === 'sm' ? 'h-[0.85rem] w-[0.85rem]' : 'h-[1rem] w-[1rem]'
+})
 </script>
 
 <template>
@@ -128,7 +138,7 @@ const buttonClasses = computed(() => [...baseButtonClasses.value, ...themeButton
       stroke-width="1.7"
       stroke-linecap="round"
       stroke-linejoin="round"
-      class="h-[1rem] w-[1rem]"
+      :class="iconSizeClass"
       aria-hidden="true"
     >
       <circle cx="12" cy="12" r="4" />
@@ -151,7 +161,7 @@ const buttonClasses = computed(() => [...baseButtonClasses.value, ...themeButton
       stroke-width="1.6"
       stroke-linecap="round"
       stroke-linejoin="round"
-      class="h-[1rem] w-[1rem]"
+      :class="iconSizeClass"
       aria-hidden="true"
     >
       <path

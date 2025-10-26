@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useEventListener, useResizeObserver } from '@vueuse/core'
 import NavigationDesktopActions from './NavigationDesktopActions.vue'
 import NavigationEmailDropdown from './NavigationEmailDropdown.vue'
 import NavigationIdentity from './NavigationIdentity.vue'
 import NavigationMobileBar from './NavigationMobileBar.vue'
+import NavigationMobileMenu from './NavigationMobileMenu.vue'
 import type { ClipboardState } from '~/composables/useClipboard'
 import type { HeroContent } from '~/types/content'
 import type { NormalizedSocialLink } from './types'
@@ -45,6 +46,24 @@ const navEmailTriggerLocal = ref<ButtonInstance | null>(null)
 const emailPanelLocal = ref<HTMLElement | null>(null)
 const emailCopyButtonLocal = ref<ButtonInstance | null>(null)
 const navEmailDropdownStyles = ref<Record<string, string>>({})
+const mobileMenuOpen = ref(false)
+
+const mobileMenuLinks = computed(() => {
+  const links: Array<{ label: string; href: string; ariaLabel?: string }> = [
+    { label: 'Experience', href: '#experience' },
+    { label: 'Skills', href: '#skills' }
+  ]
+
+  if (props.emailLink?.href) {
+    links.push({ label: 'Email', href: props.emailLink.href, ariaLabel: 'Email Anthony' })
+  }
+
+  if (props.hero?.primaryCta?.href) {
+    links.push({ label: props.hero.primaryCta.label ?? 'Résumé', href: props.hero.primaryCta.href, ariaLabel: props.hero.primaryCta.label })
+  }
+
+  return links
+})
 
 const clampNavWidth = () => {
   if (!navRootEl.value) {
@@ -94,6 +113,62 @@ const setEmailPanelLocal = (element: HTMLElement | null) => {
 
 const setEmailCopyButtonLocal = (instance: ButtonInstance | null) => {
   emailCopyButtonLocal.value = instance
+}
+
+const scrollLockState: { docOverflow: string | null; bodyOverflow: string | null } = {
+  docOverflow: null,
+  bodyOverflow: null
+}
+
+const applyScrollLock = () => {
+  if (!import.meta.client) {
+    return
+  }
+  const doc = document.documentElement
+  const body = document.body
+  if (scrollLockState.docOverflow === null) {
+    scrollLockState.docOverflow = doc.style.overflow
+    scrollLockState.bodyOverflow = body.style.overflow
+  }
+  doc.style.overflow = 'hidden'
+  body.style.overflow = 'hidden'
+}
+
+const releaseScrollLock = () => {
+  if (!import.meta.client) {
+    return
+  }
+  const doc = document.documentElement
+  const body = document.body
+  if (scrollLockState.docOverflow !== null) {
+    doc.style.overflow = scrollLockState.docOverflow
+    scrollLockState.docOverflow = null
+  } else {
+    doc.style.removeProperty('overflow')
+  }
+  if (scrollLockState.bodyOverflow !== null) {
+    body.style.overflow = scrollLockState.bodyOverflow
+    scrollLockState.bodyOverflow = null
+  } else {
+    body.style.removeProperty('overflow')
+  }
+}
+
+const handleMobileMenuToggle = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+  if (mobileMenuOpen.value && props.showNavEmailPanel) {
+    const hrefToToggle = props.activeEmailHref ?? props.emailLink?.href ?? ''
+    if (hrefToToggle) {
+      emit('toggle-nav-email', hrefToToggle)
+    }
+  }
+}
+
+const handleMobileMenuClose = () => {
+  if (!mobileMenuOpen.value) {
+    return
+  }
+  mobileMenuOpen.value = false
 }
 
 const getNavTriggerElement = () => {
@@ -196,7 +271,7 @@ if (import.meta.client) {
   })
 }
 
-const reportHeightAfterTick = () => {
+function reportHeightAfterTick() {
   if (!props.visible) {
     return
   }
@@ -208,11 +283,29 @@ const reportHeightAfterTick = () => {
 
 watch(() => props.visible, (isVisible) => {
   if (!isVisible) {
+    mobileMenuOpen.value = false
     syncHeight(0)
     assignExternalRef(props.emailPanelRef, null)
     return
   }
   reportHeightAfterTick()
+})
+
+watch(() => props.showNavEmailPanel, (isOpen) => {
+  if (isOpen && mobileMenuOpen.value) {
+    mobileMenuOpen.value = false
+  }
+})
+
+watch(mobileMenuOpen, (isOpen) => {
+  if (isOpen) {
+    applyScrollLock()
+  } else {
+    releaseScrollLock()
+  }
+  if (props.visible) {
+    reportHeightAfterTick()
+  }
 })
 
 onMounted(() => {
@@ -221,6 +314,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  releaseScrollLock()
   syncHeight(0)
 })
 </script>
@@ -234,16 +328,12 @@ onBeforeUnmount(() => {
       aria-label="Primary navigation"
     >
       <div
-        class="flex w-full max-w-5xl flex-col gap-2 rounded-[1.4rem] border border-sage-200/70 bg-white/95 px-4 py-2 shadow-[0_20px_46px_-28px_rgba(31,52,36,0.48)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:rounded-[1.75rem] sm:px-5 sm:py-2.5"
+        class="flex w-full max-w-5xl flex-col gap-1.5 rounded-[1.3rem] border border-sage-200/70 bg-white/95 px-4 py-2 shadow-[0_20px_46px_-28px_rgba(31,52,36,0.48)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:rounded-[1.75rem] sm:px-5 sm:py-2.5"
       >
         <NavigationMobileBar
           :hero="hero"
-          :email-link="emailLink"
-          :resume-is-downloading="resumeIsDownloading"
-          :copy-state="copyState"
-          :set-nav-email-trigger="setNavEmailTriggerLocal"
-          @start-resume-download="(event) => emit('start-resume-download', event)"
-          @toggle-nav-email="emit('toggle-nav-email', $event)"
+          :menu-open="mobileMenuOpen"
+          @toggle-menu="handleMobileMenuToggle"
         />
 
         <NavigationEmailDropdown
@@ -282,4 +372,12 @@ onBeforeUnmount(() => {
       </div>
     </nav>
   </Transition>
+  <Teleport to="body">
+    <NavigationMobileMenu
+      :hero="hero"
+      :links="mobileMenuLinks"
+      :open="visible && mobileMenuOpen"
+      @close="handleMobileMenuClose"
+    />
+  </Teleport>
 </template>

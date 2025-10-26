@@ -98,7 +98,7 @@ entries:
       - Mentored developers across Laravel, PHP, and Vue ecosystems, promoting best practices in testing, structure, and maintainability.
     projects:
       - title: Virtual event platform refresh
-        summary: Shipped the refreshed virtual event front end on the timeline the client picked.
+        summary: Shipped the refreshed virtual event front end under a razor-thin deadline the client imposed.
         problem: The 3D environment refresh had a fixed launch date, lots of moving parts, and a front-end crew that needed day-to-day direction once backend work wrapped.
         contribution: Coordinated the front-end devs, kept stakeholders aligned, unblocked issues, and still contributed morning coding sessions on critical pieces.
         impact: Rolled out on the agreed deadline, the 3D front-end experience ran without a hitch, and the client signed off without requesting follow-up fixes.

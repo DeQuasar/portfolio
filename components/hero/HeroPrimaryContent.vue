@@ -111,6 +111,13 @@ onBeforeUnmount(() => {
   assignExternalRef(props.tooltipBubbleRef, null)
   assignExternalRef(props.tooltipArrowRef, null)
 })
+
+const handleHeroEmailToggle = () => {
+  if (!props.emailLink?.href) {
+    return
+  }
+  emit('toggle-hero-email', props.emailLink.href)
+}
 </script>
 
 <template>
@@ -231,7 +238,7 @@ onBeforeUnmount(() => {
             class="flex w-full min-h-[44px] items-center gap-2 rounded-full border-sage-200/70 bg-white/95 !px-4 !py-0 text-[0.78rem] font-semibold text-sage-600 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-sage-400 hover:text-sage-700 focus-visible:-translate-y-0.5 focus-visible:border-sage-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:w-auto"
             :aria-expanded="showHeroEmailPanel"
             aria-haspopup="menu"
-            @click="emit('toggle-hero-email', emailLink.href)"
+            @click="handleHeroEmailToggle"
           >
             <span class="grid h-8 w-8 place-items-center rounded-full border border-sage-100 bg-sage-50 text-sage-600 shadow-inner">
               <svg
@@ -276,7 +283,7 @@ onBeforeUnmount(() => {
           <div
             role="group"
             aria-labelledby="hero-socials-label"
-            class="hidden flex-wrap items-center justify-center gap-3 sm:flex"
+            class="flex w-full flex-wrap items-center justify-center gap-3 sm:w-auto"
           >
             <AppLink
               v-for="link in otherSocials"
@@ -341,11 +348,11 @@ onBeforeUnmount(() => {
             <div
               v-if="showHeroEmailPanel && activeEmailHref"
               key="email-inline"
-          class="absolute left-1/2 top-[calc(100%+0.85rem)] z-[120] w-[min(20rem,calc(100vw-3rem))] -translate-x-1/2"
-          :style="{ visibility: emailPanelReady ? 'visible' : 'hidden' }"
-          role="group"
-          aria-label="Email options"
-        >
+              class="absolute left-1/2 top-[calc(100%+0.85rem)] z-[120] w-[min(22rem,calc(100vw-2.25rem))] -translate-x-1/2 sm:w-[min(20rem,calc(100vw-3rem))]"
+              :style="{ visibility: emailPanelReady ? 'visible' : 'hidden' }"
+              role="group"
+              aria-label="Email options"
+            >
               <div
                 ref="heroEmailPanelLocal"
                 class="flex flex-col gap-3 rounded-2xl border border-sage-200/80 bg-white/98 p-4 text-left shadow-xl backdrop-blur"

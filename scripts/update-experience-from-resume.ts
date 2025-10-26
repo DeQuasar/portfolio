@@ -23,32 +23,49 @@ let PDFParse: PDFParseConstructor | undefined
 const yamlSpecifier = ['ya', 'ml'].join('')
 const pdfParseSpecifier = ['pdf', '-', 'parse'].join('')
 
-try {
-  const yamlModule = await import(yamlSpecifier) as YamlModule & { default?: YamlModule }
-  YAML = yamlModule.default ?? yamlModule
-} catch {
+const ensureYaml = async () => {
+  if (YAML) {
+    return
+  }
+
   try {
-    const { createRequire } = await import('node:module') as typeof import('node:module')
-    const requireModule = createRequire(import.meta.url)
-    const yamlModule = requireModule(yamlSpecifier) as YamlModule & { default?: YamlModule }
+    const yamlModule = await import(yamlSpecifier) as YamlModule & { default?: YamlModule }
     YAML = yamlModule.default ?? yamlModule
   } catch {
-    console.warn('[update-experience]', 'yaml dependency is not available; skipping résumé parsing.')
+    try {
+      const { createRequire } = await import('node:module') as typeof import('node:module')
+      const requireModule = createRequire(import.meta.url)
+      const yamlModule = requireModule(yamlSpecifier) as YamlModule & { default?: YamlModule }
+      YAML = yamlModule.default ?? yamlModule
+    } catch {
+      console.warn('[update-experience]', 'yaml dependency is not available; skipping résumé parsing.')
+    }
   }
 }
 
-try {
-  const pdfModule = await import(pdfParseSpecifier) as { PDFParse?: PDFParseConstructor; default?: PDFParseConstructor }
-  PDFParse = pdfModule.PDFParse ?? pdfModule.default
-} catch {
+const ensurePdfParse = async () => {
+  if (PDFParse) {
+    return
+  }
+
   try {
-    const { createRequire } = await import('node:module') as typeof import('node:module')
-    const requireModule = createRequire(import.meta.url)
-    const pdfModule = requireModule(pdfParseSpecifier) as { PDFParse?: PDFParseConstructor; default?: PDFParseConstructor }
+    const pdfModule = await import(pdfParseSpecifier) as { PDFParse?: PDFParseConstructor; default?: PDFParseConstructor }
     PDFParse = pdfModule.PDFParse ?? pdfModule.default
   } catch {
-    console.warn('[update-experience]', 'pdf-parse dependency is not available; skipping résumé parsing.')
+    try {
+      const { createRequire } = await import('node:module') as typeof import('node:module')
+      const requireModule = createRequire(import.meta.url)
+      const pdfModule = requireModule(pdfParseSpecifier) as { PDFParse?: PDFParseConstructor; default?: PDFParseConstructor }
+      PDFParse = pdfModule.PDFParse ?? pdfModule.default
+    } catch {
+      console.warn('[update-experience]', 'pdf-parse dependency is not available; skipping résumé parsing.')
+    }
   }
+}
+
+const ensureDependencies = async () => {
+  await ensureYaml()
+  await ensurePdfParse()
 }
 
 const EXPERIENCE_CONTENT_PATH = resolve(process.cwd(), 'content/experience.md')
@@ -348,6 +365,8 @@ const cloneProjects = (projects?: ExperienceProject[]) => (
 )
 
 const loadExistingExperience = async (): Promise<ExperienceEntry[]> => {
+  await ensureYaml()
+
   if (!YAML || !existsSync(EXPERIENCE_CONTENT_PATH)) {
     return []
   }
@@ -408,6 +427,8 @@ const mergeWithExisting = (parsedEntries: ExperienceEntry[], existingEntries: Ex
 }
 
 const writeExperienceContent = async (entries: ExperienceEntry[]) => {
+  await ensureYaml()
+
   if (!YAML) {
     return
   }
@@ -417,6 +438,8 @@ const writeExperienceContent = async (entries: ExperienceEntry[]) => {
 }
 
 const updateHeroSummary = async (summary: string | null) => {
+  await ensureYaml()
+
   if (!YAML || !summary?.trim().length || !existsSync(HERO_CONTENT_PATH)) {
     return
   }
@@ -447,6 +470,8 @@ const updateHeroSummary = async (summary: string | null) => {
 }
 
 const parseResumeDocument = async (resumePath: string) => {
+  await ensureDependencies()
+
   if (!PDFParse || !YAML) {
     return { summary: null as string | null, entries: [] as ExperienceEntry[] }
   }
