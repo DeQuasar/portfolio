@@ -33,6 +33,8 @@ categories:
       - Tailwind CSS
       - SCSS
       - Vuex
+      - WordPress
+      - Slim PHP
   - title: Data & Integrations
     description: Datastores and third-party services I maintain in production.
     match:
@@ -44,6 +46,7 @@ categories:
       - API integrations
       - WebSockets
       - CMS architecture
+      - SQL tuning
   - title: Delivery & Platform Operations
     description: Deployment and automation tooling that protects velocity and uptime.
     match:
@@ -51,6 +54,7 @@ categories:
       - GitHub Actions
       - Renovatebot
       - Git
+      - GitHub
       - Composer
       - npm
       - Vite
@@ -69,5 +73,6 @@ categories:
       - ESLint
       - Stylelint
       - PHP-CS-Fixer
+      - Jest
 intro: Senior software developer focused on dependable delivery, testing discipline, and collaborative engineering environments.
 ---

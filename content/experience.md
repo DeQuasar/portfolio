@@ -86,7 +86,6 @@ entries:
       - PHPUnit
       - Pest
       - SQL tuning
-      - Mentorship
   - organization: Clevyr, Inc.
     role: Senior Software Developer
     location: Oklahoma City, OK (Remote)
@@ -121,7 +120,6 @@ entries:
       - GitHub Actions
       - PHPUnit
       - Pest
-      - Team leadership
   - organization: Clevyr, Inc.
     role: Full Stack Developer
     location: Oklahoma City, OK

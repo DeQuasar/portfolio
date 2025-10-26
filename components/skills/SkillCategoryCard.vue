@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useBreakpoints } from '@vueuse/core'
-import CardSurface from '~/components/ui/CardSurface.vue'
-import Pill from '~/components/ui/Pill.vue'
 import type { SkillCategoryDisplay } from '~/composables/useSkillStack'
 
 const props = defineProps<{ category: SkillCategoryDisplay }>()
@@ -41,38 +39,44 @@ const toggleExpanded = () => {
 </script>
 
 <template>
-  <CardSurface
-    padding="sm"
-    rounded="lg"
-    :surface-class="'border border-sage-200/80 bg-white shadow-card'"
-    class="flex h-full flex-col gap-5 text-left"
-  >
-    <div class="space-y-2">
-      <p class="text-xs font-semibold uppercase tracking-[0.24em] text-sage-600">Category</p>
-      <h3 class="font-display text-[1.25rem] font-semibold text-sage-700">{{ category.title }}</h3>
-      <p v-if="category.description" class="text-sm leading-relaxed text-sage-600">
-        {{ category.description }}
-      </p>
-    </div>
-    <ul class="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-      <li v-for="item in visibleSkills" :key="item.label" class="max-w-full">
-        <Pill
-          tone="neutral"
-          size="md"
-          class="w-full justify-center px-3.5 py-1.5 text-center text-[0.82rem] tracking-[0.06em] whitespace-normal break-words leading-snug sm:w-auto"
-        >
-          {{ item.label }}
-        </Pill>
+  <article class="group flex h-full flex-col rounded-2xl border border-sage-200/70 bg-white/80 p-5 text-left shadow-sm transition-shadow hover:shadow-md">
+    <header class="space-y-1.5">
+      <h3 class="font-display text-[1.15rem] font-semibold text-sage-800">{{ category.title }}</h3>
+    </header>
+
+    <ul class="mt-3 grid gap-2 text-sm text-sage-600 sm:grid-cols-2">
+      <li
+        v-for="item in visibleSkills"
+        :key="item.label"
+        class="flex items-start gap-2 leading-relaxed"
+      >
+        <span class="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-sage-300" aria-hidden="true" />
+        <span class="flex-1 break-words">{{ item.label }}</span>
       </li>
     </ul>
+
     <button
       v-if="hasOverflow"
       type="button"
-      class="self-start inline-flex min-h-[40px] items-center rounded-full border border-sage-200/70 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-sage-500 transition-colors hover:border-sage-400 hover:text-sage-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:hidden"
+      class="mt-4 inline-flex items-center gap-2 self-start text-xs font-semibold uppercase tracking-[0.16em] text-sage-500 transition-colors hover:text-sage-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-300 sm:hidden"
       :aria-expanded="expanded"
       @click="toggleExpanded"
     >
-      {{ expanded ? 'Show fewer' : 'Show more' }}
+      <span>{{ expanded ? 'Show fewer' : 'Show more' }}</span>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="h-3.5 w-3.5 transition-transform"
+        :class="expanded ? 'rotate-180' : ''"
+        aria-hidden="true"
+      >
+        <polyline points="4 6 8 10 12 6" />
+      </svg>
     </button>
-  </CardSurface>
+  </article>
 </template>
