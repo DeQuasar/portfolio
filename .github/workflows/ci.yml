@@ -4,7 +4,11 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-preview'
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -124,3 +128,55 @@ jobs:
       - name: Cleanup Playwright containers
         if: always()
         run: docker compose -f docker-compose.playwright.yml down --remove-orphans || true
+
+  deploy:
+    name: Deploy to Cloudflare Pages
+    needs:
+      - unit
+      - ui
+      - audit
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      deployments: write
+    env:
+      CLOUDFLARE_PROJECT_NAME: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+      IS_PREVIEW: ${{ contains(github.ref, '-preview') }}
+      CF_DEPLOY_BRANCH: ${{ contains(github.ref, '-preview') && 'preview' || 'main' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clean Nuxt content cache
+        run: rm -rf .data
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate static site
+        run: pnpm generate
+
+      - name: Deploy via Wrangler Direct Upload
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '3.81.0'
+          packageManager: pnpm
+          command: >
+            pages deploy .output/public
+            --project-name=${{ env.CLOUDFLARE_PROJECT_NAME }}
+            --branch=${{ env.CF_DEPLOY_BRANCH }}
+            --commit-hash=${{ github.sha }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
