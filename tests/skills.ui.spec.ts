@@ -32,17 +32,17 @@ const MOBILE_LIMIT = 5
 async function readAdditionalTools(section: import('playwright-core').Locator) {
   return section.evaluate((node) => {
     const grid = node.querySelector('div.grid')
-    const pills = grid
-      ? Array.from(grid.querySelectorAll<HTMLSpanElement>('span.inline-flex'))
+    const items = grid
+      ? Array.from(grid.querySelectorAll<HTMLElement>('span.inline-flex, li'))
       : []
-    const visible = pills.filter((pill) => {
-      const style = window.getComputedStyle(pill)
-      return style.display !== 'none' && style.visibility !== 'hidden' && pill.getClientRects().length > 0
+    const visible = items.filter((item) => {
+      const style = window.getComputedStyle(item)
+      return style.display !== 'none' && style.visibility !== 'hidden' && item.getClientRects().length > 0
     })
     const toggle = node.querySelector<HTMLButtonElement>('button')
     return {
       visibleCount: visible.length,
-      totalCount: pills.length,
+      totalCount: items.length,
       hasToggle: Boolean(toggle),
       toggleLabel: toggle?.textContent?.trim() ?? null
     }
@@ -90,14 +90,14 @@ describeMaybe('[chromium] skill stack (mobile)', () => {
     expect(collapsed.hasToggle).toBe(true)
     expect(collapsed.toggleLabel).toMatch(/Show more tools/i)
 
-    await additionalSection.getByRole('button', { name: /Show more tools/i }).click()
+    await additionalSection.locator('button').first().click()
 
     const expanded = await readAdditionalTools(additionalSection)
     expect(expanded.visibleCount).toBe(expanded.totalCount)
     expect(expanded.visibleCount).toBeGreaterThan(collapsed.visibleCount)
     expect(expanded.toggleLabel).toMatch(/Show fewer tools/i)
 
-    await additionalSection.getByRole('button', { name: /Show fewer tools/i }).click()
+    await additionalSection.locator('button').first().click()
 
     const reverted = await readAdditionalTools(additionalSection)
     expect(reverted.visibleCount).toBe(collapsed.visibleCount)
@@ -110,7 +110,7 @@ describeMaybe('[chromium] skill stack (mobile)', () => {
     await page.reload()
     await page.waitForLoadState('networkidle')
 
-    const categoryCard = page.locator('div.flex.h-full.flex-col:has(h3:has-text("Product Engineering"))').first()
+    const categoryCard = page.locator('article.flex.h-full.flex-col:has(h3:has-text("Product Engineering"))').first()
     await categoryCard.waitFor({ state: 'visible' })
 
     const collapsed = await readCategoryState(categoryCard)
@@ -124,14 +124,14 @@ describeMaybe('[chromium] skill stack (mobile)', () => {
     expect(collapsed.hasToggle).toBe(true)
     expect(collapsed.toggleLabel).toMatch(/Show more/i)
 
-    await categoryCard.getByRole('button', { name: /Show more/i }).click()
+    await categoryCard.locator('button').first().click()
 
     const expanded = await readCategoryState(categoryCard)
     expect(expanded.visibleCount).toBe(expanded.totalCount)
     expect(expanded.visibleCount).toBeGreaterThan(collapsed.visibleCount)
     expect(expanded.toggleLabel).toMatch(/Show fewer/i)
 
-    await categoryCard.getByRole('button', { name: /Show fewer/i }).click()
+    await categoryCard.locator('button').first().click()
 
     const reverted = await readCategoryState(categoryCard)
     expect(reverted.visibleCount).toBe(collapsed.visibleCount)
@@ -152,7 +152,7 @@ describeMaybe('[chromium] skill stack (desktop & tablet)', () => {
     const desktopLayout = await additionalSection.evaluate((node) => {
       const container = node.querySelector('div.grid')
       const computed = container ? window.getComputedStyle(container) : null
-      const pills = Array.from(node.querySelectorAll('span.inline-flex'))
+      const pills = Array.from(node.querySelectorAll<HTMLElement>('span.inline-flex, li'))
       return {
         display: computed?.display ?? null,
         visibleCount: pills.filter((pill) => {
@@ -176,7 +176,7 @@ describeMaybe('[chromium] skill stack (desktop & tablet)', () => {
     await page.reload()
     await page.waitForLoadState('networkidle')
 
-    const categoryCard = page.locator('div.flex.h-full.flex-col:has(h3:has-text("Product Engineering"))').first()
+    const categoryCard = page.locator('article.flex.h-full.flex-col:has(h3:has-text("Product Engineering"))').first()
     await categoryCard.waitFor({ state: 'visible' })
 
     const state = await categoryCard.evaluate((node) => {

@@ -99,7 +99,7 @@ const handleMailto = () => {
   <section
     ref="sectionEl"
     :style="props.heroBackdropStyle"
-    class="relative isolate z-10 mt-0 flex min-h-[calc(100svh-1rem)] flex-col items-center overflow-visible rounded-none px-4 pb-[calc(env(safe-area-inset-bottom)+1.75rem)] pt-[calc(env(safe-area-inset-top)+2.2rem)] text-center shadow-none sm:mt-10 sm:min-h-0 sm:rounded-[2.2rem] sm:px-10 sm:py-14 sm:shadow-card"
+    class="relative isolate z-10 mt-0 flex flex-col items-center overflow-visible rounded-none px-4 pb-[calc(env(safe-area-inset-bottom)+1.75rem)] pt-[calc(env(safe-area-inset-top)+2.2rem)] text-center shadow-none sm:mt-10 sm:rounded-[2.2rem] sm:px-10 sm:py-14 sm:shadow-card"
     data-testid="hero-section"
   >
     <div

@@ -23,11 +23,11 @@ describe('SkillCoreGroupCard', () => {
     })
 
     expect(wrapper.get('h3').text()).toBe(group.title)
-    expect(wrapper.text()).toContain(group.description as string)
+    expect(wrapper.text()).not.toContain(group.description as string)
 
-    const pills = wrapper.findAllComponents({ name: 'Pill' })
-    expect(pills).toHaveLength(group.skills.length)
-    expect(pills[0].text()).toContain('Nuxt')
+    const items = wrapper.findAll('li')
+    expect(items).toHaveLength(group.skills.length)
+    expect(items[0].text()).toContain('Nuxt')
 
     const summary = wrapper.findAll('p')
       .find(node => node.text().includes('Active across'))
