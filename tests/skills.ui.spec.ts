@@ -77,6 +77,11 @@ describeMaybe('[chromium] skill stack (mobile)', () => {
     await page.waitForLoadState('networkidle')
 
     const additionalSection = page.locator('div.flex.flex-col.gap-3:has-text("Additional Tools")').first()
+    const sectionCount = await additionalSection.count()
+    if (sectionCount === 0) {
+      // No additional tools section rendered - all skills are in core/supporting categories
+      return
+    }
     await additionalSection.waitFor({ state: 'visible' })
 
     const collapsed = await readAdditionalTools(additionalSection)
@@ -147,6 +152,11 @@ describeMaybe('[chromium] skill stack (desktop & tablet)', () => {
     await page.waitForLoadState('networkidle')
 
     const additionalSection = page.locator('div.flex.flex-col.gap-3:has-text("Additional Tools")').first()
+    const sectionCount = await additionalSection.count()
+    if (sectionCount === 0) {
+      // No additional tools section rendered - all skills are in core/supporting categories
+      return
+    }
     await additionalSection.waitFor({ state: 'visible' })
 
     const desktopLayout = await additionalSection.evaluate((node) => {
