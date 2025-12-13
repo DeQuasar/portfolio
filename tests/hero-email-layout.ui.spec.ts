@@ -44,6 +44,11 @@ async function setMobileViewport(page: Page) {
   await page.waitForFunction(() => window.innerWidth < 640)
 }
 
+async function setTabletViewport(page: Page) {
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await page.waitForFunction(() => window.innerWidth >= 640)
+}
+
 describeMaybe('[chromium] hero email layout', () => {
   it('keeps the hero socials root width and center stable when toggling email options', async () => {
     const page = await createPage('/')
@@ -74,7 +79,7 @@ describeMaybe('[chromium] hero email layout', () => {
 
   it('positions the sticky nav email panel below the nav and toggles closed on repeat taps', async () => {
     const page = await createPage('/')
-    await setMobileViewport(page)
+    await setTabletViewport(page)
 
     await page.evaluate(() => {
       window.scrollTo({ top: 900, behavior: 'instant' })

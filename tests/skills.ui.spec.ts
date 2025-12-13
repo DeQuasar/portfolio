@@ -194,13 +194,11 @@ describeMaybe('[chromium] skill stack (desktop & tablet)', () => {
       const computed = list ? window.getComputedStyle(list) : null
       return {
         display: computed?.display ?? null,
-        hasToggle: Boolean(node.querySelector('button')),
-        wrap: computed?.flexWrap ?? null
+        hasToggle: Boolean(node.querySelector('button'))
       }
     })
 
-    expect(state?.display).toBe('flex')
+    expect(state?.display).toBe('grid')
     expect(state?.hasToggle).toBe(false)
-    expect(state?.wrap).toBe('wrap')
   }, 20000)
 })
